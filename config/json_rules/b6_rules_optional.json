@@ -1,0 +1,126 @@
+{
+    "nogds": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "satis": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "dropact": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "empty": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bored": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "spirits": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "afraid": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "happy": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "helpless": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "stayhome": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "memprob": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "wondrful": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "wrthless": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "energy": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hopeless": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "better": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "gds": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "frmdateb6": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langb6": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modeb6": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasb6": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "rmmodeb6": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "b6not": {
+        "type": "integer",
+        "allowed": [
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "initialsb6": {
+        "nullable": true,
+        "type": "string"
+    }
+}

@@ -1,0 +1,97 @@
+{
+    "inrelto": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inknown": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inlivwth": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "incntmod": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "incntmdx": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "incntfrq": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "incnttim": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inrely": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inmemwors": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inmemtroub": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "inmemten": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "frmdatea2": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langa2": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modea2": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasa2": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "rmmodea2": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "a2not": {
+        "type": "integer",
+        "allowed": [
+            92,
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "initialsa2": {
+        "nullable": true,
+        "type": "string"
+    }
+}

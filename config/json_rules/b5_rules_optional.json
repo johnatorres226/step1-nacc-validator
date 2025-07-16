@@ -1,0 +1,171 @@
+{
+    "frmdateb5": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langb5": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modeb5": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasb5": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "rmmodeb5": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "b5not": {
+        "type": "integer",
+        "allowed": [
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "npiqinfx": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "del": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "delsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hall": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hallsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "agit": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "agitsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "depd": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "depdsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "anx": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "anxsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "elat": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "elatsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "apa": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "apasev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "disn": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "disnsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "irr": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "irrsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "mot": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "motsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "nite": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "nitesev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "app": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "appsev": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "npiqinf": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "initialsb5": {
+        "nullable": true,
+        "type": "string"
+    }
+}

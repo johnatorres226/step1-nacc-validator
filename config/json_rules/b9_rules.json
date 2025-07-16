@@ -1,0 +1,3463 @@
+{
+    "frmdateb9": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langb9": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modeb9": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "rmreasb9": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb9": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb9": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb9": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb9": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodeb9": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb9": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb9": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb9": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb9": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "deccog": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "memwors": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "deccog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "memtroub": {
+                        "allowed": [
+                            4,
+                            5
+                        ]
+                    }
+                },
+                "then": {
+                    "deccog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "memten": {
+                        "allowed": [
+                            4,
+                            5
+                        ]
+                    }
+                },
+                "then": {
+                    "deccog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "decmot": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "psychsym": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "deccogin": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inmemwors": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "deccogin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inmemtroub": {
+                        "allowed": [
+                            4,
+                            5
+                        ]
+                    }
+                },
+                "then": {
+                    "deccogin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inmemten": {
+                        "allowed": [
+                            4,
+                            5
+                        ]
+                    }
+                },
+                "then": {
+                    "deccogin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "decmotin": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "psychsymin": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "decclin": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "decclin": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "decclcog": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "decclcog": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "decclcog": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cogmem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogmem": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogmem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogori": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogori": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogori": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogjudg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogjudg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogjudg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "coglang": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "coglang": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "coglang": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogvis": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogvis": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogvis": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogattn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogattn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogattn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogfluc": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogfluc": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogfluc": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "cogothr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cogothrx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogothr": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothrx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogothr": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothrx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "cogage": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "cogmem": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogori": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogjudg": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "coglang": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogvis": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogattn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogfluc": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cogothr": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "cogmem": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogori": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogjudg": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "coglang": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogvis": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogattn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogfluc": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "cogothr": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "or",
+                "if": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "cogage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "decage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "cogage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "decage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "min": 15,
+        "max": 110
+    },
+    "cogmode": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogmode": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cogmode": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            99
+        ]
+    },
+    "cogmodex": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogmode": {
+                        "allowed": [
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "cogmodex": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogmode": {
+                        "forbidden": [
+                            4
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogmodex": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "decclbe": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "decclbe": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "decclbe": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "beapathy": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beapathy": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beapathy": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "bedep": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bedep": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bedep": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beanx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beanx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beanx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beeuph": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beeuph": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beeuph": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beirrit": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beirrit": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beirrit": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beagit": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beagit": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beagit": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "behage": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "beapathy": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "bedep": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beanx": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beeuph": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beirrit": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beagit": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "behage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "beapathy": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "bedep": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beanx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beeuph": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beirrit": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beagit": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "behage": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "behage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "behage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "beage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "behage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "beage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "min": 9,
+        "max": 110
+    },
+    "bevhall": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bevhall": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bevhall": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "bevpatt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "bevhall": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bevpatt": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "bevhall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bevpatt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "bevwell": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "bevhall": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bevwell": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "bevhall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bevwell": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beahall": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beahall": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beahall": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beahsimp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "beahall": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beahsimp": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "beahall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beahsimp": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beahcomp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "beahall": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beahcomp": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "beahall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beahcomp": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "bedel": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bedel": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bedel": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beaggrs": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beaggrs": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beaggrs": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "psychage": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "bevhall": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beahall": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "bedel": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beaggrs": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "psychage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "bevhall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beahall": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "bedel": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beaggrs": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "psychage": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 9,
+        "max": 110
+    },
+    "bedisin": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bedisin": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bedisin": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beperch": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beperch": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beperch": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beempath": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beempath": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beempath": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beobcom": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beobcom": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beobcom": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beanger": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beanger": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beanger": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "besubab": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "besubab": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "besubab": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "besubab": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "alcuse": {
+                        "nullable": false
+                    },
+                    "seduse": {
+                        "nullable": false
+                    },
+                    "opiateuse": {
+                        "nullable": false
+                    },
+                    "cocaineuse": {
+                        "nullable": false
+                    },
+                    "cannabuse": {
+                        "nullable": false
+                    },
+                    "othsubuse": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "besubab": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "alcuse": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "seduse": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "opiateuse": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cocaineuse": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cannabuse": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "othsubuse": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "alcuse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "seduse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "opiateuse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "cocaineuse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "cannabuse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "othsubuse": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "othsubusex": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othsubuse": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othsubusex": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othsubuse": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "othsubusex": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "perchage": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "bedisin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beperch": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beempath": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beobcom": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "beanger": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "besubab": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "perchage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "bedisin": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beperch": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beempath": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beobcom": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "beanger": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "besubab": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "perchage": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 9,
+        "max": 110
+    },
+    "berem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "berem": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "berem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beremago": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "berem": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beremago": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "berem": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beremago": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 9,
+        "max": 110
+    },
+    "beremconf": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "berem": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beremconf": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "berem": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beremconf": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "beothr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beothr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "beothr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "beothrx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "beothr": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "beothrx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "beothr": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "beothrx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "bemode": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bemode": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bemode": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            99
+        ]
+    },
+    "bemodex": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "bemode": {
+                        "allowed": [
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "bemodex": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "bemode": {
+                        "forbidden": [
+                            4
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bemodex": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "decclmot": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "decclmot": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "decclmot": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "mogait": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mogait": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mogait": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "gaitabn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mogait": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "gaitabn": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mogait": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "mofalls": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mofalls": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mofalls": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "moslow": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "moslow": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "moslow": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "motrem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "motrem": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "motrem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "molimb": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "molimb": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "molimb": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "moface": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "moface": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "moface": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "masking": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "moface": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "masking": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "moface": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "mospeech": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mospeech": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mospeech": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "motorage": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "mogait": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mofalls": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "moslow": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "motrem": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "molimb": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "moface": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mospeech": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "motorage": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "mogait": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "mofalls": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "moslow": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "motrem": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "molimb": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "moface": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    },
+                    "mospeech": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "motorage": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "motorage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "motorage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "moage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "motorage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "moage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "min": 15,
+        "max": 110
+    },
+    "momode": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "momode": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "momode": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            99
+        ]
+    },
+    "momodex": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "momode": {
+                        "allowed": [
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "momodex": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "momode": {
+                        "forbidden": [
+                            4
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "momodex": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "momopark": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "momopark": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "momopark": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "momopark": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "momopark": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "momoals": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "momoals": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "momoals": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ]
+    },
+    "course": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "course": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "course": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8,
+            9
+        ]
+    },
+    "frstchg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "frstchg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "decclin": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "frstchg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            8,
+            9
+        ]
+    },
+    "initialsb9": {
+        "nullable": true,
+        "type": "string"
+    }
+}

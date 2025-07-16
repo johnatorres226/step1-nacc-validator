@@ -1,0 +1,4254 @@
+{
+    "frmdated1a": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langd1a": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "dxmethod": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "normcog": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogstat": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "rmmodec2c2t": {
+                        "allowed": [
+                            2
+                        ],
+                        "nullable": true
+                    },
+                    "mocatots": {
+                        "max": 3
+                    }
+                },
+                "then": {
+                    "normcog": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "rmmodec2c2t": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mocbtots": {
+                        "max": 3
+                    }
+                },
+                "then": {
+                    "normcog": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    },
+                    "decclbe": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 4,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "scd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "scd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "scd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "scddxconf": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "scd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "scddxconf": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "scd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "scddxconf": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "demented": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "demented": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "demented": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "or",
+                "if": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdommem": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                ">=": [
+                                    {
+                                        "count": [
+                                            {
+                                                "var": "cdommem"
+                                            },
+                                            {
+                                                "var": "cdomlang"
+                                            },
+                                            {
+                                                "var": "cdomattn"
+                                            },
+                                            {
+                                                "var": "cdomexec"
+                                            },
+                                            {
+                                                "var": "cdomvisu"
+                                            },
+                                            {
+                                                "var": "cdombeh"
+                                            },
+                                            {
+                                                "var": "cdomaprax"
+                                            }
+                                        ]
+                                    },
+                                    1
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "normcog": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "mcicritcln": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mcicritcln": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "mcicritimp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mcicritimp": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "mcicritfun": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mcicritfun": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "mci": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "demented": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mci": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "demented": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "mci": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "mcicritcln": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mcicritimp": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mcicritfun": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "or",
+                "if": {
+                    "mcicritcln": {
+                        "forbidden": [
+                            1
+                        ]
+                    },
+                    "mcicritimp": {
+                        "forbidden": [
+                            1
+                        ]
+                    },
+                    "mcicritfun": {
+                        "forbidden": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "impnomcifu": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomcifu": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "impnomcicg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomcicg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "impnomclcd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomclcd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "impnomcio": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomcio": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "impnomciox": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "impnomcio": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomciox": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "impnomcio": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "impnomciox": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "impnomci": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomci": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mci": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "impnomci": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "or",
+                "if": {
+                    "impnomcifu": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "impnomcicg": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "impnomclcd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "impnomcio": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "or",
+                "if": {
+                    "mcicritcln": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "and": [
+                                    {
+                                        "==": [
+                                            1,
+                                            {
+                                                "var": "mcicritcln"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "!=": [
+                                            1,
+                                            {
+                                                "var": "mcicritimp"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "!=": [
+                                            1,
+                                            {
+                                                "var": "mcicritfun"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "mcicritimp": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "and": [
+                                    {
+                                        "!=": [
+                                            1,
+                                            {
+                                                "var": "mcicritcln"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "==": [
+                                            1,
+                                            {
+                                                "var": "mcicritimp"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "!=": [
+                                            1,
+                                            {
+                                                "var": "mcicritfun"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "mcicritfun": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    2,
+                                    {
+                                        "count": [
+                                            {
+                                                "var": "mcicritcln"
+                                            },
+                                            {
+                                                "var": "mcicritimp"
+                                            },
+                                            {
+                                                "var": "mcicritfun"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "then": {
+                    "impnomci": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 4,
+                "if_op": "and",
+                "if": {
+                    "mcicritfun": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mcicritcln": {
+                        "forbidden": [
+                            1
+                        ]
+                    },
+                    "mcicritimp": {
+                        "forbidden": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impnomci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cdommem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdommem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdomlang": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdomlang": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdomattn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdomattn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdomexec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdomexec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdomvisu": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdomvisu": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdombeh": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0,
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdombeh": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cdomaprax": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mci": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdomaprax": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "mbi": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "mci": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "impnomci": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mbi": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mbi": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bdommot": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mbi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bdommot": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bdommot": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bdomafreg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mbi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bdomafreg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bdomafreg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bdomimp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mbi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bdomimp": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bdomimp": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bdomsocial": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mbi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bdomsocial": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bdomsocial": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bdomthts": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mbi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bdomthts": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mbi": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bdomthts": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "predomsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "predomsyn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "predomsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "predomsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "predomsyn": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    1,
+                                    {
+                                        "count": [
+                                            {
+                                                "var": "amndem"
+                                            },
+                                            {
+                                                "var": "dyexecsyn"
+                                            },
+                                            {
+                                                "var": "pca"
+                                            },
+                                            {
+                                                "var": "ppasyn"
+                                            },
+                                            {
+                                                "var": "ftdsyn"
+                                            },
+                                            {
+                                                "var": "lbdsyn"
+                                            },
+                                            {
+                                                "var": "namndem"
+                                            },
+                                            {
+                                                "var": "pspsyn"
+                                            },
+                                            {
+                                                "var": "ctesyn"
+                                            },
+                                            {
+                                                "var": "cbssyn"
+                                            },
+                                            {
+                                                "var": "msasyn"
+                                            },
+                                            {
+                                                "var": "othsyn"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "predomsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "syninfclin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "syninfctst": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "syninfbiom": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "amndem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "amndem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "dyexecsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "dyexecsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "pca": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "pca": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "ppasyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ppasyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "ppasynt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ppasyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ppasynt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ppasyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ppasynt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "ftdsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ftdsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "lbdsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "lbdsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "lbdsynt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "lbdsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "lbdsynt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "lbdsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdsynt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "namndem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "namndem": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "pspsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "pspsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "pspsynt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "pspsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "pspsynt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "pspsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "pspsynt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "ctesyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ctesyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "cbssyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cbssyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "msasyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "msasyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "msasynt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "msasyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "msasynt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "msasyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "msasynt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "othsyn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othsyn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "othsynx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othsynx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othsynx": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "syninfclin": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "syninfclin": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "syninfctst": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "syninfctst": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "syninfbiom": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "predomsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "syninfbiom": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "majdepdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "majdepdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "majdepdif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "majdepdx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "majdepdif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "majdepdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "majdepdif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "logic": {
+            "formula": {
+                "<=": [
+                    {
+                        "count_exact": [
+                            1,
+                            {
+                                "var": "majdepdif"
+                            },
+                            {
+                                "var": "othdepdif"
+                            },
+                            {
+                                "var": "bipoldif"
+                            },
+                            {
+                                "var": "schizoif"
+                            },
+                            {
+                                "var": "anxietif"
+                            },
+                            {
+                                "var": "ptsddxif"
+                            },
+                            {
+                                "var": "ndevdisif"
+                            },
+                            {
+                                "var": "delirif"
+                            },
+                            {
+                                "var": "othpsyif"
+                            },
+                            {
+                                "var": "tbidxif"
+                            },
+                            {
+                                "var": "epilepif"
+                            },
+                            {
+                                "var": "hycephif"
+                            },
+                            {
+                                "var": "neopif"
+                            },
+                            {
+                                "var": "hivif"
+                            },
+                            {
+                                "var": "postc19if"
+                            },
+                            {
+                                "var": "apneadxif"
+                            },
+                            {
+                                "var": "othcillif"
+                            },
+                            {
+                                "var": "alcdemif"
+                            },
+                            {
+                                "var": "impsubif"
+                            },
+                            {
+                                "var": "medsif"
+                            },
+                            {
+                                "var": "cogothif"
+                            },
+                            {
+                                "var": "cogoth2f"
+                            },
+                            {
+                                "var": "cogoth3f"
+                            }
+                        ]
+                    },
+                    1
+                ]
+            }
+        }
+    },
+    "othdepdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othdepdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "othdepdif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othdepdx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othdepdif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othdepdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othdepdif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "bipoldx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bipoldx": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "bipoldif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "bipoldx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bipoldif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "bipoldx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "bipoldif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "schizop": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "schizop": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "schizoif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "schizop": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "schizoif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "schizop": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "schizoif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "anxiet": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "anxiet": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "anxiet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "genanx": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "panicdisdx": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "ocddx": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "othanxd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "anxietif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anxiet": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "anxietif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "anxiet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "anxietif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "genanx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anxiet": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "genanx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "panicdisdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anxiet": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "panicdisdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "ocddx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anxiet": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ocddx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "othanxd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anxiet": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othanxd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "othanxdx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othanxd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othanxdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othanxd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othanxdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ptsddx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ptsddx": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "ptsddxif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ptsddx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ptsddxif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ptsddx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ptsddxif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "ndevdis": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ndevdis": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "ndevdisif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ndevdis": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ndevdisif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ndevdis": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ndevdisif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "delir": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "delir": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "delirif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "delir": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "delirif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "delir": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "delirif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "othpsy": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othpsy": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "othpsyif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othpsy": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othpsyif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othpsy": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othpsyif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "othpsyx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othpsy": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othpsyx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othpsy": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othpsyx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "tbidx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "tbidx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "tbidxif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tbidx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tbidxif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tbidx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "tbidxif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "epilep": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "epilep": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "epilepif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "epilep": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "epilepif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "epilep": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "epilepif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "hyceph": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "hyceph": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "hycephif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "hyceph": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "hycephif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "hyceph": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "hycephif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "neop": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "neop": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "neopif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "neop": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "neopif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "neop": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "neopif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "neopstat": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "neop": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "neopstat": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "neop": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "neopstat": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "hiv": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "hiv": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "hivif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "hiv": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "hivif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "hiv": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "hivif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "postc19": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "postc19": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "postc19if": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "postc19": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "postc19if": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "postc19": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "postc19if": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "apneadx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "apneadx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "apneadxif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "apneadx": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "apneadxif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "apneadx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "apneadxif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "othcogill": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othcogill": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1
+        ]
+    },
+    "othcillif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othcogill": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othcillif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othcogill": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othcillif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "othcogillx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othcogill": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othcogillx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othcogill": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othcogillx": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "alcdem": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "alcdem": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "alcdemif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "alcdem": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "alcdemif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "alcdem": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "alcdemif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "impsub": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impsub": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "impsubif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "impsub": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "impsubif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "impsub": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "impsubif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "meds": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "meds": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "medsif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "meds": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "medsif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "meds": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "medsif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "cogoth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cogothif": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogothif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothif": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "cogothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogothx": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "cogoth2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth2": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cogoth2f": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth2": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogoth2f": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth2": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth2f": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "cogoth2x": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth2": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogoth2x": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth2": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth2x": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "cogoth3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth3": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cogoth3f": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth3": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogoth3f": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth3f": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "cogoth3x": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogoth3": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cogoth3x": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogoth3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cogoth3x": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "initialsd1a": {
+        "nullable": true,
+        "type": "string"
+    }
+}

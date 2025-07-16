@@ -1,0 +1,91 @@
+{
+    "frmdateb7": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langb7": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modeb7": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasb7": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "rmmodeb7": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "b7not": {
+        "type": "integer",
+        "allowed": [
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "bills": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "taxes": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "shopping": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "games": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "stove": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "mealprep": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "events": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "payattn": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "remdates": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "travel": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "initialsb7": {
+        "nullable": true,
+        "type": "string"
+    }
+}

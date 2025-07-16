@@ -1,0 +1,107 @@
+{
+    "frmdateb1": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langb1": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modeb1": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "b1not": {
+        "type": "integer",
+        "allowed": [
+            94,
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "height": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "weight": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "waist1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "waist2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hip1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hip2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpsysl1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpdiasl1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpsysl2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpdiasl2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpsysr1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpdiasr1": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpsysr2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "bpdiasr2": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "hrate": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "initialsb1": {
+        "nullable": true,
+        "type": "string"
+    }
+}

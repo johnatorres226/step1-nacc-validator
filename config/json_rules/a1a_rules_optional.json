@@ -1,0 +1,308 @@
+{
+    "ownscar": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "trspaccess": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "transprob": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "transworry": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "trspmed": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "incomeyr": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "finsatis": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "billpay": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "finupset": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "eatless": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "eatlessyr": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "lessmeds": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "lessmedsyr": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "compcomm": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "guardedu": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "emptiness": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "misspeople": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "friends": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "abandoned": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "closefrnd": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "parentcomm": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "childcomm": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "friendcomm": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "participate": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "safehome": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "safecomm": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "delaymed": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "scriptprob": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "missedfup": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "docadvice": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "healthacc": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "lesscourt": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "poorserv": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "notsmart": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "actafraid": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "threatened": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "poormedtrt": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expancest": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expgender": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "exprace": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expage": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "exprelig": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expheight": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expweight": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expappear": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expsexorn": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expeducinc": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expdisab": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expskin": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expother": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "expnotapp": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expnoans": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "expstrs": {
+        "nullable": true,
+        "filled": false,
+        "type": "integer"
+    },
+    "frmdatea1a": {
+        "nullable": true,
+        "type": "string"
+    },
+    "langa1a": {
+        "nullable": true,
+        "type": "string"
+    },
+    "modea1a": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasa1a": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "rmmodea1a": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "admina1a": {
+        "nullable": true,
+        "filled": false,
+        "type": "string"
+    },
+    "a1anot": {
+        "type": "integer",
+        "allowed": [
+            93
+        ],
+        "required": true
+    },
+    "initialsa1a": {
+        "nullable": true,
+        "type": "string"
+    }
+}
