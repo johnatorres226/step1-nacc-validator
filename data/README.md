@@ -1,14 +1,67 @@
 # Validation History Database
 
-This directory contains the **validation history database** used by the UDS-v4 REDCap QC Validator Enhanced Mode.
+This directory contains the **validation history databases** used by the UDS-v4 REDCap QC Validator Enhanced Mode.
 
 ## Database Overview
+
+### Production Database
 
 The `validation_history.db` file is a SQLite database that stores:
 
 - **Validation Run History**: Complete metadata for each validation run
 - **Error Records**: Detailed error information with full context
 - **Trend Analysis**: Historical error patterns and insights
+
+### Test Database
+
+The `test_validation_history.db` file is a separate SQLite database used for testing:
+
+- **Isolated Testing**: Completely separate from production validation history
+- **Test Validation Runs**: All test mode runs are stored here
+- **Safe Experimentation**: No risk of affecting production data
+- **Easy Cleanup**: Can be safely deleted and recreated for testing
+
+## 🧪 Test Mode Setup
+
+### Creating the Test Database
+
+The test database is automatically created when you first run in test mode:
+
+```bash
+# First test run - database will be created automatically
+python -m src.cli.cli run-enhanced --test-mode --mode complete_events --user-initials "TEST"
+
+# Or manually create with Python
+python -c "
+from src.pipeline.datastore import EnhancedDatastore
+db = EnhancedDatastore('data/test_validation_history.db')
+print('Test database created successfully')
+"
+```
+
+### Test Database Cleanup
+
+Use the provided cleanup script to reset the test database:
+
+```bash
+# Clean test database for fresh testing
+python clear_test_validation_db.py
+
+# Confirm cleanup
+python clear_test_validation_db.py
+```
+
+**⚠️ Important**: Only the test database is affected by cleanup - production data remains safe.
+
+### Test vs Production Modes
+
+| Aspect | Production Mode | Test Mode |
+|--------|-----------------|-----------|
+| Database | `validation_history.db` | `test_validation_history.db` |
+| CLI Flag | `--production-mode` (default) | `--test-mode` |
+| Output Suffix | None | `_TEST` |
+| Report File | `ENHANCED_SUMMARY_{date}.txt` | `TEST_RUN_SUMMARY_{date}.txt` |
+| Data Safety | Affects production history | Isolated testing only |
 
 ## 🌐 Network Drive Configuration
 
@@ -114,19 +167,19 @@ Enhanced Mode is the **only way** to interact with the validation history databa
 #### Option 1: Use Enhanced Mode
 
 ```bash
-udsv4-qc run-enhanced --center_id 123 --mode complete_events
+python -m src.cli.cli run-enhanced --mode complete_events --user-initials "JDT"
 ```
 
 #### Option 2: Use Standard Mode with Database (Default for complete_visits)
 
 ```bash
-udsv4-qc run --mode complete_visits --initials "JDT"
+python -m src.cli.cli run --mode complete_visits --user-initials "JDT"
 ```
 
 #### Option 3: Run without Database (Test Mode)
 
 ```bash
-udsv4-qc run --mode complete_visits --initials "JDT" --disable-database
+python -m src.cli.cli run --mode complete_visits --user-initials "JDT" --disable-database
 ```
 
 ## CLI Commands
@@ -134,23 +187,23 @@ udsv4-qc run --mode complete_visits --initials "JDT" --disable-database
 ### Check Database Status
 
 ```bash
-udsv4-qc datastore-status
+python -m src.cli.cli datastore-status
 ```
 
 ### Generate Analysis Reports
 
 ```bash
 # Generate comprehensive analysis
-udsv4-qc datastore-analysis --instrument a1 --output-dir ./analysis_reports
+python -m src.cli.cli datastore-analysis --instrument a1 --output-dir ./analysis_reports
 
 # Generate trend analysis for specific field
-udsv4-qc datastore-analysis --instrument a1 --days-back 90 --output-dir ./analysis_reports
+python -m src.cli.cli datastore-analysis --instrument a1 --days-back 90 --output-dir ./analysis_reports
 ```
 
 ### View Configuration
 
 ```bash
-udsv4-qc config
+python -m src.cli.cli config
 ```
 
 ## Performance Considerations

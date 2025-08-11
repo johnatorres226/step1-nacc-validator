@@ -490,6 +490,17 @@ def fetch_etl_data(config: QCConfig, output_path: Optional[Union[str, Path]] = N
             ptid_list=config.ptid_list,
             output_dir=str(etl_output_path) if etl_output_path else None
         )
+    else:
+        # Step 2b: Apply ptid filtering for other modes if ptid_list is provided
+        if config.ptid_list:
+            if 'ptid' in data.columns:
+                initial_count = len(data)
+                # Ensure ptid_list contains strings for comparison
+                ptid_list_str = [str(p) for p in config.ptid_list]
+                data = data[data['ptid'].isin(ptid_list_str)].reset_index(drop=True)
+                logger.info(f"Applied ptid filtering: {initial_count} → {len(data)} records (filtered for {len(ptid_list_str)} PTIDs)")
+            else:
+                logger.warning("'ptid' column not found in data, ignoring ptid_list filter.")
 
     logger.info(f"ETL process completed: {len(data)} records are ready for the QC pipeline.")
     return data

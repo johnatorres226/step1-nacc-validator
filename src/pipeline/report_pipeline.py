@@ -35,6 +35,7 @@ from pipeline.config_manager import (
     is_dynamic_rule_instrument,
     get_rule_mappings,
     get_instrument_json_mapping,
+    upload_ready_path
 )
 from pipeline.datastore import EnhancedDatastore, ErrorComparison
 from pipeline.fetcher import fetch_etl_data
@@ -285,16 +286,24 @@ def get_datastore_path(default_path: Optional[str] = None) -> str:
     Returns:
         str: Path to the validation history database
     """
+    # If a specific path is provided, use it directly
+    if default_path:
+        return default_path
+    
+    # Otherwise check environment variable
     env_path = os.getenv("VALIDATION_HISTORY_DB_PATH")
     if env_path:
         return env_path
-    return default_path or "data/validation_history.db"
+    
+    # Final fallback
+    return "data/validation_history.db"
 
 
 def generate_enhanced_summary_report(output_path: str, 
                                    instruments: List[str],
                                    filename: str = "ENHANCED_SUMMARY.txt",
-                                   datastore_path: Optional[str] = None) -> str:
+                                   datastore_path: Optional[str] = None,
+                                   test_mode: bool = False) -> str:
     """
     Generate an enhanced summary report for multiple instruments.
     
@@ -303,54 +312,108 @@ def generate_enhanced_summary_report(output_path: str,
         instruments: List of instrument names to analyze
         filename: Custom filename for the report
         datastore_path: Path to datastore database
+        test_mode: Whether this is a test run (affects report format)
         
     Returns:
         Path to the generated report file
     """
     datastore = EnhancedDatastore(get_datastore_path(datastore_path))
     
+    # For test mode, use TEST_RUN_SUMMARY format
+    if test_mode and "ENHANCED_SUMMARY" in filename:
+        date_tag = datetime.datetime.now().strftime("%d%b%Y").upper()
+        filename = f"TEST_RUN_SUMMARY_{date_tag}.txt"
+    
     report_path = Path(output_path) / filename
     report_path.parent.mkdir(parents=True, exist_ok=True)
     
     with open(report_path, 'w', encoding='utf-8') as f:
-        f.write("="*80 + "\n")
-        f.write("ENHANCED QC SUMMARY REPORT\n")
-        f.write("="*80 + "\n")
-        f.write(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Analysis Period: 90 days\n")
-        f.write("="*80 + "\n\n")
+        if test_mode:
+            f.write("="*80 + "\n")
+            f.write("TEST RUN SUMMARY REPORT\n")
+            f.write("="*80 + "\n")
+            f.write(f"Test Mode: ENABLED\n")
+            f.write(f"Test Database: data/test_validation_history.db\n")
+            f.write(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Analysis Period: 90 days\n")
+            f.write("="*80 + "\n\n")
+            
+            f.write("TEST MODE INFORMATION\n")
+            f.write("-" * 40 + "\n")
+            f.write("This is a test run using a separate test database.\n")
+            f.write("No production data was affected during this validation.\n")
+            f.write("Test results are isolated from production validation history.\n\n")
+        else:
+            f.write("="*80 + "\n")
+            f.write("ENHANCED QC SUMMARY REPORT\n")
+            f.write("="*80 + "\n")
+            f.write(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Analysis Period: 90 days\n")
+            f.write("="*80 + "\n\n")
         
         for instrument in instruments:
             f.write(f"INSTRUMENT: {instrument}\n")
             f.write("-" * 40 + "\n")
             
-            # Get comprehensive analysis
-            dashboard = datastore.generate_quality_dashboard(instrument)
-            trend_analysis = datastore.get_trend_analysis(instrument, days_back=90)
-            pattern_analysis = datastore.detect_error_patterns(instrument, days_back=90)
+            try:
+                # Get comprehensive analysis
+                dashboard = datastore.generate_quality_dashboard(instrument)
+                trend_analysis = datastore.get_trend_analysis(instrument, days_back=90)
+                pattern_analysis = datastore.detect_error_patterns(instrument, days_back=90)
+                
+                # Summary
+                summary = dashboard.get('summary', {})
+                current_error_rate = summary.get('current_error_rate', 0)
+                total_errors = summary.get('total_errors', 0)
+                
+                if test_mode:
+                    f.write(f"Test Run Status: {'ERRORS DETECTED' if total_errors > 0 else 'NO ERRORS FOUND'}\n")
+                    f.write(f"Total Errors Found: {total_errors}\n")
+                    f.write(f"Error Rate: {current_error_rate:.2f}%\n")
+                    
+                    if total_errors > 0:
+                        f.write(f"⚠️  WARNING: {total_errors} validation errors detected in test run\n")
+                        f.write("   Review errors before running production validation\n")
+                    else:
+                        f.write("✅ SUCCESS: No validation errors found in test run\n")
+                        f.write("   Data appears ready for production validation\n")
+                    f.write("\n")
+                
+                f.write(f"Error Rate Trend: {summary.get('error_rate_trend', 'N/A')}\n")
+                f.write(f"Current Error Rate: {current_error_rate:.2f}%\n")
+                f.write(f"Average Error Rate: {summary.get('average_error_rate', 0):.2f}%\n")
+                f.write(f"Total Historical Runs: {summary.get('total_historical_runs', 0)}\n")
+                f.write(f"Recent Runs (30 days): {summary.get('recent_runs', 0)}\n\n")
+                
+            except Exception as e:
+                f.write(f"ERROR: Could not analyze instrument {instrument}\n")
+                f.write(f"Error details: {str(e)}\n")
+                if test_mode:
+                    f.write("⚠️  WARNING: Analysis failed - check test database setup\n")
+                f.write("\n")
+                logger.warning(f"Error analyzing instrument {instrument}: {e}")
+                continue
             
-            # Summary
-            summary = dashboard.get('summary', {})
-            f.write(f"Error Rate Trend: {summary.get('error_rate_trend', 'N/A')}\n")
-            f.write(f"Current Error Rate: {summary.get('current_error_rate', 0):.2f}%\n")
-            f.write(f"Average Error Rate: {summary.get('average_error_rate', 0):.2f}%\n")
-            f.write(f"Total Historical Runs: {summary.get('total_historical_runs', 0)}\n")
-            f.write(f"Recent Runs (30 days): {summary.get('recent_runs', 0)}\n\n")
-            
-            # Trend Analysis
-            f.write("TREND ANALYSIS\n")
-            f.write("-" * 20 + "\n")
-            f.write(f"Trend Direction: {trend_analysis.get('trend_direction', 'N/A')}\n")
-            f.write(f"Analysis Period: 90 days\n")
-            f.write(f"Total Runs Analyzed: {trend_analysis.get('total_runs', 0)}\n")
-            
-            recent_rates = trend_analysis.get('recent_error_rates', [])
-            if recent_rates:
-                f.write("Recent Error Rates:\n")
-                for i, rate_info in enumerate(recent_rates[:5], 1):
-                    f.write(f"  Run {i}: {rate_info.get('error_rate', 0):.2f}% ({rate_info.get('error_count', 0)} errors)\n")
-            
-            f.write("\n")
+            # Trend Analysis (skip in test mode if no historical data)
+            if not test_mode or trend_analysis.get('total_runs', 0) > 0:
+                f.write("TREND ANALYSIS\n")
+                f.write("-" * 20 + "\n")
+                f.write(f"Trend Direction: {trend_analysis.get('trend_direction', 'N/A')}\n")
+                f.write(f"Analysis Period: 90 days\n")
+                f.write(f"Total Runs Analyzed: {trend_analysis.get('total_runs', 0)}\n")
+                
+                recent_rates = trend_analysis.get('recent_error_rates', [])
+                if recent_rates:
+                    f.write("Recent Error Rates:\n")
+                    for i, rate_info in enumerate(recent_rates[:5], 1):
+                        f.write(f"  Run {i}: {rate_info.get('error_rate', 0):.2f}% ({rate_info.get('error_count', 0)} errors)\n")
+                
+                f.write("\n")
+            elif test_mode:
+                f.write("TREND ANALYSIS\n")
+                f.write("-" * 20 + "\n")
+                f.write("No historical data available in test database\n")
+                f.write("This is expected for test runs\n\n")
             
             # Pattern Analysis
             f.write("PATTERN ANALYSIS\n")
@@ -378,15 +441,27 @@ def generate_enhanced_summary_report(output_path: str,
             # Recommendations
             f.write("RECOMMENDATIONS\n")
             f.write("-" * 20 + "\n")
-            if summary['error_rate_trend'] == 'increasing':
-                f.write("WARNING: Error rate is increasing. Consider:\n")
-                f.write("   - Reviewing data collection procedures\n")
-                f.write("   - Additional staff training\n")
-                f.write("   - Implementing preventive measures\n")
-            elif summary['error_rate_trend'] == 'decreasing':
-                f.write("SUCCESS: Error rate is decreasing. Continue current practices.\n")
+            if test_mode:
+                if summary.get('total_errors', 0) > 0:
+                    f.write("TEST MODE RECOMMENDATIONS:\n")
+                    f.write("   1. Review and fix validation errors before production run\n")
+                    f.write("   2. Check data entry procedures for systematic issues\n")
+                    f.write("   3. Re-run test after corrections to verify fixes\n")
+                    f.write("   4. Only proceed to production after clean test run\n")
+                else:
+                    f.write("TEST MODE RECOMMENDATIONS:\n")
+                    f.write("   ✅ Test passed successfully - ready for production run\n")
+                    f.write("   📋 Use: qc_validator run_enhanced --production-mode\n")
             else:
-                f.write("INFO: Error rate is stable. Monitor for changes.\n")
+                if summary['error_rate_trend'] == 'increasing':
+                    f.write("WARNING: Error rate is increasing. Consider:\n")
+                    f.write("   - Reviewing data collection procedures\n")
+                    f.write("   - Additional staff training\n")
+                    f.write("   - Implementing preventive measures\n")
+                elif summary['error_rate_trend'] == 'decreasing':
+                    f.write("SUCCESS: Error rate is decreasing. Continue current practices.\n")
+                else:
+                    f.write("INFO: Error rate is stable. Monitor for changes.\n")
             
             if pattern_analysis['systematic_issues'] > 0:
                 f.write(f"\nWARNING: {pattern_analysis['systematic_issues']} systematic issues detected.\n")
@@ -394,7 +469,15 @@ def generate_enhanced_summary_report(output_path: str,
             
             f.write("\n" + "="*80 + "\n\n")
         
-        f.write("End of Enhanced Summary Report\n")
+        # Test mode summary
+        if test_mode:
+            f.write("TEST RUN COMPLETION SUMMARY\n")
+            f.write("="*40 + "\n")
+            f.write("Test run completed successfully.\n")
+            f.write("Use clear_test_validation_db.py to clean test database for next test.\n")
+            f.write("Switch to --production-mode when ready for production validation.\n\n")
+        
+        f.write(f"End of {'Test Run' if test_mode else 'Enhanced'} Summary Report\n")
         f.write("="*80 + "\n")
     
     logger.info(f"Enhanced summary report generated: {report_path}")
@@ -647,10 +730,18 @@ def run_enhanced_report_pipeline(config: QCConfig, enable_datastore: bool = True
         logger.info(f"Datastore disabled for mode: {config.mode}")
         enable_datastore = False
     
+    # Handle test mode by modifying datastore path
+    if hasattr(config, 'test_mode') and config.test_mode:
+        logger.info("Running in TEST MODE - using test database")
+        # Set environment variable to use test database
+        import os
+        os.environ['VALIDATION_HISTORY_DB_PATH'] = str(Path("data") / "test_validation_history.db")
+    
     # Create enhanced output directory structure
     event_type = config.mode.replace('_', ' ').title().replace(' ', '_')
     date_tag = datetime.datetime.today().strftime("%d%b%Y").upper()
-    enhanced_dir_name = f"ENHANCED_QC_{event_type}_{date_tag}"
+    test_suffix = "_TEST" if (hasattr(config, 'test_mode') and config.test_mode) else ""
+    enhanced_dir_name = f"ENHANCED_QC_{event_type}_{date_tag}{test_suffix}"
     
     enhanced_output_path = Path(config.output_path) / enhanced_dir_name
     enhanced_output_path.mkdir(parents=True, exist_ok=True)
@@ -668,10 +759,12 @@ def run_enhanced_report_pipeline(config: QCConfig, enable_datastore: bool = True
         run_report_pipeline(config)
         
         # Generate enhanced datastore analysis
+        test_mode = hasattr(config, 'test_mode') and config.test_mode
         analysis_file = generate_enhanced_summary_report(
             str(enhanced_output_path),
             config.instruments,
-            filename=f"ENHANCED_SUMMARY_{date_tag}.txt"
+            filename=f"ENHANCED_SUMMARY_{date_tag}.txt",
+            test_mode=test_mode
         )
         
         logger.info(f"Enhanced datastore analysis saved to: {analysis_file}")
@@ -849,13 +942,6 @@ def run_report_pipeline(config: QCConfig, enable_datastore: Optional[bool] = Non
         except Exception as e:
             logger.error(f"Database storage failed: {e}")
             # Don't fail the entire pipeline if database storage fails
-    
-    print("")
-    print("="*80)
-    print("✅ QC REPORT PIPELINE COMPLETE")
-    print("="*80)
-    print("")
-
 
 def _store_validation_in_database(df_errors: pd.DataFrame, 
                                  all_records_df: pd.DataFrame,
@@ -1561,7 +1647,9 @@ def generate_tool_status_reports(
 
     json_export_df = status_report_df[json_columns]
     json_records = json_export_df.to_dict(orient="records")
-    json_path = output_dir / f"QC_Status_Report_{file_suffix}.json"
+    # Use upload_ready_path from config_manager instead of json_path
+    json_path = Path(upload_ready_path) / f"QC_Status_Report_{file_suffix}.json"
+    json_path.parent.mkdir(parents=True, exist_ok=True)
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(json_records, f, indent=2)
     print(f"📊 STATUS REPORT JSON EXPORTED TO: {json_path}")

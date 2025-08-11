@@ -81,12 +81,12 @@ def config(detailed: bool, json_output: bool):
         console.print_json(data=status)
         return
 
-    panel_title = "🎯 UDSv4 QC Validator Status"
+    panel_title = "[TARGET] UDSv4 QC Validator Status"
     if status['valid']:
-        panel = Panel.fit("✅ All systems ready for QC validation!",
+        panel = Panel.fit("[CHECK] All systems ready for QC validation!",
                           title=panel_title, border_style="green")
     else:
-        panel = Panel.fit("⚠️ Configuration issues detected",
+        panel = Panel.fit("[WARNING] Configuration issues detected",
                           title=panel_title, border_style="yellow")
     console.print(panel)
 
@@ -97,27 +97,27 @@ def config(detailed: bool, json_output: bool):
 
     config_table.add_row(
         "Overall System",
-        "✅ Ready" if status['valid'] else "❌ Issues Found",
+        "[CHECK] Ready" if status['valid'] else "[X] Issues Found",
         f"{len(status['errors'])} issues" if status['errors'] else "All components ready",
     )
     config_table.add_row(
         "REDCap API",
-        "✅ Connected" if status['redcap_configured'] else "❌ Not Configured",
+        "[CHECK] Connected" if status['redcap_configured'] else "[X] Not Configured",
         "API credentials found" if status['redcap_configured'] else "Check .env file",
     )
     config_table.add_row(
         "Output Directory",
-        "✅ Ready" if status['output_path_exists'] else "⚠️ Will be created",
+        "[CHECK] Ready" if status['output_path_exists'] else "[WARNING] Will be created",
         f"Path: {get_config().output_path}",
     )
     config_table.add_row(
         "Validation Rules",
-        "✅ Loaded" if status['json_rules_path_exists'] else "❌ Missing",
+        "[CHECK] Loaded" if status['json_rules_path_exists'] else "[X] Missing",
         "JSON rules directory found" if status['json_rules_path_exists'] else "Check JSON_RULES_PATH",
     )
     config_table.add_row(
         "Enhanced Datastore",
-        "✅ Available" if status['datastore_exists'] else "⚠️ Available",
+        "[CHECK] Available" if status['datastore_exists'] else "[WARNING] Available",
         "Error tracking, trend analysis (complete_events mode only)",
     )
     console.print(config_table)
@@ -133,7 +133,7 @@ def config(detailed: bool, json_output: bool):
         console.print(data_table)
 
     if status['errors']:
-        console.print("\n[red]⚠️ Configuration Issues:[/red]")
+        console.print("\n[red][WARNING] Configuration Issues:[/red]")
         for error in status['errors']:
             console.print(f"  [red]•[/red] {error}")
 
@@ -296,13 +296,14 @@ def datastore(instruments: tuple, output_path: str, days_back: int):
 
 @cli.command()
 @click.option('--enable-datastore/--disable-datastore', default=True, help='Enable or disable datastore functionality.')
+@click.option('--test-mode/--production-mode', default=False, help='Use test database instead of production database.')
 @click.option('--mode', '-m', type=click.Choice(['custom', 'complete_instruments', 'complete_events'], case_sensitive=False), 
               default='complete_events', help='Validation mode (datastore only works with complete_events).')
 @click.option('--instruments', '-i', multiple=True, help='Specific instruments to validate.')
 @click.option('--events', '-e', multiple=True, help='Specific events to validate.')
 @click.option('--output-path', '-o', type=click.Path(), default='output', help='Output directory.')
 @click.option('--user-initials', '-u', type=str, help='User initials for the run.')
-def run_enhanced(enable_datastore: bool, mode: str, instruments: tuple, events: tuple, 
+def run_enhanced(enable_datastore: bool, test_mode: bool, mode: str, instruments: tuple, events: tuple, 
                 output_path: str, user_initials: str):
     """Run enhanced validation with datastore integration (complete_events mode only)."""
     try:
@@ -322,6 +323,7 @@ def run_enhanced(enable_datastore: bool, mode: str, instruments: tuple, events: 
             config.user_initials = user_initials.strip().upper()[:3]
         
         config.mode = mode
+        config.test_mode = test_mode  # Set test mode in config
         
         # Validate config
         errors = config.validate()
@@ -339,11 +341,13 @@ def run_enhanced(enable_datastore: bool, mode: str, instruments: tuple, events: 
         
         # Display configuration
         mode_title = mode.replace('_', ' ').title()
-        table = Table(title=f"🚀 Enhanced QC Run Configuration (Mode: {mode_title})")
+        mode_suffix = " (TEST MODE)" if test_mode else ""
+        table = Table(title=f"🚀 Enhanced QC Run Configuration (Mode: {mode_title}{mode_suffix})")
         table.add_column("Parameter", style="cyan")
         table.add_column("Value", style="magenta")
         
         table.add_row("Mode", mode_title)
+        table.add_row("Test Mode", "Yes" if test_mode else "No")
         table.add_row("Datastore Enabled", "Yes" if enable_datastore else "No")
         table.add_row("Instruments", ", ".join(config.instruments) if config.instruments else "All")
         table.add_row("Events", ", ".join(config.events) if config.events else "All")

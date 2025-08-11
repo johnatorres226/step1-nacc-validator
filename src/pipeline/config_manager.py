@@ -37,6 +37,7 @@ project_id = os.getenv('PROJECT_ID')
 json_file_path = os.getenv('JSON_RULES_PATH')
 output_path = os.getenv('OUTPUT_PATH')
 status_path = os.getenv('STATUS_PATH')
+upload_ready_path = os.getenv('UPLOAD_READY_PATH')
 
 
 # =============================================================================
@@ -360,6 +361,7 @@ class QCConfig:
 
     # --- QC Pipeline Behavior ---
     mode: str = 'complete_visits'  # 'complete_visits', 'all_visits', 'ivp_only', 'fvp_only'
+    test_mode: bool = False  # Use test database instead of production database
     log_level: str = 'INFO'
     user_initials: Optional[str] = None
     ptid_list: Optional[List[str]] = None

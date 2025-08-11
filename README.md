@@ -40,6 +40,15 @@ A comprehensive Quality Control (QC) pipeline for validating NACC UDSv4 REDCap d
    REDCAP_API_TOKEN=your_api_token_here
    VALIDATION_HISTORY_DB_PATH=\\network-drive\shared\validation_history.db
    ```
+2.1 **Ensure all subdirectories have been created**
+- Create output directory:
+   ```bash
+   mkdir output
+   ```
+- Update the path in the ENV file to point to the output directory:
+   ```env
+   OUTPUT_DIR=output
+   ```
 
 3. **Verify installation:**
    ```bash
@@ -64,24 +73,6 @@ udsv4-qc datastore-status
 
 # Generate analysis reports
 udsv4-qc datastore-analysis --instrument a1 --output-dir ./analysis
-```
-
-## 📂 Project Structure
-
-```text
-udsv4-redcap-qc-validator/
-├── src/
-│   ├── cli/                    # Command-line interface
-│   └── pipeline/               # Core validation pipeline
-├── config/
-│   └── json_rules/             # Validation rules (JSON format)
-├── data/                       # Database storage directory
-├── docs/                       # Comprehensive documentation
-├── tests/                      # Test suite
-├── output/                     # Default output directory
-├── QUICK_START.md              # Quick reference guide
-├── README.md                   # This file
-└── requirements.txt            # Python dependencies
 ```
 
 ## 💻 Command Reference
@@ -121,26 +112,25 @@ dir "\\network-drive\shared\"
 - **Quality Monitoring**: Dashboard and reporting functionality for quality assurance
 - **Team Collaboration**: Shared access to validation history and patterns
 
-## 📊 Output Examples
+## 🧪 Test Mode Features
 
-### Standard Validation Output
-```
-output/QC_CompleteVisits_16JUL2025/
-├── complete_visits_dataset_16JUL2025.csv    # Clean validated data
-├── final_error_dataset_16JUL2025.csv        # All validation errors
-├── QC_Report_ErrorCount_16JUL2025.csv       # Error summary by participant
-├── QC_Status_Report_16JUL2025.csv           # Instrument-level status
-└── Validation_Logs/                         # Detailed logs
-```
+The enhanced validator includes a comprehensive test mode for safe validation testing:
 
-### Enhanced Validation Output
-```
-output/ENHANCED_QC_CompleteEvents_16JUL2025/
-├── ENHANCED_SUMMARY_16JUL2025.txt           # Enhanced summary report
-├── QC_CompleteEvents_16JUL2025/             # Standard validation output
-├── DATABASE_SUMMARY_16JUL2025.json          # Database storage summary
-├── DATABASE_SUMMARY_16JUL2025.txt           # Human-readable summary
-└── Analysis_Reports/                        # Trend analysis files
+- **Isolated Testing**: Uses separate `test_validation_history.db` database
+- **Error Detection**: Creates `TEST_RUN_SUMMARY_{date}.txt` showing if errors were found
+- **Safe Experimentation**: No impact on production validation history
+- **Easy Cleanup**: Use `clear_test_validation_db.py` to reset test database
+- **Test Workflow**: Test first with `--test-mode`, then run `--production-mode`
+
+```bash
+# Test validation before production run
+udsv4-qc run-enhanced --test-mode --mode complete_events --user-initials "TEST"
+
+# Clean test database for fresh testing  
+python clear_test_validation_db.py
+
+# Run production validation after successful test
+udsv4-qc run-enhanced --production-mode --mode complete_events --user-initials "JDT"
 ```
 
 ## 📚 Documentation
@@ -229,6 +219,22 @@ flake8 src/ tests/
 4. Contact system administrator for network drive issues
 
 ---
+
+## 📢 Third-Party Code Disclosure
+
+This project incorporates code from the following scripts originally developed in the [`naccdata/nacc-form-validator`](https://github.com/naccdata/nacc-form-validator) repository:
+
+- `datastore.py`
+- `errors.py`
+- `json_logic.py`
+- `keys.py`
+- `nacc_validator.py`
+- `quality_check.py`
+- `utils.py`
+
+These files are subject to the [Mozilla Public License Version 2.0 (MPL v2.0)](https://www.mozilla.org/en-US/MPL/2.0/). If a copy of the MPL was not distributed with this project, you can obtain one at [mozilla.org/MPL/2.0/](https://www.mozilla.org/MPL/2.0/).
+
+Please refer to the original repository for further details and source history.
 
 **Project Status**: Production Ready  
 **Version**: 1.0.0  

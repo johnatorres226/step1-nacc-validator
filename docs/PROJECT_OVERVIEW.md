@@ -295,52 +295,6 @@ set VALIDATION_HISTORY_DB_PATH=Z:\validation_history.db
 dir Z:\validation_history.db
 ```
 
-## Output Structure
-
-### Standard Run Output
-```
-output/
-└── QC_CompleteVisits_16JUL2025/
-    ├── complete_visits_dataset_16JUL2025.csv
-    ├── final_error_dataset_16JUL2025.csv
-    ├── QC_Report_ErrorCount_16JUL2025.csv
-    ├── QC_Status_Report_16JUL2025.csv
-    └── Validation_Logs/
-        ├── validation_16JUL2025.log
-        └── detailed_validation_log_16JUL2025.txt
-```
-
-### Enhanced Run Output
-```
-output/
-└── ENHANCED_QC_CompleteEvents_16JUL2025/
-    ├── ENHANCED_SUMMARY_16JUL2025.txt
-    ├── QC_CompleteEvents_16JUL2025/
-    │   ├── complete_events_dataset_16JUL2025.csv
-    │   ├── final_error_dataset_16JUL2025.csv
-    │   └── enhanced_error_status_16JUL2025.csv
-    ├── DATABASE_SUMMARY_16JUL2025.json
-    ├── DATABASE_SUMMARY_16JUL2025.txt
-    └── Analysis_Reports/
-        ├── trend_analysis_16JUL2025.csv
-        └── pattern_detection_16JUL2025.csv
-```
-
-## Testing Framework
-
-### Test Structure
-```
-tests/
-├── test_cli.py                     # CLI command testing
-├── test_config_manager.py          # Configuration testing
-├── test_datastore.py               # Database functionality testing
-├── test_enhanced_run.py            # Enhanced mode testing
-├── test_helpers.py                 # Helper function testing
-├── test_quality_check.py           # Validation logic testing
-├── test_report_pipeline.py         # Pipeline testing
-└── test_compatibility_null_fields.py  # Compatibility testing
-```
-
 ### Running Tests
 ```bash
 # Run all tests
