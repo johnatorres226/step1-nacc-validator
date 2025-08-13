@@ -21,11 +21,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 from pipeline.config_manager import QCConfig, get_config
 from pipeline.report_pipeline import (
     run_report_pipeline, 
-    get_datastore_path,
     generate_tool_status_reports,
     generate_aggregate_error_count_report
 )
-from pipeline.datastore import EnhancedDatastore
 from pipeline.helpers import build_complete_visits_df
 
 
@@ -116,164 +114,6 @@ class TestConfigurationSystem:
         assert len(mode_errors) > 0
 
 
-class TestDatastorePathResolution:
-    """Test datastore path resolution functionality."""
-
-    def test_datastore_path_environment_variable(self):
-        """Test datastore path resolution from environment variable."""
-        test_path = '/custom/path/validation_history.db'
-        
-        with patch.dict(os.environ, {'VALIDATION_HISTORY_DB_PATH': test_path}):
-            path = get_datastore_path()
-            assert path == test_path
-
-    def test_datastore_path_default(self):
-        """Test datastore path resolution with default path."""
-        # Clear environment variable
-        with patch.dict(os.environ, {}, clear=True):
-            path = get_datastore_path()
-            assert 'validation_history.db' in path
-            assert 'data' in path
-
-    def test_datastore_path_custom_default(self):
-        """Test datastore path resolution with custom default."""
-        custom_default = '/tmp/custom_default.db'
-        
-        with patch.dict(os.environ, {}, clear=True):
-            path = get_datastore_path(custom_default)
-            assert path == custom_default
-
-
-class TestEnhancedDatastore:
-    """Test enhanced datastore functionality."""
-
-    @pytest.fixture
-    def temp_db_path(self):
-        """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:
-            db_path = tmp.name
-        yield db_path
-        if os.path.exists(db_path):
-            os.unlink(db_path)
-
-    def test_datastore_initialization(self, temp_db_path):
-        """Test datastore initialization."""
-        datastore = EnhancedDatastore(temp_db_path)
-        
-        assert datastore.db_path == Path(temp_db_path)
-        assert os.path.exists(temp_db_path)
-        
-        # Check database schema
-        conn = sqlite3.connect(temp_db_path)
-        cursor = conn.cursor()
-        
-        # Check validation_runs table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='validation_runs'")
-        assert cursor.fetchone() is not None
-        
-        # Check error_records table exists
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='error_records'")
-        assert cursor.fetchone() is not None
-        
-        conn.close()
-
-    def test_datastore_schema_structure(self, temp_db_path):
-        """Test database schema structure."""
-        datastore = EnhancedDatastore(temp_db_path)
-        
-        conn = sqlite3.connect(temp_db_path)
-        cursor = conn.cursor()
-        
-        # Check validation_runs table structure
-        cursor.execute("PRAGMA table_info(validation_runs)")
-        columns = [row[1] for row in cursor.fetchall()]
-        
-        expected_columns = ['run_id', 'timestamp', 'instrument', 'total_records', 'error_count']
-        for col in expected_columns:
-            assert col in columns
-        
-        # Check error_records table structure
-        cursor.execute("PRAGMA table_info(error_records)")
-        columns = [row[1] for row in cursor.fetchall()]
-        
-        expected_columns = ['id', 'run_id', 'ptid', 'redcap_event_name', 'instrument_name', 'variable']
-        for col in expected_columns:
-            assert col in columns
-        
-        conn.close()
-
-    def test_datastore_directory_creation(self):
-        """Test that datastore creates parent directories."""
-        test_path = os.path.join(tempfile.gettempdir(), 'test_subdir', 'test.db')
-        
-        # Ensure parent directory doesn't exist
-        parent_dir = os.path.dirname(test_path)
-        if os.path.exists(parent_dir):
-            os.rmdir(parent_dir)
-        
-        try:
-            datastore = EnhancedDatastore(test_path)
-            
-            # Should create parent directory and database
-            assert os.path.exists(parent_dir)
-            assert os.path.exists(test_path)
-            
-        finally:
-            # Cleanup
-            if os.path.exists(test_path):
-                os.unlink(test_path)
-            if os.path.exists(parent_dir):
-                os.rmdir(parent_dir)
-
-    def test_store_validation_run_complete_events_only(self, temp_db_path):
-        """Test that datastore only accepts complete_events mode."""
-        datastore = EnhancedDatastore(temp_db_path)
-        
-        sample_errors = pd.DataFrame({
-            'ptid': ['1001'],
-            'redcap_event_name': ['udsv4_ivp_1_arm_1'],
-            'instrument_name': ['a1'],
-            'variable': ['a1_field1'],
-            'current_value': [''],
-            'expected_value': ['required'],
-            'error': ['Field is required']
-        })
-        
-        # Test with complete_events mode (should work)
-        run_id = datastore.store_validation_run(
-            instrument='a1',
-            errors_df=sample_errors,
-            total_records=100,
-            run_config={'mode': 'complete_events'}
-        )
-        assert run_id is not None
-        
-        # Test with other mode (should return None)
-        run_id = datastore.store_validation_run(
-            instrument='a1',
-            errors_df=sample_errors,
-            total_records=100,
-            run_config={'mode': 'all_incomplete_visits'}
-        )
-        assert run_id is None
-
-    def test_generate_quality_dashboard_structure(self, temp_db_path):
-        """Test quality dashboard structure."""
-        datastore = EnhancedDatastore(temp_db_path)
-        
-        # Generate dashboard (even with empty database)
-        dashboard = datastore.generate_quality_dashboard('a1')
-        
-        # Check basic structure
-        assert isinstance(dashboard, dict)
-        
-        # Check for expected keys
-        expected_keys = ['total_runs', 'current_error_rate', 'average_error_rate', 
-                        'error_rate_trend', 'recent_errors', 'top_error_types']
-        for key in expected_keys:
-            assert key in dashboard
-
-
 class TestReportGeneration:
     """Test report generation functionality."""
 
@@ -305,7 +145,7 @@ class TestReportGeneration:
             generate_tool_status_reports(
                 processed_records_df=sample_processed_records,
                 pass_fail_log=[],
-                output_dir=temp_dir,
+                output_dir=Path(temp_dir),
                 file_suffix='test',
                 qc_run_by='tester',
                 primary_key_field='ptid',
@@ -325,11 +165,16 @@ class TestReportGeneration:
     def test_generate_aggregate_error_count_report(self, sample_errors_df):
         """Test aggregate error count report generation."""
         with tempfile.TemporaryDirectory() as temp_dir:
+            # Create mock data for required parameters
+            all_records_df = pd.DataFrame({'ptid': ['TEST001', 'TEST002']})
+            instrument_list = ['a1', 'a2']
+            
             # Generate aggregate error count report
             generate_aggregate_error_count_report(
-                errors_df=sample_errors_df,
-                output_dir=temp_dir,
-                file_suffix='test',
+                df_errors=sample_errors_df,
+                instrument_list=instrument_list,
+                all_records_df=all_records_df,
+                output_dir=Path(temp_dir),
                 primary_key_field='ptid'
             )
             
@@ -390,7 +235,7 @@ class TestPipelineIntegration:
         
         # Run pipeline without datastore
         with patch('pipeline.report_pipeline.export_results_to_csv') as mock_export:
-            run_report_pipeline(config=mock_config, enable_datastore=False)
+            run_report_pipeline(config=mock_config)
             
             # Verify that components were called
             mock_fetch_data.assert_called_once_with(mock_config)
@@ -420,7 +265,7 @@ class TestPipelineIntegration:
         
         # Run pipeline with datastore
         with patch('pipeline.report_pipeline.export_results_to_csv') as mock_export:
-            run_report_pipeline(config=mock_config, enable_datastore=True)
+            run_report_pipeline(config=mock_config)
             
             # Verify that components were called
             mock_fetch_data.assert_called_once_with(mock_config)
@@ -444,12 +289,9 @@ class TestHelperFunctions:
         })
         
         # Test with instrument filter
-        result = build_complete_visits_df(
+        result, _ = build_complete_visits_df(
             data_df=sample_data,
-            instrument_list=['a1', 'a2'],
-            events=['udsv4_ivp_1_arm_1'],
-            ptid_list=[],
-            primary_key_field='ptid'
+            instrument_list=['a1', 'a2']
         )
         
         # Should filter out incomplete records
@@ -495,30 +337,13 @@ class TestErrorHandling:
         empty_df = pd.DataFrame()
         
         # Should handle empty DataFrame without errors
-        result = build_complete_visits_df(
+        result, _ = build_complete_visits_df(
             data_df=empty_df,
-            instrument_list=['a1'],
-            events=['udsv4_ivp_1_arm_1'],
-            ptid_list=[],
-            primary_key_field='ptid'
+            instrument_list=['a1']
         )
         
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 0
-
-    def test_datastore_invalid_path_handling(self):
-        """Test datastore handling of invalid paths."""
-        # Test with path that requires privileges
-        invalid_path = '/root/invalid/path/database.db'
-        
-        # Should either create directory or handle error gracefully
-        try:
-            datastore = EnhancedDatastore(invalid_path)
-            # If successful, verify it was created
-            assert os.path.exists(os.path.dirname(invalid_path)) or datastore.db_path == Path(invalid_path)
-        except (PermissionError, OSError) as e:
-            # Expected behavior for invalid paths
-            assert 'permission' in str(e).lower() or 'path' in str(e).lower()
 
 
 class TestDataValidation:

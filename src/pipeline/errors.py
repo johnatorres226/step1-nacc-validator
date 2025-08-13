@@ -1,8 +1,6 @@
-# errors.py
-
 """Error-code and schema related constants."""
 
-from typing import Mapping, Optional
+from typing import Mapping
 
 from cerberus.errors import (
     BasicErrorHandler,
@@ -14,6 +12,7 @@ from cerberus.errors import (
 from pipeline.keys import SchemaDefs
 
 # pylint: disable=(too-few-public-methods)
+
 
 class ErrorDefs:
     """Class to define custom errors."""
@@ -44,10 +43,10 @@ class ErrorDefs:
     COMPARE_WITH = ErrorDefinition(0x2009, "compare_with")
     COMPARE_WITH_PREV = ErrorDefinition(0x3000, "compare_with")
     RXNORM = ErrorDefinition(0x3001, "check_with")
-    DATE_CONVERSION = ErrorDefinition(0x3002, 'compare_age')
-    COMPARE_AGE = ErrorDefinition(0x3003, 'compare_age')
-    COMPARE_AGE_INVALID_COMPARISON = ErrorDefinition(0x3004, 'compare_age')
-    TEMPORAL_SWAPPED = ErrorDefinition(0x3005, 'temporalrules')
+    DATE_CONVERSION = ErrorDefinition(0x3002, "compare_age")
+    COMPARE_AGE = ErrorDefinition(0x3003, "compare_age")
+    COMPARE_AGE_INVALID_COMPARISON = ErrorDefinition(0x3004, "compare_age")
+    TEMPORAL_SWAPPED = ErrorDefinition(0x3005, "temporalrules")
     ADCID_NOT_MATCH = ErrorDefinition(0x3006, "function")
     ADCID_NOT_VALID = ErrorDefinition(0x3007, "function")
     SCORING_INVALID = ErrorDefinition(0x3008, "function")
@@ -103,27 +102,29 @@ class CustomErrorHandler(BasicErrorHandler):
             0x2001:
             "primary key variable {0} not set in current visit data",
             0x2002:
-            "failed to retrieve the previous visit, cannot proceed with validation",
+            "failed to retrieve the previous visit, cannot proceed with " +
+            "validation",
             0x2003:
             "error in formula evaluation - {0}",
             0x2004:
             "If GDS not attempted (nogds=1), total GDS score should be 88 " +
             "- GDS rule no: {0}",
             0x2005:
-            "If GDS not attempted (nogds=1), there cannot be >=12 questions with "
-            + "valid scores - GDS rule no: {0}",
+            "If GDS not attempted (nogds=1), there cannot be >=12 " +
+            "questions with valid scores - GDS rule no: {0}",
             0x2006:
             "incorrect GDS score {1}, expected value {2} - GDS rule no: {0}",
             0x2007:
-            "incorrect prorated GDS score {1}, expected value {2} - GDS rule no: {0}",
+            "incorrect prorated GDS score {1}, expected value {2} - GDS " +
+            "rule no: {0}",
             0x2008:
-            "If GDS attempted (nogds = 0 or blank), at least 12 questions need to have "
-            + "valid scores - GDS rule no: {0}",
+            "If GDS attempted (nogds = 0 or blank), at least 12 questions " +
+            "need to have valid scores - GDS rule no: {0}",
             0x2009:
             "input value doesn't satisfy the condition {0}",
             0x3000:
-            "failed to retrieve record for previous visit, cannot proceed with "
-            + "validation {0}",
+            "failed to retrieve record for previous visit, cannot proceed " +
+            "with validation {0}",
             0x3001:
             "Drug ID {0} is not a valid RXCUI",
             0x3002:
@@ -142,7 +143,8 @@ class CustomErrorHandler(BasicErrorHandler):
             0x3008:
             "Provided value {0} does not match the expected score",
             0x3009:
-            "Cannot compute birth date, one or more components empty or malformed"
+            "Cannot compute birth date, one or more components empty or " +
+            "malformed",
         }
 
         self.messages.update(custom_errors)

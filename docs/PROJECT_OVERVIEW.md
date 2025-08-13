@@ -2,14 +2,11 @@
 
 ## Table of Contents
 - [Overview](#overview)
-- [Architecture](#architecture)
 - [Core Scripts and Functions](#core-scripts-and-functions)
 - [Configuration System](#configuration-system)
 - [Validation Pipeline](#validation-pipeline)
-- [Database Integration](#database-integration)
 - [CLI Interface](#cli-interface)
 - [Windows Environment Setup](#windows-environment-setup)
-- [Network Drive Configuration](#network-drive-configuration)
 - [Output Structure](#output-structure)
 - [Testing Framework](#testing-framework)
 - [Usage Examples](#usage-examples)
@@ -21,32 +18,8 @@ The UDSv4 REDCap QC Validator is a comprehensive quality control pipeline design
 ### Key Features
 - **Multi-mode Validation**: Supports complete visits, incomplete visits, and custom validation modes
 - **Schema-driven Validation**: Uses Cerberus and JSON Logic for flexible rule definitions
-- **Historical Tracking**: SQLite database for error tracking and trend analysis
 - **Network Drive Support**: Centralized database storage for team collaboration
-- **Enhanced Reporting**: Comprehensive reports with error status and comparisons
 - **Modern CLI**: Rich command-line interface with progress indicators and tables
-
-## Architecture
-
-```
-┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────────┐
-│     CLI Layer       │    │   Configuration     │    │    Validation       │
-│   (src/cli/cli.py)  │◄──►│  (config_manager)   │◄──►│   (report_pipeline) │
-└─────────────────────┘    └─────────────────────┘    └─────────────────────┘
-           │                           │                           │
-           ▼                           ▼                           ▼
-┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────────┐
-│    Data Fetching    │    │   Rule Processing   │    │   Output Generation │
-│     (fetcher.py)    │    │  (quality_check.py) │    │   (helpers.py)      │
-└─────────────────────┘    └─────────────────────┘    └─────────────────────┘
-           │                           │                           │
-           └─────────────────┬─────────────────────────────────────┘
-                             ▼
-                ┌─────────────────────┐
-                │   Database Layer    │
-                │   (datastore.py)    │
-                └─────────────────────┘
-```
 
 ## Core Scripts and Functions
 
@@ -54,7 +27,6 @@ The UDSv4 REDCap QC Validator is a comprehensive quality control pipeline design
 
 **Primary Functions:**
 - `run_report_pipeline(config, enable_datastore)` - Main entry point for standard validation
-- `run_enhanced_report_pipeline(config, enable_datastore)` - Enhanced validation with datastore integration
 - `validate_data(data, instrument, rules, config)` - Core validation logic
 - `process_instruments_etl(data, config)` - ETL processing for multiple instruments
 - `export_results_to_csv(errors_df, output_path)` - Results export functionality
@@ -77,7 +49,6 @@ The UDSv4 REDCap QC Validator is a comprehensive quality control pipeline design
 - API credentials (REDCap URL and token)
 - Validation modes and filters
 - Output paths and logging levels
-- Database and rule configurations
 
 ### 3. Data Fetcher (`src/pipeline/fetcher.py`)
 
@@ -95,42 +66,7 @@ The UDSv4 REDCap QC Validator is a comprehensive quality control pipeline design
 - `QualityCheck.apply_json_logic_rules(data, rules)` - Rule-based validation
 - `QualityCheck.generate_error_report(errors)` - Error reporting
 
-### 5. Enhanced Datastore (`src/pipeline/datastore.py`)
-
-**Primary Functions:**
-- `EnhancedDatastore.store_validation_run(run_data)` - Store validation results
-- `EnhancedDatastore.compare_with_previous_run(current_errors)` - Error comparison
-- `EnhancedDatastore.generate_quality_dashboard(instrument)` - Dashboard generation
-- `EnhancedDatastore.analyze_error_trends(instrument, days_back)` - Trend analysis
-
-**Database Schema:**
-```sql
--- Validation runs metadata
-CREATE TABLE validation_runs (
-    id TEXT PRIMARY KEY,
-    instrument TEXT,
-    timestamp DATETIME,
-    total_records INTEGER,
-    error_count INTEGER,
-    mode TEXT,
-    user_initials TEXT
-);
-
--- Detailed error records
-CREATE TABLE error_records (
-    id INTEGER PRIMARY KEY,
-    run_id TEXT,
-    ptid TEXT,
-    event_name TEXT,
-    field_name TEXT,
-    error_type TEXT,
-    error_message TEXT,
-    field_value TEXT,
-    FOREIGN KEY (run_id) REFERENCES validation_runs(id)
-);
-```
-
-### 6. Helper Functions (`src/pipeline/helpers.py`)
+### 5. Helper Functions (`src/pipeline/helpers.py`)
 
 **Primary Functions:**
 - `build_complete_visits_df(data)` - Complete visits dataset construction
@@ -138,14 +74,11 @@ CREATE TABLE error_records (
 - `load_rules_for_instruments(instruments)` - Rule loading and caching
 - `prepare_instrument_data_cache(data)` - Data preparation optimization
 
-### 7. CLI Interface (`src/cli/cli.py`)
+### 6. CLI Interface (`src/cli/cli.py`)
 
 **Available Commands:**
 - `udsv4-qc config` - Configuration validation and display
 - `udsv4-qc run` - Standard validation pipeline
-- `udsv4-qc run-enhanced` - Enhanced validation with datastore
-- `udsv4-qc datastore-status` - Database status information
-- `udsv4-qc datastore-analysis` - Generate analysis reports
 
 ## Configuration System
 
@@ -198,11 +131,6 @@ The system validates:
 - Builds status reports
 - Produces validation logs
 
-### 5. Database Integration Phase (Enhanced Mode)
-- Stores validation results
-- Compares with previous runs
-- Generates trend analyses
-- Creates quality dashboards
 
 ## Database Integration
 
@@ -219,11 +147,9 @@ dir "\\network-drive\shared\validation_history.db"
 ```
 
 ### Database Features
-- **Centralized Storage**: Shared database for team collaboration
 - **Historical Tracking**: Long-term error trend analysis
 - **Run Comparison**: Identify new, resolved, and persistent errors
 - **Pattern Detection**: Systematic error identification
-- **Performance Monitoring**: Database size and query optimization
 
 ## CLI Interface
 
@@ -239,9 +165,6 @@ Options:
 Commands:
   config              Display configuration status
   run                 Run standard validation pipeline
-  run-enhanced        Run enhanced validation with datastore
-  datastore-status    Show database status
-  datastore-analysis  Generate analysis reports
 ```
 
 ### Common Usage Patterns
@@ -283,18 +206,6 @@ pip install -e .
 udsv4-qc --help
 ```
 
-### Network Drive Configuration
-```cmd
-# Map network drive (if needed)
-net use Z: \\network-drive\shared
-
-# Set database path
-set VALIDATION_HISTORY_DB_PATH=Z:\validation_history.db
-
-# Verify access
-dir Z:\validation_history.db
-```
-
 ### Running Tests
 ```bash
 # Run all tests
@@ -318,23 +229,6 @@ udsv4-qc run --mode complete_visits --initials "JDT"
 udsv4-qc run --mode custom --initials "JDT" --event "udsv4_ivp_1_arm_1"
 ```
 
-### Enhanced Validation
-```bash
-# Enhanced mode with database tracking
-udsv4-qc run-enhanced --mode complete_events --center_id 123
-
-# Generate comprehensive analysis
-udsv4-qc datastore-analysis --instrument a1 --output-dir ./analysis
-```
-
-### Database Management
-```bash
-# Check database status
-udsv4-qc datastore-status
-
-# Generate trend analysis
-udsv4-qc datastore-analysis --instrument a1 --days-back 90
-```
 
 ### Configuration Management
 ```bash
@@ -345,45 +239,8 @@ udsv4-qc config
 udsv4-qc config --detailed --json-output
 ```
 
-## Performance Considerations
-
-### Network Drive Operations
-- **Local Database**: ~100-1000ms operations
-- **Network Database**: ~1-10 seconds operations
-- **Optimization**: Use datastore analysis commands for batch operations
-
-### Database Size Management
-- **Excellent**: < 100MB
-- **Good**: 100MB - 1GB
-- **Cleanup Needed**: > 1GB
-
-### Memory Usage
-- **Typical**: 200-500MB for standard runs
-- **Large datasets**: 1-2GB for complete institution validation
-- **Optimization**: Instrument-specific processing to reduce memory footprint
-
-## Best Practices
-
-### For Regular Users
-1. Always check configuration before running (`udsv4-qc config`)
-2. Use meaningful initials for tracking
-3. Monitor database size regularly
-4. Use enhanced mode for production validation
-
-### For Administrators
-1. Configure network drive permissions properly
-2. Set up automated database backups
-3. Monitor database performance
-4. Implement data retention policies
-
-### For Developers
-1. Follow the existing code structure
-2. Add comprehensive tests for new features
-3. Update documentation when making changes
-4. Use type hints and docstrings consistently
-
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: July 16, 2025  
+**Document Version**: 1.1  
+**Last Updated**: August 12, 2025  
 **Target Environment**: Windows with Network Drive Support

@@ -1,14 +1,12 @@
-# nacc_validator.py
-
 """Module for defining NACC specific data validation rules (extending cerberus
 library)."""
 
 import copy
 import logging
+import math
 from datetime import datetime as dt
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-from cerberus.errors import DocumentErrorTree
 from cerberus.validator import Validator
 from dateutil import parser
 
@@ -37,13 +35,13 @@ class NACCValidator(Validator):
         super().__init__(schema=schema, *args, **kwargs)
 
         # Data type map for each field
-        self.__dtypes: Dict[str, str] = self.__populate_data_types()
+        self.__dtypes: Dict[str, str] = self.__populate_data_types() or {}
 
         # Datastore instance
-        self.__datastore: Datastore = None
+        self.__datastore: Optional[Datastore] = None
 
         # Primary key field of the project
-        self.__pk_field: str = None
+        self.__pk_field: Optional[str] = None
 
         # Cache of previous records that has been retrieved
         self.__prev_records: Dict[str, Mapping] = {}
@@ -93,21 +91,6 @@ class NACCValidator(Validator):
         return data_types
 
     @property
-    def datastore(self) -> Optional[Datastore]:
-        """Returns the datastore object or None."""
-        return self.__datastore
-
-    @datastore.setter
-    def datastore(self, datastore: Datastore):
-        """Set the Datastore instance.
-
-        Args:
-            datastore: Datastore instance to retrieve longitudinal data
-        """
-
-        self.__datastore = datastore
-
-    @property
     def primary_key(self) -> Optional[str]:
         """Returns the primary key field name or None."""
         return self.__pk_field
@@ -121,6 +104,21 @@ class NACCValidator(Validator):
         """
 
         self.__pk_field = pk_field
+
+    @property
+    def datastore(self) -> Optional[Datastore]:
+        """Returns the datastore object or None."""
+        return self.__datastore
+
+    @datastore.setter
+    def datastore(self, datastore: Optional[Datastore]):
+        """Set the Datastore instance.
+
+        Args:
+            datastore: Datastore instance to retrieve longitudinal data
+        """
+
+        self.__datastore = datastore
 
     @property
     def sys_errors(self) -> Dict[str, List[str]]:
@@ -255,9 +253,9 @@ class NACCValidator(Validator):
         if not ignore_empty and record_id in self.__prev_records:
             prev_ins = self.__prev_records[record_id]
         else:
-            prev_ins = (self.__datastore.get_previous_nonempty_record(
+            prev_ins = (self.datastore.get_previous_nonempty_record(
                 self.document, ignore_empty_fields) if ignore_empty else
-                        self.__datastore.get_previous_record(self.document))
+                        self.datastore.get_previous_record(self.document))
 
             if prev_ins:
                 prev_ins = self.cast_record(prev_ins)

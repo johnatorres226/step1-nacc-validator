@@ -1,14 +1,3 @@
-from __future__ import absolute_import
-
-"""
-This module is a modified version of the `json-logic-py` library.
-
-It has been adapted to include custom logic and integrate with the project's
-configuration management. The original license is preserved below.
-"""
-
-# json_logic.py
-
 """This code is from json-logic-py GitHub project by nadirizr
 https://github.com/nadirizr/json-logic-py Which is a Python implementation of
 the following jsonLogic JS library, https://github.com/jwadhams/json-logic-js.
@@ -36,13 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 import logging
 import math
 from functools import reduce
-from pathlib import Path
-
-from pipeline.config_manager import get_config, instrument_json_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +217,7 @@ operations = {
     "max": lambda *args: max(args),
     "merge": merge,
     "count": lambda *args: sum(1 if a else 0 for a in args),
-    "count_exact": lambda *args: count_exact(args)
+    "count_exact": lambda *args: count_exact(args),
 }
 
 
@@ -266,54 +251,3 @@ def jsonLogic(tests, data=None):
         raise ValueError(f"Unrecognized operation {operator}")
 
     return operations[operator](*values)
-
-
-def load_json_rules_for_instrument(instrument_name: str) -> dict:
-    """
-    Loads all JSON validation rules for a given instrument.
-    It looks up the required JSON files from the instrument_json_mapping
-    and merges them into a single dictionary.
-    """
-    config = get_config()
-    json_rules_path = Path(config.json_rules_dir)
-    
-    # Get the list of JSON files for the instrument
-    rule_files = instrument_json_mapping.get(instrument_name, [])
-    if not rule_files:
-        logger.warning(f"No JSON rule files found for instrument: {instrument_name}")
-        return {}
-
-    # Load and merge all rules from the files
-    combined_rules = {}
-    for file_name in rule_files:
-        file_path = json_rules_path / file_name
-        if file_path.exists():
-            with open(file_path, 'r') as f:
-                try:
-                    rules = json.load(f)
-                    combined_rules.update(rules)
-                except json.JSONDecodeError:
-                    logger.error(f"Could not decode JSON from {file_path}")
-        else:
-            logger.warning(f"JSON rule file not found: {file_path}")
-            
-    return combined_rules
-
-def get_all_fields_from_rule(rule_name):
-    """Helper function to get all fields from a given rule."""
-    config = get_config()
-    json_rules_path = Path(config.json_rules_dir)
-    rule_file_path = json_rules_path / rule_name
-    
-    if not rule_file_path.exists():
-        logger.warning(f"Rule file does not exist: {rule_file_path}")
-        return {}
-    
-    with open(rule_file_path, 'r') as f:
-        try:
-            rule = json.load(f)
-            logger.info(f"Loaded rule from {rule_file_path}: {rule}")
-            return rule
-        except json.JSONDecodeError:
-            logger.error(f"Could not decode JSON from {rule_file_path}")
-            return {}

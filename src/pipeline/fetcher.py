@@ -28,7 +28,7 @@ from abc import ABC, abstractmethod
 # ETL-optimized imports
 from pipeline.config_manager import (
     QCConfig,
-    complete_event_filter_logic,
+    complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
     complete_instruments_vars,
 )
@@ -37,6 +37,10 @@ from pipeline.helpers import get_variables_for_instrument, load_rules_for_instru
 
 # Initialize logger
 logger = get_logger(__name__)
+
+# Global variables for consistent timestamp naming across ETL operations
+_etl_date_tag: Optional[str] = None
+_etl_time_tag: Optional[str] = None
 
 
 # =============================================================================
@@ -233,7 +237,7 @@ class RedcapDataFetcher:
     def _save_data(self, data: pd.DataFrame, output_dir: str) -> None:
         """Save processed data to output directory."""
         if not data.empty:
-            _save_etl_output(data, output_dir, "ETL_Fetcher_Raw_Output")
+            _save_etl_output(data, output_dir, "ETL_Fetcher_RawOutput")
     
     def _handle_fetch_error(self, error: Exception) -> None:
         """Handle fetch errors with proper logging."""
@@ -334,7 +338,8 @@ def instrument_subset_transformer(
     return transformed_df
 
 
-def _save_etl_output(df: pd.DataFrame, output_dir: str, filename_prefix: str) -> str:
+def _save_etl_output(df: pd.DataFrame, output_dir: str, filename_prefix: str, 
+                     date_tag: Optional[str] = None, time_tag: Optional[str] = None) -> str:
     """
     Save ETL output to a designated directory with a timestamp.
 
@@ -342,16 +347,29 @@ def _save_etl_output(df: pd.DataFrame, output_dir: str, filename_prefix: str) ->
         df: DataFrame to save.
         output_dir: Base output directory.
         filename_prefix: Prefix for the filename.
+        date_tag: Optional date tag for consistent naming across pipeline.
+        time_tag: Optional time tag for consistent naming across pipeline.
 
     Returns:
         The full path of the saved file as a string.
     """
-    run_date = datetime.now().strftime("%d%b%Y")
+    # Use provided timestamps, global variables, or generate new ones
+    if date_tag and time_tag:
+        run_date = date_tag
+        time_stamp = time_tag
+    elif _etl_date_tag and _etl_time_tag:
+        run_date = _etl_date_tag
+        time_stamp = _etl_time_tag
+    else:
+        current_datetime = datetime.now()
+        run_date = current_datetime.strftime("%d%b%Y").upper()
+        time_stamp = current_datetime.strftime("%H%M%S")
+    
     # Create ETL_Data subdirectory within the run-specific directory
-    etl_dir = Path(output_dir) / f"ETL_Data_{run_date}"
+    etl_dir = Path(output_dir) / f"ETL_Data_{run_date}_{time_stamp}"
     etl_dir.mkdir(parents=True, exist_ok=True)
 
-    filename = f"{filename_prefix}_{run_date}.csv"
+    filename = f"{filename_prefix}_{run_date}_{time_stamp}.csv"
     file_path = etl_dir / filename
 
     df.to_csv(file_path, index=False)
@@ -364,8 +382,11 @@ def _save_etl_output(df: pd.DataFrame, output_dir: str, filename_prefix: str) ->
 def _get_filter_logic(config: QCConfig) -> Optional[str]:
     """Determines the appropriate REDCap filter logic based on the config."""
     if config.mode == 'complete_events':
-        logger.info("Using 'complete events only' filter logic.")
-        return complete_event_filter_logic
+        logger.info("Using 'complete events with incomplete QC' filter logic.")
+        return complete_events_with_incomplete_qc_filter_logic
+    elif config.mode == 'complete_visits':
+        logger.info("Using 'complete visits with incomplete QC' filter logic.")
+        return complete_events_with_incomplete_qc_filter_logic
     elif config.mode == 'complete_instruments':
         logger.info("Using 'QC status check' filter logic for 'complete instruments' mode.")
         return qc_filterer_logic
@@ -436,7 +457,8 @@ def _fetch_with_fallback(
     return data
 
 
-def fetch_etl_data(config: QCConfig, output_path: Optional[Union[str, Path]] = None) -> pd.DataFrame:
+def fetch_etl_data(config: QCConfig, output_path: Optional[Union[str, Path]] = None, 
+                   date_tag: Optional[str] = None, time_tag: Optional[str] = None) -> pd.DataFrame:
     """
     Main ETL function that orchestrates data fetching and transformation.
 
@@ -446,11 +468,23 @@ def fetch_etl_data(config: QCConfig, output_path: Optional[Union[str, Path]] = N
     Args:
         config: A QCConfig object containing all run parameters.
         output_path: Optional path to use for ETL output. If None, uses config.output_path.
+        date_tag: Optional date tag for consistent naming across pipeline.
+        time_tag: Optional time tag for consistent naming across pipeline.
 
     Returns:
         A processed DataFrame ready for the QC pipeline.
     """
     logger.info(f"Starting ETL data fetch in '{config.mode}' mode.")
+
+    # Store timestamps for consistent naming
+    if date_tag and time_tag:
+        global _etl_date_tag, _etl_time_tag
+        _etl_date_tag = date_tag
+        _etl_time_tag = time_tag
+    else:
+        current_datetime = datetime.now()
+        _etl_date_tag = current_datetime.strftime("%d%b%Y").upper()
+        _etl_time_tag = current_datetime.strftime("%H%M%S")
 
     # Use provided output_path or fall back to config.output_path
     etl_output_path = output_path if output_path is not None else config.output_path

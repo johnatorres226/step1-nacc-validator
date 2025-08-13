@@ -26,77 +26,75 @@ class QualityCheck:
     """Coordinates the validation of a single data record against a schema.
 
     This class wraps the `NACCValidator`, configuring it with a specific schema,
-    primary key, and optional datastore for cross-record validation. It provides
-    a simple interface to validate a record and retrieve structured results.
+    primary key for the data validation, and optional datastore for temporal 
+    validations. It provides a simple interface to validate a record and 
+    retrieve structured results.
 
     Attributes:
-        pk_field: The primary key field of the data being validated.
-        schema: The Cerberus validation schema.
+        pk_field: The primary key field name for the record.
+        schema: The validation schema rules.
+        datastore: Optional datastore for temporal and previous record validations.
         validator: The configured `NACCValidator` instance.
     """
 
     def __init__(
         self,
-        pk_field: str,
         schema: Mapping[str, Any],
-        strict: bool = True,
+        pk_field: str,
         datastore: Optional[Datastore] = None,
-    ):
-        """Initializes the QualityCheck instance and its validator.
+        strict: bool = False,
+    ) -> None:
+        """Initialize the QualityCheck with schema, primary key, and optional datastore.
 
         Args:
-            pk_field: Primary key field name for the data.
-            schema: A dictionary representing the Cerberus validation schema.
-            strict: If True, unknown fields in records will raise an error.
-                    If False, they will be ignored. Defaults to True.
-            datastore: An optional `Datastore` instance for validations
-                       that require access to other records.
+            schema: The Cerberus validation schema to apply.
+            pk_field: The name of the primary key field.
+            datastore: Optional datastore instance for temporal validations.
+                      If None, temporal validations will be skipped with warnings.
+            strict: Whether to disallow unknown fields in validation.
 
         Raises:
-            QualityCheckException: If the schema is invalid or if there's a
-                                   mismatch in primary keys with the datastore.
+            QualityCheckException: If the schema is invalid or there's a
+                                   configuration error.
         """
         self.pk_field: str = pk_field
         self.schema: Mapping[str, Any] = schema
-        self.__strict: bool = strict
-        # The 'compatibility' rule is not a standard Cerberus rule.
-        # It's a custom rule implemented in NACCValidator.
-        # We need to inform Cerberus about this custom rule to avoid warnings.
-        self.validator: NACCValidator = self._init_validator(datastore)
-        self.validator.allow_unknown = {'schema': {'compatibility': {'type': 'list'}}}
+        self.datastore: Optional[Datastore] = datastore
+        self.strict: bool = strict
+        self.validator: NACCValidator = self._init_validator()
 
-
-    def _init_validator(self, datastore: Optional[Datastore]) -> NACCValidator:
+    # @profile  # Uncomment if using `line_profiler` or similar tools
+    def _init_validator(self) -> NACCValidator:
         """Creates and configures the NACCValidator instance.
-
-        Args:
-            datastore: The datastore to be used by the validator.
 
         Returns:
             A configured `NACCValidator` instance.
 
         Raises:
             QualityCheckException: If there is a schema compilation error or
-                                   a primary key mismatch with the datastore.
+                                   datastore configuration mismatch.
         """
         try:
             validator = NACCValidator(
                 self.schema,
-                allow_unknown=not self.__strict,
+                allow_unknown=not self.strict,  # Use strict mode setting
                 error_handler=CustomErrorHandler(self.schema),
             )
         except (SchemaError, RuntimeError) as e:
             raise QualityCheckException(f"Schema Error: {e}") from e
 
-        if datastore and self.pk_field != datastore.pk_field:
-            raise QualityCheckException(
-                "Mismatched primary key fields: "
-                f"QualityCheck pk is '{self.pk_field}', "
-                f"but Datastore pk is '{datastore.pk_field}'."
-            )
-
+        # Set primary key
         validator.primary_key = self.pk_field
-        validator.datastore = datastore
+        
+        # Set datastore if provided and validate primary key compatibility
+        if self.datastore:
+            if self.datastore.pk_field != self.pk_field:
+                raise QualityCheckException(
+                    f"Mismatched primary key fields: schema='{self.pk_field}', "
+                    f"datastore='{self.datastore.pk_field}'"
+                )
+            validator.datastore = self.datastore
+        
         return validator
 
     def validate_record(self, record: Dict[str, Any]) -> ValidationResult:
