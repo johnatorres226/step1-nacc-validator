@@ -1,276 +1,221 @@
 {
     "ownscar": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trspaccess": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "transprob": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "transworry": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trspmed": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "incomeyr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "finsatis": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "billpay": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "finupset": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "eatless": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "eatlessyr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "lessmeds": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "lessmedsyr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "compcomm": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "guardedu": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "emptiness": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "misspeople": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "friends": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "abandoned": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "closefrnd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "parentcomm": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "childcomm": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "friendcomm": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "participate": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "safehome": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "safecomm": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "delaymed": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "scriptprob": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "missedfup": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "docadvice": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "healthacc": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "lesscourt": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "poorserv": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "notsmart": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "actafraid": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "threatened": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "poormedtrt": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expancest": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expgender": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "exprace": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expage": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "exprelig": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expheight": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expweight": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expappear": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expsexorn": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expeducinc": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expdisab": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expskin": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expother": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "expnotapp": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expnoans": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "expstrs": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "frmdatea1a": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langa1a": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modea1a": {
         "required": true,
@@ -281,18 +226,15 @@
     },
     "rmreasa1a": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "rmmodea1a": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "admina1a": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "a1anot": {
         "type": "integer",
@@ -302,7 +244,6 @@
         "required": true
     },
     "initialsa1a": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

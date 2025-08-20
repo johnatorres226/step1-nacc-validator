@@ -1,96 +1,77 @@
 {
     "nogds": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "satis": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "dropact": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "empty": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bored": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "spirits": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "afraid": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "happy": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "helpless": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "stayhome": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "memprob": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "wondrful": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "wrthless": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "energy": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hopeless": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "better": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "gds": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "frmdateb6": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langb6": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modeb6": {
         "required": true,
@@ -101,13 +82,11 @@
     },
     "rmreasb6": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "rmmodeb6": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "b6not": {
         "type": "integer",
@@ -120,7 +99,6 @@
         "required": true
     },
     "initialsb6": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

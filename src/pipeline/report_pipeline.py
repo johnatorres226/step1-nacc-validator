@@ -37,7 +37,7 @@ from pipeline.config_manager import (
     get_instrument_json_mapping,
     upload_ready_path
 )
-from pipeline.fetcher import fetch_etl_data
+from pipeline.fetcher import RedcapETLPipeline
 from pipeline.quality_check import QualityCheck
 from pipeline.helpers import (
     build_complete_visits_df,
@@ -405,13 +405,16 @@ def process_instruments_etl(
     logger.info(f"Loading validation rules for {len(config.instruments)} instruments")
     rules_cache = load_rules_for_instruments(config.instruments)
 
-    # Step 2: Fetch data using the ETL approach with upfront filtering
-    logger.info("Fetching data using configuration-driven ETL approach.")
+    # Step 2: Fetch data using the modern ETL pipeline
+    logger.info("Fetching data using modern RedcapETLPipeline.")
     try:
-        data_df = fetch_etl_data(config, output_path, date_tag, time_tag)
-        logger.info(f"ETL fetch completed: {len(data_df)} records ready for processing")
+        pipeline = RedcapETLPipeline(config)
+        etl_result = pipeline.run(output_path, date_tag, time_tag)
+        data_df = etl_result.data
+        logger.info(f"ETL pipeline completed: {etl_result.records_processed} records ready for processing "
+                   f"(execution time: {etl_result.execution_time:.2f}s)")
     except Exception as e:
-        logger.error(f"ETL fetch failed: {e}", exc_info=True)
+        logger.error(f"ETL pipeline failed: {e}", exc_info=True)
         raise RuntimeError(f"ETL data fetch failed: {e}") from e
 
     # Step 3: Apply complete visits filtering BEFORE building the instrument data cache

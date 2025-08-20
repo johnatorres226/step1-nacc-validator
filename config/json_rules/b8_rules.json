@@ -2547,7 +2547,6 @@
         ]
     },
     "initialsb8": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

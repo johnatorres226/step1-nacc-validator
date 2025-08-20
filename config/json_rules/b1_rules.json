@@ -381,7 +381,6 @@
         ]
     },
     "initialsb1": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

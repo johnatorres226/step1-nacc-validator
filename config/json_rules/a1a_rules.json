@@ -1130,7 +1130,6 @@
         ]
     },
     "initialsa1a": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

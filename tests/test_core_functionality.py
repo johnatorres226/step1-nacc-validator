@@ -218,14 +218,20 @@ class TestPipelineIntegration:
             'a1_field2': ['10', '20', '30']
         })
 
-    @patch('pipeline.fetcher.fetch_etl_data')
+    @patch('pipeline.fetcher.RedcapETLPipeline.run')
     @patch('pipeline.helpers.load_rules_for_instruments')
     @patch('pipeline.report_pipeline.process_instruments_etl')
-    def test_run_report_pipeline_basic(self, mock_process, mock_load_rules, mock_fetch_data, 
+    def test_run_report_pipeline_basic(self, mock_process, mock_load_rules, mock_pipeline_run, 
                                       mock_config, sample_redcap_data):
         """Test basic pipeline run without datastore."""
         # Setup mocks
-        mock_fetch_data.return_value = sample_redcap_data
+        from pipeline.fetcher import ETLResult
+        mock_pipeline_run.return_value = ETLResult(
+            data=sample_redcap_data,
+            records_processed=len(sample_redcap_data),
+            execution_time=1.0,
+            saved_files=[]
+        )
         mock_load_rules.return_value = {}
         mock_process.return_value = (
             sample_redcap_data,  # processed_records
@@ -238,20 +244,26 @@ class TestPipelineIntegration:
             run_report_pipeline(config=mock_config)
             
             # Verify that components were called
-            mock_fetch_data.assert_called_once_with(mock_config)
+            mock_pipeline_run.assert_called_once()
             mock_process.assert_called_once()
             mock_export.assert_called()
 
-    @patch('pipeline.fetcher.fetch_etl_data')
+    @patch('pipeline.fetcher.RedcapETLPipeline.run')
     @patch('pipeline.helpers.load_rules_for_instruments')
     @patch('pipeline.report_pipeline.process_instruments_etl')
     @patch('pipeline.report_pipeline._store_validation_in_database')
     def test_run_report_pipeline_with_datastore(self, mock_store_db, mock_process, 
-                                               mock_load_rules, mock_fetch_data, 
+                                               mock_load_rules, mock_pipeline_run, 
                                                mock_config, sample_redcap_data):
         """Test pipeline run with datastore enabled."""
         # Setup mocks
-        mock_fetch_data.return_value = sample_redcap_data
+        from pipeline.fetcher import ETLResult
+        mock_pipeline_run.return_value = ETLResult(
+            data=sample_redcap_data,
+            records_processed=len(sample_redcap_data),
+            execution_time=1.0,
+            saved_files=[]
+        )
         mock_load_rules.return_value = {}
         mock_process.return_value = (
             sample_redcap_data,  # processed_records
@@ -268,7 +280,7 @@ class TestPipelineIntegration:
             run_report_pipeline(config=mock_config)
             
             # Verify that components were called
-            mock_fetch_data.assert_called_once_with(mock_config)
+            mock_pipeline_run.assert_called_once()
             mock_process.assert_called_once()
             mock_export.assert_called()
             mock_store_db.assert_called_once()

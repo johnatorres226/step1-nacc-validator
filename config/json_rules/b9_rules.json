@@ -3457,7 +3457,6 @@
         ]
     },
     "initialsb9": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

@@ -2486,7 +2486,6 @@
         ]
     },
     "initialsa1": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

@@ -623,7 +623,6 @@
         "check_with": "rxnorm"
     },
     "initialsa4": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

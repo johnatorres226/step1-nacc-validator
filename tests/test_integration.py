@@ -21,7 +21,7 @@ from pipeline.report_pipeline import run_report_pipeline, validate_data
 from pipeline.quality_check import QualityCheck
 from pipeline.datastore import EnhancedDatastore
 from pipeline.helpers import build_complete_visits_df
-from pipeline.fetcher import fetch_etl_data
+from pipeline.fetcher import RedcapETLPipeline
 
 
 class TestPipelineIntegration:
@@ -81,12 +81,18 @@ class TestPipelineIntegration:
             }
         }
 
-    @patch('pipeline.fetcher.fetch_etl_data')
+    @patch('pipeline.fetcher.RedcapETLPipeline.run')
     @patch('pipeline.helpers.load_rules_for_instruments')
-    def test_complete_pipeline_run(self, mock_load_rules, mock_fetch_data, mock_config, sample_redcap_data, sample_validation_rules):
+    def test_complete_pipeline_run(self, mock_load_rules, mock_pipeline_run, mock_config, sample_redcap_data, sample_validation_rules):
         """Test a complete pipeline run from start to finish."""
         # Setup mocks
-        mock_fetch_data.return_value = sample_redcap_data
+        from pipeline.fetcher import ETLResult
+        mock_pipeline_run.return_value = ETLResult(
+            data=sample_redcap_data,
+            records_processed=len(sample_redcap_data),
+            execution_time=1.0,
+            saved_files=[]
+        )
         mock_load_rules.return_value = sample_validation_rules
         
         # Run the pipeline
@@ -96,8 +102,8 @@ class TestPipelineIntegration:
             # Verify that results were exported
             mock_export.assert_called()
             
-            # Verify fetch was called with correct config
-            mock_fetch_data.assert_called_once_with(mock_config)
+            # Verify pipeline was called
+            mock_pipeline_run.assert_called_once()
             
             # Verify rules were loaded
             mock_load_rules.assert_called_once()

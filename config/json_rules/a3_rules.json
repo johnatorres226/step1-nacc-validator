@@ -12370,7 +12370,6 @@
         ]
     },
     "initialsa3": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

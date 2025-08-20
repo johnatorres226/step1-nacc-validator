@@ -1385,7 +1385,6 @@
         ]
     },
     "initialsb5": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

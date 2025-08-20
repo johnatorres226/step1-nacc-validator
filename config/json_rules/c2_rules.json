@@ -4356,15 +4356,34 @@
             {
                 "index": 0,
                 "if": {
-                    "verbaltest": {
-                        "allowed": [
-                            2
-                        ]
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
                     }
                 },
                 "then": {
                     "ceradj6rec": {
                         "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "allowed": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ceradj6rec": {
+                        "nullable": true,
+                        "filled": false
                     }
                 }
             }
@@ -4428,7 +4447,7 @@
             {
                 "index": 0,
                 "if": {
-                    "ceradj6rec": {
+                    "cerad1rec": {
                         "min": 0,
                         "max": 10
                     }
@@ -4442,9 +4461,10 @@
             {
                 "index": 1,
                 "if": {
-                    "ceradj6rec": {
+                    "cerad1rec": {
                         "min": 95,
-                        "max": 98
+                        "max": 98,
+                        "nullable": true
                     }
                 },
                 "then": {
@@ -4477,7 +4497,7 @@
             {
                 "index": 0,
                 "if": {
-                    "ceradj6rec": {
+                    "ceradj7yes": {
                         "min": 0,
                         "max": 10
                     }
@@ -4491,9 +4511,10 @@
             {
                 "index": 1,
                 "if": {
-                    "ceradj6rec": {
+                    "ceradj7yes": {
                         "min": 95,
-                        "max": 98
+                        "max": 98,
+                        "nullable": true
                     }
                 },
                 "then": {
@@ -4708,6 +4729,23 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "mintscng": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mintscnc": {
+                        "allowed": [
+                            88
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -4805,6 +4843,23 @@
                     "mintpcnc": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "mintpcng": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mintpcnc": {
+                        "allowed": [
+                            88
+                        ]
                     }
                 }
             }
@@ -5053,7 +5108,6 @@
         ]
     },
     "initialsc2c2t": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

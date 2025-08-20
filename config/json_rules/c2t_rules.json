@@ -3953,7 +3953,6 @@
         ]
     },
     "initialsc2c2t": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

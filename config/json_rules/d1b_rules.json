@@ -4420,7 +4420,6 @@
         ]
     },
     "initialsd1b": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

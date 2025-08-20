@@ -1,11 +1,9 @@
 {
     "frmdateb5": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langb5": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modeb5": {
         "required": true,
@@ -16,13 +14,11 @@
     },
     "rmreasb5": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "rmmodeb5": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "b5not": {
         "type": "integer",
@@ -36,136 +32,109 @@
     },
     "npiqinfx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "del": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "delsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hall": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hallsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "agit": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "agitsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "depd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "depdsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "anx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "anxsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "elat": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "elatsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "apa": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "apasev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "disn": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "disnsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "irr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "irrsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "mot": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "motsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "nite": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "nitesev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "app": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "appsev": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "npiqinf": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "initialsb5": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

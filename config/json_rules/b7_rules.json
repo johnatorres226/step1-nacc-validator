@@ -312,7 +312,6 @@
         ]
     },
     "initialsb7": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

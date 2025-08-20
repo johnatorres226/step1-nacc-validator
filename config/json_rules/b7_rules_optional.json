@@ -1,11 +1,9 @@
 {
     "frmdateb7": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langb7": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modeb7": {
         "required": true,
@@ -16,13 +14,11 @@
     },
     "rmreasb7": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "rmmodeb7": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "b7not": {
         "type": "integer",
@@ -36,56 +32,45 @@
     },
     "bills": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "taxes": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "shopping": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "games": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "stove": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "mealprep": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "events": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "payattn": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "remdates": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "travel": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "initialsb7": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

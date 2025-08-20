@@ -1,11 +1,9 @@
 {
     "frmdateb1": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langb1": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modeb1": {
         "required": true,
@@ -27,81 +25,65 @@
     },
     "height": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "weight": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "waist1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "waist2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hip1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hip2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpsysl1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpdiasl1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpsysl2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpdiasl2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpsysr1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpdiasr1": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpsysr2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bpdiasr2": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "hrate": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "initialsb1": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

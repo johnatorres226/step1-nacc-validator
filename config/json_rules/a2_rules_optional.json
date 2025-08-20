@@ -1,66 +1,53 @@
 {
     "inrelto": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inknown": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inlivwth": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "incntmod": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "incntmdx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "incntfrq": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "incnttim": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inrely": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inmemwors": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inmemtroub": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "inmemten": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "frmdatea2": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langa2": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modea2": {
         "required": true,
@@ -71,13 +58,11 @@
     },
     "rmreasa2": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "rmmodea2": {
         "nullable": true,
-        "filled": false,
-        "type": "string"
+        "filled": false
     },
     "a2not": {
         "type": "integer",
@@ -91,7 +76,6 @@
         "required": true
     },
     "initialsa2": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

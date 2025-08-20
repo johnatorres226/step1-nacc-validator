@@ -3904,7 +3904,6 @@
         ]
     },
     "initialsa4a": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

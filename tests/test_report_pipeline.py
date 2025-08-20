@@ -139,15 +139,23 @@ def test_complete_visits_filtering():
         'a3_participant_family_history': {}
     }
     
-    # Mock the fetch_etl_data function to return our test data
-    with patch('pipeline.report_pipeline.fetch_etl_data') as mock_fetch, \
+    # Mock the RedcapETLPipeline to return our test data
+    with patch('pipeline.report_pipeline.RedcapETLPipeline') as mock_pipeline_class, \
          patch('pipeline.report_pipeline.load_rules_for_instruments') as mock_rules, \
          patch('pipeline.report_pipeline.debug_variable_mapping') as mock_debug, \
          patch('pipeline.report_pipeline.validate_data') as mock_validate, \
          patch('pipeline.report_pipeline.build_detailed_validation_logs') as mock_logs, \
          patch('pipeline.report_pipeline.build_variable_maps') as mock_var_maps:
         
-        mock_fetch.return_value = mock_data
+        # Setup ETL pipeline mock
+        from pipeline.fetcher import ETLResult
+        mock_pipeline = mock_pipeline_class.return_value
+        mock_pipeline.run.return_value = ETLResult(
+            data=mock_data,
+            records_processed=len(mock_data),
+            execution_time=1.0,
+            saved_files=[]
+        )
         mock_rules.return_value = mock_rules_cache
         mock_debug.return_value = {'mapping_summary': {'overall_coverage': 100.0}, 'missing_variables': {}}
         mock_validate.return_value = ([], [], [])
@@ -157,8 +165,8 @@ def test_complete_visits_filtering():
         # Run the process_instruments_etl function
         result = process_instruments_etl(config)
         
-        # Verify that fetch_etl_data was called
-        mock_fetch.assert_called_once()
+        # Verify that the ETL pipeline was called
+        mock_pipeline.run.assert_called_once()
         
         # Check that the function returns the expected tuple structure
         assert len(result) == 6

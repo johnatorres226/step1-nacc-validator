@@ -1,11 +1,9 @@
 {
     "frmdateb3": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "langb3": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     },
     "modeb3": {
         "required": true,
@@ -27,286 +25,229 @@
     },
     "pdnormal": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "speech": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "speechx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "facexp": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "facexpx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestfac": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestfax": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestrhd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestrhx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestlhd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestlhx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestrft": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestrfx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestlft": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "trestlfx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tractrhd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tractrhx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tractlhd": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tractlhx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdneck": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdnex": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigduprt": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigduprx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigduplf": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigduplx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdlort": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdlorx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdlolf": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "rigdlolx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tapsrt": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tapsrtx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tapslf": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "tapslfx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handmovr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handmvrx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handmovl": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handmvlx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handaltr": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handatrx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handaltl": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "handatlx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "legrt": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "legrtx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "leglf": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "leglfx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "arising": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "arisingx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "posture": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "posturex": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "gait": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "gaitx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "posstab": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "posstabx": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bradykin": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "bradykix": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "totalupdrs": {
         "nullable": true,
-        "filled": false,
-        "type": "integer"
+        "filled": false
     },
     "initialsb3": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }

@@ -442,7 +442,6 @@
         ]
     },
     "initialsa2": {
-        "nullable": true,
-        "type": "string"
+        "nullable": true
     }
 }
