@@ -277,7 +277,7 @@ class DataSaver:
         df.to_csv(file_path, index=False)
         self.saved_files.append(file_path)
         
-        logger.info(f"Saved ETL output: {file_path} ({len(df)} records)")
+        logger.debug(f"Saved ETL output: {file_path} ({len(df)} records)")
         return file_path
 
 
@@ -458,7 +458,7 @@ class RedcapETLPipeline:
             payload['events'] = ','.join(self.config.events)
         if filter_logic:
             payload['filterLogic'] = filter_logic
-            logger.info(f"Applying filter logic: {filter_logic}")
+            logger.info("Applying filter logic (see complete_events_with_incomplete_qc_filter_logic in config_manager.py)")
         
         return payload
     

@@ -12,7 +12,7 @@ from pathlib import Path
 
 def run_command(cmd, description, allow_unicode_error=False):
     """Run a command and display results."""
-    print(f"\n🔄 {description}")
+    print(f"\n{description}")
     print("=" * 60)
     print(f"Command: {cmd}")
     print("-" * 60)
@@ -32,13 +32,13 @@ def run_command(cmd, description, allow_unicode_error=False):
                 print(result.stderr)
         
         if result.returncode == 0:
-            print("✅ Command completed successfully")
+            print("Command completed successfully")
         elif allow_unicode_error and result.returncode == 1 and "'charmap' codec can't encode character" in result.stderr:
-            print("✅ Command functionality works (Unicode display issue only)")
+            print("Command functionality works (Unicode display issue only)")
         else:
-            print(f"⚠️  Command failed with return code: {result.returncode}")
+            print(f"Command failed with return code: {result.returncode}")
     except Exception as e:
-        print(f"❌ Error running command: {e}")
+        print(f"Error running command: {e}")
     
     print("-" * 60)
 

@@ -76,7 +76,7 @@ def run_report_pipeline(config: QCConfig):
     """
     print("")
     print("="*80)
-    print("⏲️ STARTING QC REPORT PIPELINE")
+    print("STARTING QC REPORT PIPELINE")
     print("="*80)
     print("")
 
@@ -429,7 +429,7 @@ def process_instruments_etl(
                 complete_visits_df.set_index(['ptid', 'redcap_event_name']).index
             )
             data_df = data_df[complete_visits_mask].copy()
-            logger.info(f"Filtered to {len(data_df)} records from {len(complete_visits_df)} complete visits")
+            logger.debug(f"Filtered to {len(data_df)} records from {len(complete_visits_df)} complete visits")
         else:
             logger.warning("No complete visits found - no data will be processed")
             data_df = pd.DataFrame()  # Empty the dataframe if no complete visits
@@ -437,7 +437,7 @@ def process_instruments_etl(
     # Step 4: Prepare data and mappings with filtered data
     if not data_df.empty:
         debug_info = debug_variable_mapping(data_df, config.instruments, rules_cache)
-        logger.info(f"Variable mapping analysis: {debug_info['mapping_summary']['overall_coverage']:.1f}% coverage")
+        logger.debug(f"Variable mapping analysis: {debug_info['mapping_summary']['overall_coverage']:.1f}% coverage")
         for instrument, missing_vars in debug_info['missing_variables'].items():
             if missing_vars:
                 logger.warning(f"Missing variables for {instrument}: {missing_vars[:5]}{'...' if len(missing_vars) > 5 else ''}")
@@ -501,12 +501,12 @@ def process_instruments_etl(
         )
 
     logger.info(
-        f"🎯 VALIDATION SUMMARY: {len(df_errors)} errors found across {len(config.instruments)} instruments"
+        f"VALIDATION SUMMARY: {len(df_errors)} errors found across {len(config.instruments)} instruments"
     )
 
     print("")
     print("="*80)
-    print("🎉 ETL INSTRUMENT PROCESSING COMPLETED SUCCESSFULLY")
+    print("ETL INSTRUMENT PROCESSING COMPLETED SUCCESSFULLY")
     print("="*80)
 
     return (
@@ -577,8 +577,8 @@ def export_results_to_csv(
             index=False,
         )
 
-    print(f"📁 KEY SUMMARY FILES SAVED TO: {output_dir}")
-    print(f"📁 DETAILED LOGS SAVED TO: {validation_logs_dir}")
+    print("Final Error Dataset Created")
+    print("Validation Logs Created")
 
 
 # ── Aggregate Error Count Report ────────────────────────────────────────────────
@@ -652,7 +652,7 @@ def generate_aggregate_error_count_report(
     # Use passed parameters for consistent timestamps across all files
     path = output_dir / f"QC_Report_ErrorCount_{date_tag}_{time_tag}.csv"
     report.to_csv(path, index=False)
-    print(f"📊 AGGREGATE ERROR COUNT REPORT GENERATED AND SAVED TO: {path}")
+    print("Aggregate Report Created")
 
 
 # ── Tool Status Reports ─────────────────────────────────────────────────────────
@@ -734,7 +734,7 @@ def generate_tool_status_reports(
     # Save the report to CSV
     report_path = output_dir / f"QC_Status_Report_{file_suffix}.csv"
     status_report_df.to_csv(report_path, index=False)
-    print(f"📊 STATUS REPORT GENERATED AND SAVED TO: {report_path}")
+    print("Status Report Created")
 
     # --- Export selected columns to JSON ---
     json_columns = [
@@ -759,6 +759,6 @@ def generate_tool_status_reports(
         json_path.parent.mkdir(parents=True, exist_ok=True)
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(json_records, f, indent=2)
-        print(f"📊 STATUS REPORT JSON EXPORTED TO: {json_path}")
+        print("Status Report JSON File Created")
     else:
         logger.warning("Upload ready path not configured - skipping JSON export")

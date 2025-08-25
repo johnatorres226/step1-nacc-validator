@@ -690,7 +690,7 @@ def prepare_instrument_data_cache(
                 data_df, instrument, rules_cache, primary_key_field
             )
             instrument_data_cache[instrument] = instrument_df
-            logger.info(
+            logger.debug(
                 f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(instrument_df.columns) if not instrument_df.empty else 0} columns"
             )
             logger.debug(
@@ -712,7 +712,7 @@ def prepare_instrument_data_cache(
                 has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
                 instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
             instrument_data_cache[instrument] = instrument_df
-            logger.info(f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(relevant_cols)} columns")
+            logger.debug(f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(relevant_cols)} columns")
             logger.debug(f"Variables for {instrument}: {instrument_vars[:10]}{'...' if len(instrument_vars) > 10 else ''}")
         else:
             logger.warning(f"No relevant columns found for instrument '{instrument}'")
@@ -776,7 +776,7 @@ def build_complete_visits_df(
             complete_visits.append((ptid, event))
 
     if not complete_visits:
-        logger.info("ETL identified 0 truly complete visits.")
+        logger.debug("ETL identified 0 truly complete visits.")
         return pd.DataFrame(), []
 
     # Create the summary DataFrame
@@ -790,7 +790,7 @@ def build_complete_visits_df(
     # Get the list of (primary_key, event) tuples for downstream filtering
     complete_visits_tuples = list(complete_visits_summary[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
 
-    logger.info(f"ETL identified {len(report_df)} truly complete visits.")
+    logger.debug(f"ETL identified {len(report_df)} truly complete visits.")
     
     return report_df, complete_visits_tuples
 

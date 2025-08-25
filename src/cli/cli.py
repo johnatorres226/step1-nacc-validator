@@ -15,9 +15,6 @@ from datetime import datetime
 
 import click
 from rich.console import Console
-from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
 
 from pipeline.config_manager import (
     QCConfig,
@@ -78,56 +75,32 @@ def config(detailed: bool, json_output: bool):
         console.print_json(data=status)
         return
 
-    panel_title = "[TARGET] UDSv4 QC Validator Status"
     if status['valid']:
-        panel = Panel.fit("[CHECK] All systems ready for QC validation!",
-                          title=panel_title, border_style="green")
+        console.print("UDSv4 QC Validator Status: Ready")
     else:
-        panel = Panel.fit("[WARNING] Configuration issues detected",
-                          title=panel_title, border_style="yellow")
-    console.print(panel)
+        console.print("UDSv4 QC Validator Status: Configuration issues detected")
 
-    config_table = Table(title="System Configuration")
-    config_table.add_column("Component", style="cyan", width=20)
-    config_table.add_column("Status", width=15)
-    config_table.add_column("Details", style="dim")
-
-    config_table.add_row(
-        "Overall System",
-        "[CHECK] Ready" if status['valid'] else "[X] Issues Found",
-        f"{len(status['errors'])} issues" if status['errors'] else "All components ready",
-    )
-    config_table.add_row(
-        "REDCap API",
-        "[CHECK] Connected" if status['redcap_configured'] else "[X] Not Configured",
-        "API credentials found" if status['redcap_configured'] else "Check .env file",
-    )
-    config_table.add_row(
-        "Output Directory",
-        "[CHECK] Ready" if status['output_path_exists'] else "[WARNING] Will be created",
-        f"Path: {get_config().output_path}",
-    )
-    config_table.add_row(
-        "Validation Rules",
-        "[CHECK] Loaded" if status['json_rules_path_exists'] else "[X] Missing",
-        "JSON rules directory found" if status['json_rules_path_exists'] else "Check JSON_RULES_PATH",
-    )
-    console.print(config_table)
+    console.print("\nSystem Configuration:")
+    
+    console.print(f"Overall System: {'Ready' if status['valid'] else 'Issues Found'}")
+    if status['errors']:
+        console.print(f"  Issues: {len(status['errors'])}")
+    
+    console.print(f"REDCap API: {'Connected' if status['redcap_configured'] else 'Not Configured'}")
+    console.print(f"Output Directory: {'Ready' if status['output_path_exists'] else 'Will be created'}")
+    console.print(f"Validation Rules: {'Loaded' if status['json_rules_path_exists'] else 'Missing'}")
 
     if detailed and 'legacy_compatibility' in status:
         legacy_info = status['legacy_compatibility']
-        data_table = Table(title="Data Components")
-        data_table.add_column("Component", style="cyan")
-        data_table.add_column("Count", style="green")
-        data_table.add_row("Instruments", str(legacy_info.get('instruments_count', 0)))
-        data_table.add_row("Events", str(legacy_info.get('events_count', 0)))
-        data_table.add_row("JSON Mappings", str(legacy_info.get('mapping_count', 0)))
-        console.print(data_table)
+        console.print("\nData Components:")
+        console.print(f"Instruments: {legacy_info.get('instruments_count', 0)}")
+        console.print(f"Events: {legacy_info.get('events_count', 0)}")
+        console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
     if status['errors']:
-        console.print("\n[red][WARNING] Configuration Issues:[/red]")
+        console.print("\nConfiguration Issues:")
         for error in status['errors']:
-            console.print(f"  [red]•[/red] {error}")
+            console.print(f"  - {error}")
 
 
 @cli.command()
@@ -163,7 +136,7 @@ def run(
     # Validate configuration before proceeding
     config_errors = base_config.validate()
     if config_errors:
-        console.print("[bold red]Configuration errors detected:[/bold red]")
+        console.print("Configuration errors detected:")
         for error in config_errors:
             console.print(f"- {error}")
         return
@@ -189,40 +162,33 @@ def run(
     _display_run_summary(base_config)
 
     try:
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
-        ) as progress:
-            progress.add_task(description="", total=None)
-            run_report_pipeline(config=base_config)
+        console.print("Processing...")
+        run_report_pipeline(config=base_config)
 
-        console.print(f"[bold green]QC Run Complete![/bold green]")
-        console.print(f"Results saved to: [cyan]{Path(base_config.output_path).resolve()}[/cyan]")
+        console.print(f"Results saved: {Path(base_config.output_path).resolve()}")
+        console.print("QC Run Complete")
 
     except Exception as e:
         logger.error(f"An unexpected error occurred during the QC run: {e}", exc_info=True)
-        console.print(f"[bold red]An error occurred. See logs for details.[/bold red]")
+        console.print("An error occurred. See logs for details.")
         sys.exit(1)
 
 
 def _display_run_summary(config: QCConfig):
     """Displays a summary of the QC run configuration."""
     mode_title = config.mode.replace('_', ' ').title() if config.mode else "N/A"
-    table = Table(title=f"📊 QC Run Configuration (Mode: {mode_title})")
-    table.add_column("Parameter", style="cyan")
-    table.add_column("Value", style="magenta")
-
-    table.add_row("User Initials", config.user_initials or "N/A")
-    table.add_row("Output Directory", str(Path(config.output_path).resolve()))
-    table.add_row("Log Level", config.log_level)
-    table.add_row("Events", "All" if not config.events else ", ".join(config.events))
-    table.add_row("Participants", "All" if not config.ptid_list else ", ".join(config.ptid_list))
+    console.print(f"\nQC Run Configuration (Mode: {mode_title})")
+    
+    console.print(f"User Initials: {config.user_initials or 'N/A'}")
+    console.print(f"Output Directory: {Path(config.output_path).resolve()}")
+    console.print(f"Log Level: {config.log_level}")
+    console.print(f"Events: {'All' if not config.events else ', '.join(config.events)}")
+    console.print(f"Participants: {'All' if not config.ptid_list else ', '.join(config.ptid_list)}")
 
     if config.mode == 'custom':
-        table.add_row("Include Previously QCed", "Yes" if config.include_qced else "No")
-
-    console.print(table)
+        console.print(f"Include Previously QCed: {'Yes' if config.include_qced else 'No'}")
+    
+    console.print("")
 
 
 

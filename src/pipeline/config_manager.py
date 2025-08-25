@@ -488,7 +488,7 @@ def get_config(force_reload: bool = False, skip_validation: bool = False) -> QCC
                 # Use a simple print for critical config errors, as logging may not be configured yet
                 print("Configuration errors found. Cannot continue.")
                 for error in errors:
-                    print(f"  • {error}")
+                    print(f"  - {error}")
                 raise SystemExit(1)  # Exit if configuration is invalid
     return _config_instance
 
