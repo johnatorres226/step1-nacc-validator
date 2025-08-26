@@ -550,55 +550,36 @@ def prepare_instrument_data_cache(
     """
     Prepares a cache of DataFrames, one for each instrument.
 
-    Each DataFrame is filtered to contain only the columns relevant to that
-    instrument, improving memory usage and processing speed.
+    This function now uses the strategy pattern through InstrumentDataCache
+    for improved maintainability and reduced complexity.
 
     Args:
         data_df: The main DataFrame containing all data.
         instrument_list: The list of instruments to process.
-        instrument_variable_map: A map of instruments to their variables.
-        rules_cache: A cache of loaded JSON rules (for dynamic instruments).
+        instrument_variable_map: A map of instruments to their variables (legacy parameter).
+        rules_cache: A cache of loaded JSON rules.
         primary_key_field: The name of the primary key field.
 
     Returns:
         A dictionary mapping each instrument name to its filtered DataFrame.
     """
-    instrument_data_cache = {}
-    core_cols = get_core_columns()
-    for instrument in instrument_list:
-        if is_dynamic_rule_instrument(instrument):
-            # Use the new consolidated processor
-            processor = DynamicInstrumentProcessor(instrument)
-            instrument_df, instrument_variables = processor.prepare_data(data_df, primary_key_field)
-            instrument_data_cache[instrument] = instrument_df
-            logger.debug(
-                f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(instrument_df.columns) if not instrument_df.empty else 0} columns"
-            )
-            logger.debug(
-                f"Variables for {instrument}: {instrument_variables[:10]}{'...' if len(instrument_variables) > 10 else ''}"
-            )
-            continue
-        relevant_cols = [col for col in core_cols if col in data_df.columns]
-        instrument_vars = instrument_variable_map.get(instrument, [])
-        for var in instrument_vars:
-            if var in data_df.columns:
-                relevant_cols.append(var)
-        completion_cols = [col for col in get_completion_columns() if col in data_df.columns]
-        relevant_cols.extend(completion_cols)
-        relevant_cols = list(set([col for col in relevant_cols if col in data_df.columns]))
-        if relevant_cols:
-            instrument_df = data_df[relevant_cols].copy()
-            non_core_cols = [col for col in relevant_cols if col not in core_cols and not col.endswith('_complete')]
-            if non_core_cols:
-                has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
-                instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
-            instrument_data_cache[instrument] = instrument_df
-            logger.debug(f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(relevant_cols)} columns")
-            logger.debug(f"Variables for {instrument}: {instrument_vars[:10]}{'...' if len(instrument_vars) > 10 else ''}")
-        else:
-            logger.warning(f"No relevant columns found for instrument '{instrument}'")
-            instrument_data_cache[instrument] = pd.DataFrame()
-    return instrument_data_cache
+    # Import here to avoid circular dependencies
+    from .context import ProcessingContext
+    from .instrument_processors import InstrumentDataCache
+    from .config_manager import get_config
+    
+    # Create processing context
+    context = ProcessingContext(
+        data_df=data_df,
+        instrument_list=instrument_list,
+        rules_cache=rules_cache,
+        primary_key_field=primary_key_field,
+        config=get_config()
+    )
+    
+    # Use strategy pattern through InstrumentDataCache
+    cache = InstrumentDataCache(context)
+    return cache.prepare_all()
 
 def build_complete_visits_df(
     data_df: pd.DataFrame,

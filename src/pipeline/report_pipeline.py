@@ -27,11 +27,14 @@ import datetime
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from dataclasses import asdict
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from .context import ExportConfiguration, ReportConfiguration
 
 from pipeline.config_manager import (
     QCConfig,
@@ -171,6 +174,209 @@ def _collect_processed_records_info(
 
 
 # ───────────────────────────────── Data Validation with Json Rules ─────────────────────────────────
+
+class ValidationEngine:
+    """
+    Optimized validation engine with caching and performance improvements.
+    
+    This maintains the per-record validation approach while optimizing
+    supporting infrastructure for better performance.
+    """
+    
+    def __init__(self):
+        """Initialize validation engine with caches."""
+        self._schema_cache: Dict[str, Any] = {}
+        self._rule_cache: Dict[str, Any] = {}
+        self._qc_cache: Dict[str, QualityCheck] = {}
+    
+    def _get_cache_key(self, instrument_name: str, variant: str = "") -> str:
+        """Generate cache key for instrument and variant."""
+        return f"{instrument_name}:{variant}" if variant else instrument_name
+    
+    def _get_cached_schema_and_rules(
+        self,
+        record: Dict[str, Any],
+        instrument_name: str,
+        default_rules: Dict[str, Any],
+        primary_key_field: str,
+    ) -> Tuple[QualityCheck, Dict[str, Any]]:
+        """
+        Get cached schema and rules with optimized lookups.
+        
+        This replaces _get_schema_and_rules_for_record with caching.
+        """
+        if is_dynamic_rule_instrument(instrument_name):
+            discriminant_var = get_discriminant_variable(instrument_name)
+            variant = str(record.get(discriminant_var, "")).upper()
+            
+            # Fallback to first variant if missing
+            if not variant:
+                rule_mappings = get_rule_mappings(instrument_name)
+                variant = list(rule_mappings.keys())[0]
+            
+            cache_key = self._get_cache_key(instrument_name, variant)
+        else:
+            cache_key = self._get_cache_key(instrument_name)
+            variant = ""
+        
+        # Check QualityCheck cache first
+        if cache_key in self._qc_cache:
+            qc = self._qc_cache[cache_key]
+            rules = self._rule_cache.get(cache_key, default_rules)
+            return qc, rules
+        
+        # Build schema and QualityCheck if not cached
+        if is_dynamic_rule_instrument(instrument_name):
+            # Get cached schema or build it
+            if cache_key not in self._schema_cache:
+                cerb_schema = build_cerberus_schema_for_instrument(
+                    instrument_name, 
+                    include_temporal_rules=False,
+                    include_compatibility_rules=True
+                )
+                self._schema_cache[cache_key] = cerb_schema[variant]
+                
+                # Cache rules for this variant
+                dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
+                self._rule_cache[cache_key] = dynamic_rules[variant]
+            
+            sub_schema = self._schema_cache[cache_key]
+            rules = self._rule_cache[cache_key]
+            qc = QualityCheck(pk_field=primary_key_field, schema=sub_schema, datastore=None)
+        else:
+            # Standard instrument
+            if cache_key not in self._schema_cache:
+                cerb_schema = build_cerberus_schema_for_instrument(
+                    instrument_name,
+                    include_temporal_rules=False,
+                    include_compatibility_rules=True
+                )
+                self._schema_cache[cache_key] = cerb_schema
+                self._rule_cache[cache_key] = default_rules
+            
+            schema = self._schema_cache[cache_key]
+            rules = self._rule_cache[cache_key]
+            qc = QualityCheck(pk_field=primary_key_field, schema=schema, datastore=None)
+        
+        # Cache QualityCheck instance
+        self._qc_cache[cache_key] = qc
+        return qc, rules
+    
+    def validate_data_optimized(
+        self,
+        data: pd.DataFrame,
+        validation_rules: Dict[str, Any],
+        instrument_name: str,
+        primary_key_field: str,
+        event_name: Optional[str] = None,
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """
+        Optimized validation with caching and reduced object creation.
+        
+        Maintains per-record processing while optimizing supporting infrastructure.
+        """
+        errors: List[Dict[str, Any]] = []
+        validation_logs: List[Dict[str, Any]] = []
+        passed_validations: List[Dict[str, Any]] = []
+
+        df = data.copy()
+        if event_name:
+            df = df[df["redcap_event_name"] == event_name]
+
+        # Pre-compute rule file mapping
+        if is_dynamic_rule_instrument(instrument_name):
+            instrument_json_mapping = get_rule_mappings(instrument_name)
+        else:
+            instrument_json_mapping = get_instrument_json_mapping()
+            
+        rule_files = instrument_json_mapping.get(instrument_name, [])
+        rule_file_str = ",".join(rule_files) if isinstance(rule_files, list) else rule_files
+
+        # --- Optimized per-record validation ---
+        for _, row in df.iterrows():
+            record = row.to_dict()
+
+            qc, rules = self._get_cached_schema_and_rules(
+                record, instrument_name, validation_rules, primary_key_field
+            )
+
+            result = qc.validate_record(record)
+
+            # Optimized error logging with reduced object creation
+            self._log_validation_results_optimized(
+                record, rules, result.errors, qc, instrument_name,
+                errors, validation_logs, passed_validations,
+                primary_key_field, rule_file_str
+            )
+
+        return errors, validation_logs, passed_validations
+    
+    def _log_validation_results_optimized(
+        self,
+        record: Dict[str, Any],
+        rules: Dict[str, Any],
+        errs_dict: Dict[str, Any],
+        qc: QualityCheck,
+        instrument_name: str,
+        errors: List[Dict[str, Any]],
+        validation_logs: List[Dict[str, Any]],
+        passed_validations: List[Dict[str, Any]],
+        primary_key_field: str,
+        rule_file_str: str,
+    ):
+        """
+        Optimized validation result logging with reduced overhead.
+        """
+        pk_val = record.get(primary_key_field)
+        event = record.get("redcap_event_name")
+
+        # Process all variables in a single loop to reduce overhead
+        for var, var_rules in rules.items():
+            raw_val = record.get(var)
+            str_val = str(raw_val) if raw_val is not None else ""
+            interp_val = qc.validator.cast_record({var: str_val}).get(var, raw_val)
+
+            expected_t = var_rules.get("type")
+            fld_errs = errs_dict.get(var, [])
+            err_msg = fld_errs[0] if fld_errs else None
+
+            # Pre-computed common data
+            base_log_data = {
+                primary_key_field: pk_val,
+                "variable": var,
+                "redcap_event_name": event,
+                "instrument_name": instrument_name,
+            }
+
+            # Always add to validation logs
+            validation_logs.append({
+                **base_log_data,
+                "json_rule": json.dumps(var_rules),
+                "rule_file": rule_file_str,
+            })
+
+            if err_msg:
+                # Add to errors
+                errors.append({
+                    **base_log_data,
+                    "current_value": interp_val,
+                    "expected_value": expected_t,
+                    "error": err_msg,
+                })
+            else:
+                # Add to passed validations
+                passed_validations.append({
+                    **base_log_data,
+                    "current_value": interp_val,
+                    "json_rule": json.dumps(var_rules),
+                    "rule_file": rule_file_str,
+                })
+
+
+# Global validation engine instance for reuse
+_validation_engine = ValidationEngine()
+
+
 def validate_data(
     data: pd.DataFrame,
     validation_rules: Dict[str, Any],
@@ -181,9 +387,8 @@ def validate_data(
     """
     Validates a DataFrame of instrument data against a set of rules using a standardized process.
 
-    This function uses a unified validation approach that processes all records
-    individually through the QualityCheck validation system. This ensures
-    consistent validation behavior across all instrument types and rule complexity.
+    This function now uses an optimized validation engine while maintaining the
+    per-record validation approach required for ETL modularity and nacc_form_validator compatibility.
 
     Args:
         data: DataFrame containing the data for a specific instrument.
@@ -198,42 +403,9 @@ def validate_data(
         - A list of dictionaries representing detailed validation logs.
         - A list of dictionaries for validations that passed.
     """
-    errors: List[Dict[str, Any]] = []
-    validation_logs: List[Dict[str, Any]] = []
-    passed_validations: List[Dict[str, Any]] = []
-
-    df = data.copy()
-    if event_name:
-        df = df[df["redcap_event_name"] == event_name]
-
-    # Build schema without temporal rules since datastore is not available in this context
-    cerb_schema = build_cerberus_schema_for_instrument(
-        instrument_name, 
-        include_temporal_rules=False,  # Skip temporal rules when datastore is not available
-        include_compatibility_rules=True  # Keep compatibility rules for proper validation
+    return _validation_engine.validate_data_optimized(
+        data, validation_rules, instrument_name, primary_key_field, event_name
     )
-
-    # --- Standardized per-record validation for all instruments ---
-    for _, row in df.iterrows():
-        record = row.to_dict()
-
-        qc, rules = _get_schema_and_rules_for_record(
-            record, cerb_schema, instrument_name, validation_rules, primary_key_field
-        )
-
-        result = qc.validate_record(record)
-
-        _log_validation_results(
-            record,
-            rules,
-            result.errors,
-            qc,
-            instrument_name,
-            errors,
-            validation_logs,
-            passed_validations,
-            primary_key_field,
-        )
 
     return errors, validation_logs, passed_validations
 
@@ -527,6 +699,9 @@ def export_results_to_csv(
     """
     Exports the results of the ETL process to CSV files in organized directories.
 
+    This function now uses ExportConfiguration for better parameter management.
+    Legacy interface maintained for backward compatibility.
+
     Args:
         df_errors: DataFrame of all validation errors.
         df_logs: DataFrame of comprehensive validation logs.
@@ -538,38 +713,71 @@ def export_results_to_csv(
         date_tag: Date tag string for consistent naming.
         time_tag: Time tag string for consistent naming.
     """
-    # Use passed parameters for consistent timestamps across all files
+    # Import here to avoid circular dependencies
+    from .context import ExportConfiguration
+    
+    # Create export configuration
+    export_config = ExportConfiguration(
+        output_dir=Path(output_dir),
+        date_tag=date_tag,
+        time_tag=time_tag,
+        include_logs=True,
+        include_passed=True,
+        include_detailed_logs=True
+    )
+    
+    # Use the new export function
+    export_results_with_config(
+        df_errors, df_logs, df_passed, all_records_df, 
+        complete_visits_df, detailed_validation_logs_df, export_config
+    )
 
+
+def export_results_with_config(
+    df_errors: pd.DataFrame,
+    df_logs: pd.DataFrame,
+    df_passed: pd.DataFrame,
+    all_records_df: pd.DataFrame,
+    complete_visits_df: pd.DataFrame,
+    detailed_validation_logs_df: pd.DataFrame,
+    export_config: 'ExportConfiguration',
+):
+    """
+    Exports results using structured configuration object.
+
+    Args:
+        df_errors: DataFrame of all validation errors.
+        df_logs: DataFrame of comprehensive validation logs.
+        df_passed: DataFrame of all passed validations.
+        all_records_df: DataFrame with info on all processed records.
+        complete_visits_df: DataFrame of completed visits.
+        detailed_validation_logs_df: DataFrame of pre-validation screening logs.
+        export_config: Configuration object for export settings.
+    """
     # --- Save Key Summary Files to the Run-Specific Directory ---
     if not df_errors.empty:
-        df_errors.to_csv(output_dir / f"Final_Error_Dataset_{date_tag}_{time_tag}.csv", index=False)
+        error_filename = export_config.get_report_filename("Final_Error_Dataset")
+        df_errors.to_csv(export_config.output_dir / error_filename, index=False)
 
     if not complete_visits_df.empty:
-        complete_visits_df.to_csv(
-            output_dir / f"PTID_CompletedVisits_{date_tag}_{time_tag}.csv", index=False
-        )
-
-    # --- Create Subdirectories for Detailed Logs ---
-    validation_logs_dir = output_dir / "Validation_Logs"
-    validation_logs_dir.mkdir(exist_ok=True)
+        visits_filename = export_config.get_report_filename("PTID_CompletedVisits")
+        complete_visits_df.to_csv(export_config.output_dir / visits_filename, index=False)
 
     # --- Save Detailed Logs to Validation_Logs Subdirectory ---
-    if not df_logs.empty:
-        df_logs.to_csv(
-            validation_logs_dir / f"Log_RulesValidation_{date_tag}_{time_tag}.csv",
-            index=False,
-        )
+    if export_config.include_logs or export_config.include_passed or export_config.include_detailed_logs:
+        validation_logs_dir = export_config.get_validation_logs_dir()
 
-    if not df_passed.empty:
-        df_passed.to_csv(
-            validation_logs_dir / f"Log_PassedValidations_{date_tag}_{time_tag}.csv", index=False
-        )
+        if export_config.include_logs and not df_logs.empty:
+            logs_filename = export_config.get_report_filename("Log_RulesValidation")
+            df_logs.to_csv(validation_logs_dir / logs_filename, index=False)
 
-    if not detailed_validation_logs_df.empty:
-        detailed_validation_logs_df.to_csv(
-            validation_logs_dir / f"Log_EventCompletenessScreening_{date_tag}_{time_tag}.csv",
-            index=False,
-        )
+        if export_config.include_passed and not df_passed.empty:
+            passed_filename = export_config.get_report_filename("Log_PassedValidations")
+            df_passed.to_csv(validation_logs_dir / passed_filename, index=False)
+
+        if export_config.include_detailed_logs and not detailed_validation_logs_df.empty:
+            detailed_filename = export_config.get_report_filename("Log_EventCompletenessScreening")
+            detailed_validation_logs_df.to_csv(validation_logs_dir / detailed_filename, index=False)
 
     print("Final Error Dataset Created")
     print("Validation Logs Created")
@@ -588,6 +796,8 @@ def generate_aggregate_error_count_report(
     """
     Summarizes error counts per ptid & event, writing the report to the output directory.
     
+    Legacy interface maintained for backward compatibility.
+    
     Args:
         df_errors: DataFrame containing all validation errors.
         instrument_list: List of all instruments included in the run.
@@ -597,12 +807,49 @@ def generate_aggregate_error_count_report(
         date_tag: Date tag string for consistent naming.
         time_tag: Time tag string for consistent naming.
     """
+    # Import here to avoid circular dependencies
+    from .context import ProcessingContext, ExportConfiguration, ReportConfiguration
+    from .config_manager import get_config
+    
+    # Create configuration objects
+    export_config = ExportConfiguration(
+        output_dir=Path(output_dir),
+        date_tag=date_tag,
+        time_tag=time_tag
+    )
+    
+    report_config = ReportConfiguration(
+        qc_run_by="N/A",  # Not available in legacy interface
+        primary_key_field=primary_key_field,
+        instruments=instrument_list,
+        export_config=export_config
+    )
+    
+    # Use the new function
+    generate_aggregate_report_with_config(
+        df_errors, all_records_df, report_config
+    )
+
+
+def generate_aggregate_report_with_config(
+    df_errors: pd.DataFrame,
+    all_records_df: pd.DataFrame,
+    report_config: 'ReportConfiguration',
+):
+    """
+    Generate aggregate error count report using configuration objects.
+    
+    Args:
+        df_errors: DataFrame containing all validation errors.
+        all_records_df: DataFrame containing all records that were processed.
+        report_config: Configuration for report generation.
+    """
     if all_records_df.empty:
         logger.warning("No records found — skipping aggregate error report.")
         return
 
     combos = (
-        all_records_df[[primary_key_field, "redcap_event_name"]]
+        all_records_df[[report_config.primary_key_field, "redcap_event_name"]]
         .drop_duplicates()
         .reset_index()
         .drop(columns="index")
@@ -610,43 +857,45 @@ def generate_aggregate_error_count_report(
 
     if df_errors.empty:
         report = combos.copy()
-        for instr in instrument_list:
+        for instr in report_config.instruments:
             report[instr] = 0
     else:
         counts = (
             df_errors.groupby(
-                [primary_key_field, "redcap_event_name", "instrument_name"]
+                [report_config.primary_key_field, "redcap_event_name", "instrument_name"]
             )
             .size()
             .reset_index(name="error_count")
         )
         pivot = counts.pivot_table(
-            index=[primary_key_field, "redcap_event_name"],
+            index=[report_config.primary_key_field, "redcap_event_name"],
             columns="instrument_name",
             values="error_count",
             fill_value=0,
         ).reset_index()
         report = combos.merge(
-            pivot, on=[primary_key_field, "redcap_event_name"], how="left"
+            pivot, on=[report_config.primary_key_field, "redcap_event_name"], how="left"
         )
 
-    for instr in instrument_list:
+    for instr in report_config.instruments:
         if instr not in report.columns:
             report[instr] = 0
         report[instr] = report[instr].fillna(0).astype(int)
 
-    report["total_error_count"] = report[instrument_list].sum(axis=1)
+    report["total_error_count"] = report[report_config.instruments].sum(axis=1)
     cols = (
-        [primary_key_field, "redcap_event_name"]
-        + instrument_list
+        [report_config.primary_key_field, "redcap_event_name"]
+        + report_config.instruments
         + ["total_error_count"]
     )
     report = report[cols]
 
-    # Use passed parameters for consistent timestamps across all files
-    path = output_dir / f"QC_Report_ErrorCount_{date_tag}_{time_tag}.csv"
-    report.to_csv(path, index=False)
-    print("Aggregate Report Created")
+    # Save using export configuration
+    if report_config.export_config:
+        filename = report_config.export_config.get_report_filename("Report_ErrorCount")
+        path = report_config.export_config.output_dir / filename
+        report.to_csv(path, index=False)
+        print("Aggregate Report Created")
 
 
 # ── Tool Status Reports ─────────────────────────────────────────────────────────
