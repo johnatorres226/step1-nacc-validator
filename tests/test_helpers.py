@@ -3,6 +3,7 @@
 import pytest
 import json
 import pandas as pd
+import warnings
 from pathlib import Path
 from unittest.mock import patch
 
@@ -103,23 +104,24 @@ def sample_data():
     return pd.DataFrame(data)
 
 def test_run_vectorized_simple_checks(sample_data):
-    """Test the _run_vectorized_simple_checks function."""
+    """Test the deprecated _run_vectorized_simple_checks function."""
     rules = {
         'AGE': {'type': 'integer', 'min': 18, 'max': 90},
         'SEX': {'type': 'integer', 'allowed': [1, 2]},
         'POSTAL': {'type': 'string', 'regex': r'^\d{5}(-\d{4})?$'}
     }
     
-    errors, passed_df = helpers._run_vectorized_simple_checks(sample_data, rules, "test_instrument")
+    # Test that the deprecated function still works but doesn't perform validation
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        errors, passed_df = helpers._run_vectorized_simple_checks(sample_data, rules, "test_instrument")
+        
+        # Check that deprecation warning is raised
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert "deprecated" in str(w[0].message)
     
-    # Check errors
-    assert len(errors) == 5  # Updated to reflect actual errors found
-    error_vars = [e['variable'] for e in errors]
-    assert error_vars.count('AGE') == 1
-    assert error_vars.count('SEX') == 2
-    assert error_vars.count('POSTAL') == 2  # Updated to match actual errors
-    
-    # Check passed DataFrame - ptids 1 and 3 pass all checks
-    assert len(passed_df) == 2
-    assert passed_df.iloc[0]['ptid'] == 1  # ptid 1 passes all checks
-    assert passed_df.iloc[1]['ptid'] == 3  # ptid 3 also passes all checks
+    # Function should return empty errors and the original DataFrame
+    assert len(errors) == 0  # No validation performed
+    assert len(passed_df) == len(sample_data)  # All data passed through
+    assert passed_df.equals(sample_data)  # Data unchanged

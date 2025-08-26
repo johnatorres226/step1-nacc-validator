@@ -7,6 +7,18 @@ It includes utilities for:
 - Handling dynamic rule selection for complex instruments.
 - Preprocessing data for validation.
 - Generating detailed logs and reports.
+
+REFACTORING NOTE: As of the validation standardization refactor, the simple checks
+validation system has been completely removed. The following functions are deprecated:
+- process_dynamic_validation(): Use the unified validation in report_pipeline.validate_data()
+- _run_vectorized_simple_checks(): Use the standardized per-record validation approach
+
+The validation classes (ValidationResult, BaseValidator, RangeValidator, etc.) have 
+been removed as part of the cleanup. All validation now uses the unified approach
+through QualityCheck.validate_record().
+
+These deprecated functions are maintained for backward compatibility but will be 
+removed in a future version.
 """
 from typing import Tuple, List, Dict, Any, Optional
 import pandas as pd
@@ -21,259 +33,144 @@ from .config_manager import (
 )
 from .logging_config import get_logger
 from .instrument_mapping import load_dynamic_rules_for_instrument
-from abc import ABC, abstractmethod
 
 logger = get_logger(__name__)
 
 
 # =============================================================================
-# VALIDATION CLASSES - MODULAR SYSTEM
+# DYNAMIC INSTRUMENT PROCESSOR (NEW CONSOLIDATED APPROACH)
 # =============================================================================
 
-class ValidationResult:
-    """Container for validation results."""
+class DynamicInstrumentProcessor:
+    """
+    Consolidated processor for dynamic rule instruments.
     
-    def __init__(self):
-        self.errors: List[Dict[str, Any]] = []
-        self.valid_mask: Optional[pd.Series] = None
-        
-    def add_error(self, ptid: str, event_name: str, instrument_name: str, 
-                  variable: str, current_value: Any, expected_value: Any, error_msg: str):
-        """Add a validation error to the results."""
-        self.errors.append({
-            "ptid": ptid,
-            "redcap_event_name": event_name,
-            "instrument_name": instrument_name,
-            "variable": variable,
-            "current_value": current_value,
-            "expected_value": expected_value,
-            "error": error_msg
-        })
+    This class centralizes all dynamic instrument processing logic that was
+    previously scattered across multiple functions, providing a unified
+    interface for handling instruments with variable-based rule selection.
+    """
     
-    def combine_with(self, other: 'ValidationResult'):
-        """Combine this result with another validation result."""
-        self.errors.extend(other.errors)
-        if self.valid_mask is not None and other.valid_mask is not None:
-            self.valid_mask &= other.valid_mask
-
-
-class BaseValidator(ABC):
-    """Abstract base class for all validators."""
-    
-    @abstractmethod
-    def validate(self, df: pd.DataFrame, field: str, config: Dict[str, Any], 
-                 instrument_name: str) -> ValidationResult:
-        """Validate a field according to its configuration."""
-        pass
-
-
-class RangeValidator(BaseValidator):
-    """Validates min/max range constraints."""
-    
-    def validate(self, df: pd.DataFrame, field: str, config: Dict[str, Any], 
-                 instrument_name: str) -> ValidationResult:
-        result = ValidationResult()
-        result.valid_mask = pd.Series(True, index=df.index)
-        
-        if field not in df.columns:
-            return result
-            
-        series = df[field]
-        nullable = config.get("nullable", False)
-        dtype = config.get("type")
-        mn_raw, mx_raw = config.get("min"), config.get("max")
-        
-        if mn_raw is None and mx_raw is None:
-            return result
-            
-        mask = pd.Series(True, index=df.index)
-        
-        if dtype in ("date", "datetime"):
-            dt_series = pd.to_datetime(series, errors="coerce")
-            mn_date = pd.to_datetime(mn_raw, errors="coerce") if mn_raw is not None else None
-            mx_date = pd.to_datetime(mx_raw, errors="coerce") if mx_raw is not None else None
-            
-            if mn_date is not None:
-                mask &= dt_series >= mn_date
-            if mx_date is not None:
-                mask &= dt_series <= mx_date
-            if nullable:
-                mask |= dt_series.isna()
-        else:
-            num = pd.to_numeric(series, errors="coerce")
-            mn, mx = None, None
-            try:
-                mn = float(mn_raw) if mn_raw is not None else None
-            except (TypeError, ValueError):
-                pass
-            try:
-                mx = float(mx_raw) if mx_raw is not None else None
-            except (TypeError, ValueError):
-                pass
-            
-            if mn is not None:
-                mask &= num >= mn
-            if mx is not None:
-                mask &= num <= mx
-            if nullable:
-                mask |= num.isna()
-        
-        # Add errors for invalid values
-        bad_indices = df.index[~mask]
-        for idx in bad_indices:
-            row = df.loc[idx]
-            result.add_error(
-                ptid=row["ptid"],
-                event_name=row["redcap_event_name"],
-                instrument_name=instrument_name,
-                variable=field,
-                current_value=row[field],
-                expected_value=f"[{mn_raw},{mx_raw}]",
-                error_msg=f"Value {row[field]} outside [{mn_raw},{mx_raw}]"
-            )
-        
-        result.valid_mask = mask
-        return result
-
-
-class RegexValidator(BaseValidator):
-    """Validates regex/pattern constraints."""
-    
-    def validate(self, df: pd.DataFrame, field: str, config: Dict[str, Any], 
-                 instrument_name: str) -> ValidationResult:
-        result = ValidationResult()
-        result.valid_mask = pd.Series(True, index=df.index)
-        
-        if field not in df.columns:
-            return result
-            
-        pattern = config.get("regex")
-        if not pattern:
-            return result
-            
-        series = df[field]
-        nullable = config.get("nullable", False)
-        
-        mask = series.astype(str).str.match(pattern)
-        if nullable:
-            mask |= series.isna() | (series == "")
-        
-        # Add errors for invalid values
-        bad_indices = df.index[~mask]
-        for idx in bad_indices:
-            row = df.loc[idx]
-            result.add_error(
-                ptid=row["ptid"],
-                event_name=row["redcap_event_name"],
-                instrument_name=instrument_name,
-                variable=field,
-                current_value=row[field],
-                expected_value=pattern,
-                error_msg=f"'{row[field]}' does not match /{pattern}/"
-            )
-        
-        result.valid_mask = mask
-        return result
-
-
-class AllowedValuesValidator(BaseValidator):
-    """Validates allowed values constraints."""
-    
-    def validate(self, df: pd.DataFrame, field: str, config: Dict[str, Any], 
-                 instrument_name: str) -> ValidationResult:
-        result = ValidationResult()
-        result.valid_mask = pd.Series(True, index=df.index)
-        
-        if field not in df.columns:
-            return result
-            
-        allowed = config.get("allowed")
-        if allowed is None:
-            return result
-            
-        series = df[field]
-        nullable = config.get("nullable", False)
-        dtype = config.get("type")
-        
-        # Handle numeric vs string comparison
-        if dtype in ("integer", "float") and all(isinstance(x, (int, float)) for x in allowed):
-            comp = pd.to_numeric(series, errors="coerce")
-        else:
-            comp = series
-            
-        mask = comp.isin(allowed)
-        if nullable:
-            mask |= series.isna() | (series == "")
-        
-        # Add errors for invalid values
-        bad_indices = df.index[~mask]
-        for idx in bad_indices:
-            row = df.loc[idx]
-            result.add_error(
-                ptid=row["ptid"],
-                event_name=row["redcap_event_name"],
-                instrument_name=instrument_name,
-                variable=field,
-                current_value=row[field],
-                expected_value=allowed,
-                error_msg=f"'{row[field]}' not in {allowed}"
-            )
-        
-        result.valid_mask = mask
-        return result
-
-
-class SimpleChecksValidator:
-    """Orchestrates multiple simple validation checks."""
-    
-    def __init__(self):
-        self.validators = [
-            RangeValidator(),
-            RegexValidator(),
-            AllowedValuesValidator()
-        ]
-    
-    def validate(self, df: pd.DataFrame, rules: Dict[str, Dict[str, Any]], 
-                 instrument_name: str) -> Tuple[List[Dict[str, Any]], pd.DataFrame]:
+    def __init__(self, instrument_name: str):
         """
-        Perform bulk vectorized checks for simple validation rules.
-        
-        This function handles type, min/max, regex, and allowed value checks
-        in a vectorized manner for performance. It skips fields that require
-        more complex logic (like 'compatibility' or 'temporalrules').
+        Initialize processor for a dynamic instrument.
         
         Args:
-            df: The DataFrame to validate.
-            rules: The validation rules for the instrument.
-            instrument_name: The name of the instrument being validated.
+            instrument_name: Name of the dynamic instrument to process
+            
+        Raises:
+            ValueError: If instrument is not configured for dynamic rule selection
+        """
+        if not is_dynamic_rule_instrument(instrument_name):
+            raise ValueError(
+                f"Instrument '{instrument_name}' is not configured for dynamic rule selection"
+            )
+        
+        self.instrument_name = instrument_name
+        self.discriminant_var = get_discriminant_variable(instrument_name)
+        self.rule_mappings = get_rule_mappings(instrument_name)
+        self._rule_cache = None
+        self._variables_cache = None
+    
+    def get_all_variables(self) -> List[str]:
+        """
+        Get all possible variables across all rule variants for this instrument.
+        
+        Returns:
+            List of all variable names from all rule variants
+        """
+        if self._variables_cache is None:
+            rule_map = self._get_rule_map()
+            all_variables = set()
+            for variant_rules in rule_map.values():
+                all_variables.update(variant_rules.keys())
+            self._variables_cache = list(all_variables)
+        
+        return self._variables_cache
+    
+    def get_rules_for_variant(self, variant: str) -> Dict[str, Any]:
+        """
+        Get validation rules for a specific variant.
+        
+        Args:
+            variant: The variant name (e.g., 'C2', 'C2T')
             
         Returns:
-            A tuple containing a list of error dictionaries and a DataFrame
-            with rows that passed the simple checks.
+            Dictionary of validation rules for the variant
         """
-        overall_result = ValidationResult()
-        overall_result.valid_mask = pd.Series(True, index=df.index)
+        rule_map = self._get_rule_map()
+        return rule_map.get(variant.upper(), {})
+    
+    def prepare_data(self, df: pd.DataFrame, primary_key_field: str) -> Tuple[pd.DataFrame, List[str]]:
+        """
+        Prepare data for dynamic instrument processing.
         
-        for field, config in rules.items():
-            # Skip dynamic fields altogether here
-            if 'compatibility' in config or 'temporalrules' in config:
-                continue
-            if field not in df.columns:
-                continue
-            
-            # Run all validators for this field
-            field_result = ValidationResult()
-            field_result.valid_mask = pd.Series(True, index=df.index)
-            
-            for validator in self.validators:
-                validator_result = validator.validate(df, field, config, instrument_name)
-                field_result.combine_with(validator_result)
-            
-            # Combine field results with overall results
-            overall_result.combine_with(field_result)
+        This method extracts relevant columns and rows for the dynamic instrument,
+        considering all possible variables from different rule variants.
         
-        # Return errors and valid rows
-        return overall_result.errors, df.loc[overall_result.valid_mask].reset_index(drop=True)
+        Args:
+            df: Source DataFrame containing the data
+            primary_key_field: Name of the primary key field
+            
+        Returns:
+            Tuple of (filtered DataFrame, list of all instrument variables)
+        """
+        # Get all variables from all rule variants
+        instrument_variables = self.get_all_variables()
+        
+        # Build column list
+        core_cols = get_core_columns()
+        relevant_cols = [col for col in core_cols if col in df.columns]
+        
+        # Add instrument variables
+        for var in instrument_variables:
+            if var in df.columns:
+                relevant_cols.append(var)
+        
+        # Add completion columns
+        completion_cols = [col for col in get_completion_columns() if col in df.columns]
+        relevant_cols.extend(completion_cols)
+        
+        # Add discriminant variable
+        if self.discriminant_var in df.columns:
+            relevant_cols.append(self.discriminant_var)
+        
+        # Remove duplicates and ensure columns exist
+        relevant_cols = list(set([col for col in relevant_cols if col in df.columns]))
+        
+        # Filter DataFrame
+        instrument_df = pd.DataFrame()
+        if relevant_cols:
+            instrument_df = df[relevant_cols].copy()
+            non_core_cols = [col for col in relevant_cols 
+                           if col not in core_cols and not col.endswith('_complete')]
+            if non_core_cols:
+                has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
+                instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
+        
+        return instrument_df, instrument_variables
+    
+    def get_variants_in_data(self, df: pd.DataFrame) -> List[str]:
+        """
+        Get list of variants actually present in the data.
+        
+        Args:
+            df: DataFrame to analyze
+            
+        Returns:
+            List of variant values found in the discriminant variable
+        """
+        if self.discriminant_var not in df.columns:
+            logger.warning(f"Discriminant variable '{self.discriminant_var}' not found in data")
+            return []
+        
+        variants = df[self.discriminant_var].dropna().str.upper().unique().tolist()
+        return [v for v in variants if v in self.rule_mappings]
+    
+    def _get_rule_map(self) -> Dict[str, Dict[str, Any]]:
+        """Load and cache rule map for this instrument."""
+        if self._rule_cache is None:
+            self._rule_cache = load_dynamic_rules_for_instrument(self.instrument_name)
+        return self._rule_cache
 
 
 # =============================================================================
@@ -336,12 +233,9 @@ def get_variables_for_instrument(instrument_name: str, rules_cache: Dict[str, An
         A list of variable names associated with the instrument.
     """
     if is_dynamic_rule_instrument(instrument_name):
-        # For dynamic rule instruments, combine variables from all rule variants
-        rule_map = load_dynamic_rules_for_instrument(instrument_name)
-        all_variables = set()
-        for variant_rules in rule_map.values():
-            all_variables.update(variant_rules.keys())
-        return list(all_variables)
+        # Use the new consolidated processor for dynamic instruments
+        processor = DynamicInstrumentProcessor(instrument_name)
+        return processor.get_all_variables()
     else:
         # For standard instruments, get variables from the cached rules
         return list(rules_cache.get(instrument_name, {}).keys())
@@ -382,11 +276,9 @@ def debug_variable_mapping(
         rules = rules_cache.get(instrument, {})
         
         if is_dynamic_rule_instrument(instrument):
-            # Special handling for dynamic rule instruments
-            dynamic_rules = load_dynamic_rules_for_instrument(instrument)
-            rule_vars = set()
-            for variant_rules in dynamic_rules.values():
-                rule_vars.update(variant_rules.keys())
+            # Use the new consolidated processor for dynamic instruments
+            processor = DynamicInstrumentProcessor(instrument)
+            rule_vars = set(processor.get_all_variables())
         else:
             rule_vars = set(rules.keys())
         
@@ -461,12 +353,31 @@ def _run_vectorized_simple_checks(
     instrument_name: str
 ) -> Tuple[List[Dict[str, Any]], pd.DataFrame]:
     """
-    Legacy wrapper for backward compatibility.
+    DEPRECATED: Legacy wrapper for backward compatibility.
     
-    This function now uses the new SimpleChecksValidator class internally.
+    This function is deprecated as of the validation standardization refactor.
+    The validation process now uses a unified per-record approach through
+    QualityCheck.validate_record() instead of separate vectorized checks.
+    
+    Warning:
+        This function will be removed in version 2.0.0 (target: Q1 2026).
+        Use the standardized validation process in report_pipeline.validate_data() instead.
+        
+    Note:
+        This function now returns empty results as the simple checks validation
+        system has been removed in favor of the unified validation approach.
     """
-    validator = SimpleChecksValidator()
-    return validator.validate(df, rules, instrument_name)
+    import warnings
+    warnings.warn(
+        "_run_vectorized_simple_checks is deprecated and will be removed in "
+        "version 2.0.0 (target: Q1 2026). Use the standardized validation "
+        "process in report_pipeline.validate_data() instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
+    # Return empty results as this function is fully deprecated
+    return [], df.copy()
 
 # ─── Validation Helper ──────────────────────────────────────────────────
 
@@ -475,11 +386,20 @@ def process_dynamic_validation(
     instrument_name: str
 ) -> Tuple[pd.DataFrame, List[Dict[str, Any]]]:
     """
-    Handles dynamic rule selection for instruments with variable-based rules.
+    DEPRECATED: Handles dynamic rule selection for instruments with variable-based rules.
 
-    This function identifies the correct set of validation rules to apply
-    based on a 'discriminant variable' in the data. It then runs simple
+    This function is deprecated as of the validation standardization refactor.
+    The validation process now uses a unified per-record approach that handles
+    both dynamic and standard instruments consistently through the same pathway.
+
+    This function identified the correct set of validation rules to apply
+    based on a 'discriminant variable' in the data, then ran simple
     vectorized checks for each rule variant.
+
+    Warning:
+        This function will be removed in version 2.0.0 (target: Q1 2026).
+        The new standardized validation process in report_pipeline.validate_data() 
+        handles dynamic instruments automatically through _get_schema_and_rules_for_record().
 
     Args:
         df: DataFrame containing the data to validate.
@@ -489,6 +409,15 @@ def process_dynamic_validation(
         A tuple containing the filtered DataFrame (for complex checks) and
         a list of errors found during simple checks.
     """
+    import warnings
+    warnings.warn(
+        "process_dynamic_validation is deprecated and will be removed in "
+        "version 2.0.0 (target: Q1 2026). The new standardized validation "
+        "process handles dynamic instruments automatically.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     if not is_dynamic_rule_instrument(instrument_name):
         raise ValueError(f"Instrument '{instrument_name}' is not configured for dynamic rule selection")
     
@@ -506,16 +435,13 @@ def process_dynamic_validation(
     # Load all rule variants for this instrument
     rule_map = load_dynamic_rules_for_instrument(instrument_name)
     
-    # Process each variant separately
+    # Process each variant separately - but skip validation since it's deprecated
     variant_dataframes = []
     for variant in rule_mappings.keys():
         variant_df = df[df[discriminant_var].str.upper() == variant.upper()]
         if len(variant_df) > 0:
-            variant_errors, processed_df = _run_vectorized_simple_checks(
-                variant_df, rule_map[variant], instrument_name
-            )
-            errors.extend(variant_errors)
-            variant_dataframes.append(processed_df)
+            # No longer perform simple checks - just collect the data
+            variant_dataframes.append(variant_df)
     
     # Combine all variant dataframes
     if variant_dataframes:
@@ -538,13 +464,13 @@ def process_dynamic_instrument_data(
     """
     Helper to process data for a dynamic rule instrument in the ETL pipeline.
 
-    This function extracts the relevant columns and rows for a dynamic instrument,
-    considering all possible variables from its different rule variants.
+    This function now uses the consolidated DynamicInstrumentProcessor for
+    improved maintainability and consistency.
 
     Args:
         df: The source DataFrame.
         instrument: The name of the dynamic instrument.
-        rules_cache: A cache of loaded JSON rules.
+        rules_cache: A cache of loaded JSON rules (not used for dynamic instruments).
         primary_key_field: The name of the primary key field.
 
     Returns:
@@ -552,51 +478,9 @@ def process_dynamic_instrument_data(
         - A filtered DataFrame with only relevant data for the instrument.
         - A list of all variables associated with the instrument.
     """
-    if not is_dynamic_rule_instrument(instrument):
-        raise ValueError(
-            f"Instrument '{instrument}' is not configured for dynamic rule selection"
-        )
-
-    # Load all rule variants for this instrument
-    rule_map = load_dynamic_rules_for_instrument(instrument)
-    discriminant_var = get_discriminant_variable(instrument)
-
-    # Get all variables from all rule variants
-    all_variables = set()
-    for variant_rules in rule_map.values():
-        all_variables.update(variant_rules.keys())
-    instrument_variables = list(all_variables)
-
-    # Build column list
-    core_cols = get_core_columns()
-    relevant_cols = [col for col in core_cols if col in df.columns]
-
-    # Add instrument variables
-    for var in instrument_variables:
-        if var in df.columns:
-            relevant_cols.append(var)
-    
-    # Add completion columns
-    completion_cols = [col for col in get_completion_columns() if col in df.columns]
-    relevant_cols.extend(completion_cols)
-    
-    # Add discriminant variable
-    if discriminant_var in df.columns:
-        relevant_cols.append(discriminant_var)
-    
-    # Remove duplicates and ensure columns exist
-    relevant_cols = list(set([col for col in relevant_cols if col in df.columns]))
-    
-    # Filter DataFrame
-    instrument_df = pd.DataFrame()
-    if relevant_cols:
-        instrument_df = df[relevant_cols].copy()
-        non_core_cols = [col for col in relevant_cols if col not in core_cols and not col.endswith('_complete')]
-        if non_core_cols:
-            has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
-            instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
-    
-    return instrument_df, instrument_variables
+    # Use the new consolidated processor
+    processor = DynamicInstrumentProcessor(instrument)
+    return processor.prepare_data(df, primary_key_field)
 
 # ─── ETL Helper Functions ──────────────────────────────────────────────────────
 
@@ -642,12 +526,9 @@ def build_variable_maps(
             continue
 
         if is_dynamic_rule_instrument(instrument):
-            # For dynamic instruments, get all possible variables
-            dynamic_rule_map = load_dynamic_rules_for_instrument(instrument)
-            all_dynamic_vars = set()
-            for variant_rules in dynamic_rule_map.values():
-                all_dynamic_vars.update(variant_rules.keys())
-            instrument_variables = list(all_dynamic_vars)
+            # Use the new consolidated processor for dynamic instruments
+            processor = DynamicInstrumentProcessor(instrument)
+            instrument_variables = processor.get_all_variables()
         else:
             instrument_variables = list(rules.keys())
 
@@ -686,15 +567,15 @@ def prepare_instrument_data_cache(
     core_cols = get_core_columns()
     for instrument in instrument_list:
         if is_dynamic_rule_instrument(instrument):
-            instrument_df, _ = process_dynamic_instrument_data(
-                data_df, instrument, rules_cache, primary_key_field
-            )
+            # Use the new consolidated processor
+            processor = DynamicInstrumentProcessor(instrument)
+            instrument_df, instrument_variables = processor.prepare_data(data_df, primary_key_field)
             instrument_data_cache[instrument] = instrument_df
             logger.debug(
                 f"Prepared {len(instrument_df)} records for instrument '{instrument}' with {len(instrument_df.columns) if not instrument_df.empty else 0} columns"
             )
             logger.debug(
-                f"Variables for {instrument}: {instrument_variable_map[instrument][:10]}{'...' if len(instrument_variable_map[instrument]) > 10 else ''}"
+                f"Variables for {instrument}: {instrument_variables[:10]}{'...' if len(instrument_variables) > 10 else ''}"
             )
             continue
         relevant_cols = [col for col in core_cols if col in data_df.columns]

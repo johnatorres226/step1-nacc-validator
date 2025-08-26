@@ -10,13 +10,18 @@ The pipeline operates in several stages:
 2.  **Data Fetching**: Extracts data from the source using `pipeline.fetcher`.
 3.  **Rule Loading**: Caches all JSON validation rules for the requested instruments.
 4.  **Data Preparation**: Prepares instrument-specific dataframes for validation.
-5.  **Validation**: Runs vectorized simple checks and then row-by-row complex
-    validation against the JSON rules.
+5.  **Validation**: Uses a standardized per-record validation approach through
+    the QualityCheck system for consistent processing across all instrument types.
 6.  **Reporting**: Generates several output files, including:
     - A final dataset of all identified errors.
     - Aggregate error counts per participant/event.
     - A tool status report indicating pass/fail for each instrument.
     - Detailed validation logs.
+
+REFACTORING NOTE: The validation process has been standardized to use a single
+unified approach instead of separate vectorized and dynamic validation paths.
+This ensures consistency across all validation scenarios at the cost of some
+performance optimization.
 """
 import datetime
 import json
@@ -47,9 +52,7 @@ from pipeline.helpers import (
     load_rules_for_instruments,
     load_json_rules_for_instrument,
     prepare_instrument_data_cache,
-    process_dynamic_validation,
     _preprocess_cast_types,
-    _run_vectorized_simple_checks,
     load_dynamic_rules_for_instrument,
 )
 from pipeline.schema_builder import build_cerberus_schema_for_instrument
@@ -176,18 +179,17 @@ def validate_data(
     event_name: Optional[str] = None,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Validates a DataFrame of instrument data against a set of rules.
+    Validates a DataFrame of instrument data against a set of rules using a standardized process.
 
-    The validation process is two-fold:
-    1.  **Vectorized Simple Checks**: Fast, bulk checks for types, ranges,
-        and allowed values are performed on the entire DataFrame.
-    2.  **Per-Record Complex Checks**: For logic that cannot be vectorized
-        (e.g., conditional fields), records are iterated for in-depth validation.
+    This function uses a unified validation approach that processes all records
+    individually through the QualityCheck validation system. This ensures
+    consistent validation behavior across all instrument types and rule complexity.
 
     Args:
         data: DataFrame containing the data for a specific instrument.
         validation_rules: A dictionary of JSON validation rules for the instrument.
         instrument_name: The name of the instrument being validated.
+        primary_key_field: The name of the primary key field.
         event_name: If provided, filters the DataFrame to this specific event.
 
     Returns:
@@ -204,15 +206,6 @@ def validate_data(
     if event_name:
         df = df[df["redcap_event_name"] == event_name]
 
-    # --- Handle instruments with dynamic rule selection ---
-    if is_dynamic_rule_instrument(instrument_name):
-        df, dynamic_errors = process_dynamic_validation(df, instrument_name)
-        errors.extend(dynamic_errors)
-    else:
-        errs, df = _run_vectorized_simple_checks(df, validation_rules, instrument_name)
-        errors.extend(errs)
-
-    # --- Per-record complex validation ---
     # Build schema without temporal rules since datastore is not available in this context
     cerb_schema = build_cerberus_schema_for_instrument(
         instrument_name, 
@@ -220,6 +213,7 @@ def validate_data(
         include_compatibility_rules=True  # Keep compatibility rules for proper validation
     )
 
+    # --- Standardized per-record validation for all instruments ---
     for _, row in df.iterrows():
         record = row.to_dict()
 
