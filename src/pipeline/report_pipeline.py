@@ -38,7 +38,7 @@ from pipeline.config_manager import (
     upload_ready_path
 )
 from pipeline.fetcher import RedcapETLPipeline
-from pipeline.quality_check import QualityCheck
+from nacc_form_validator.quality_check import QualityCheck
 from pipeline.helpers import (
     build_complete_visits_df,
     build_detailed_validation_logs,
@@ -53,7 +53,7 @@ from pipeline.helpers import (
     load_dynamic_rules_for_instrument,
 )
 from pipeline.schema_builder import build_cerberus_schema_for_instrument
-from pipeline.utils import (
+from nacc_form_validator.utils import (
     convert_to_date,
     convert_to_datetime,
 )

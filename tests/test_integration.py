@@ -18,8 +18,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from pipeline.config_manager import QCConfig, get_config
 from pipeline.report_pipeline import run_report_pipeline, validate_data
-from pipeline.quality_check import QualityCheck
-from pipeline.datastore import EnhancedDatastore
+from nacc_form_validator.quality_check import QualityCheck
+from nacc_form_validator.datastore import Datastore
 from pipeline.helpers import build_complete_visits_df
 from pipeline.fetcher import RedcapETLPipeline
 

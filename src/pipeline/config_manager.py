@@ -724,7 +724,7 @@ class CompatibilityValidator:
                                           rule: Dict[str, Any], rule_index: int) -> Optional[Dict[str, Any]]:
         """Validate a single compatibility rule."""
         # Import here to avoid circular dependencies
-        from .json_logic import jsonLogic
+        from nacc_form_validator.json_logic import jsonLogic
         
         if_condition = rule.get("if")
         then_condition = rule.get("then")

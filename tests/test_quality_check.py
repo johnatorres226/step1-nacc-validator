@@ -2,9 +2,9 @@
 
 import pytest
 from unittest.mock import MagicMock, patch
-from pipeline.quality_check import QualityCheck, QualityCheckException
-from pipeline.datastore import Datastore
-from pipeline.nacc_validator import ValidationException
+from nacc_form_validator.quality_check import QualityCheck, QualityCheckException
+from nacc_form_validator.datastore import Datastore
+from nacc_form_validator.nacc_validator import ValidationException
 
 # Mock data and schemas for testing
 VALID_SCHEMA = {

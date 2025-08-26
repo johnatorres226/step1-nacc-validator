@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["pipeline", "cli"]
+package-dir = {"" = "src", "nacc_form_validator" = "nacc_form_validator"}
+packages = ["pipeline", "cli", "nacc_form_validator"]
 
 [project.scripts]
 udsv4-qc = "cli.cli:cli"

@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from pipeline.config_manager import QCConfig
 from pipeline.report_pipeline import generate_enhanced_summary_report
-from pipeline.datastore import EnhancedDatastore
+from nacc_form_validator.datastore import Datastore
 
 def create_test_databases():
     """Create test databases for testing."""

@@ -3,8 +3,8 @@
 Test to verify that temporal validations are skipped when no datastore is provided.
 """
 
-from pipeline.quality_check import QualityCheck
-from pipeline.errors import ErrorDefs
+from nacc_form_validator.quality_check import QualityCheck
+from nacc_form_validator.errors import ErrorDefs
 
 # Test schema with temporal rules
 test_schema = {

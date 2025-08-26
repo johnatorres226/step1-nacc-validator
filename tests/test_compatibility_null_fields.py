@@ -2,8 +2,8 @@
 """Test for compatibility rule fix to handle null/missing fields"""
 
 import pytest
-from pipeline.nacc_validator import NACCValidator
-from pipeline.errors import CustomErrorHandler
+from nacc_form_validator.nacc_validator import NACCValidator
+from nacc_form_validator.errors import CustomErrorHandler
 
 
 class TestCompatibilityRuleNullFields:

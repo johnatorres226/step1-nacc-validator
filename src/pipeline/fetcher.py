@@ -17,13 +17,13 @@ from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 from dataclasses import dataclass
 
-from pipeline.config_manager import (
+from .config_manager import (
     QCConfig,
     complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
 )
-from pipeline.logging_config import get_logger
-from pipeline.helpers import get_variables_for_instrument, load_rules_for_instruments
+from .logging_config import get_logger
+from .helpers import get_variables_for_instrument, load_rules_for_instruments
 
 logger = get_logger(__name__)
 
