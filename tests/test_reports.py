@@ -10,8 +10,7 @@ from tempfile import TemporaryDirectory
 
 from src.pipeline.reports import (
     ReportFactory,
-    ReportMetadata,
-    create_legacy_export_results_to_csv
+    ReportMetadata
 )
 from src.pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 
@@ -266,51 +265,3 @@ class TestReportFactory:
         assert result_path.parent.name == "error_reports"
 
 
-class TestLegacyCompatibility:
-    """Test legacy compatibility functions."""
-    
-    @pytest.fixture
-    def mock_processing_context(self):
-        """Mock processing context."""
-        context = Mock()
-        context.instrument_list = ['a1', 'a2']
-        return context
-    
-    @pytest.fixture
-    def mock_report_config(self):
-        """Mock report configuration."""
-        config = Mock(spec=ReportConfiguration)
-        config.primary_key_field = 'ptid'
-        config.qc_run_by = 'test_user'
-        return config
-    
-    def test_create_legacy_export_results_to_csv(self, mock_processing_context, mock_report_config):
-        """Test legacy compatibility wrapper."""
-        with TemporaryDirectory() as tmp_dir:
-            # Create sample data with required columns
-            df_errors = pd.DataFrame({
-                'ptid': ['001'],
-                'redcap_event_name': ['v1'],
-                'error': ['test']
-            })
-            df_logs = pd.DataFrame({'log': ['test']})
-            df_passed = pd.DataFrame({'passed': ['test']})
-            all_records_df = pd.DataFrame({
-                'ptid': ['001'],
-                'redcap_event_name': ['v1']
-            })
-            complete_visits_df = pd.DataFrame({'visit': ['test']})
-            detailed_logs_df = pd.DataFrame({'detail': ['test']})
-            
-            # Test legacy function
-            result_paths = create_legacy_export_results_to_csv(
-                df_errors, df_logs, df_passed, all_records_df,
-                complete_visits_df, detailed_logs_df,
-                Path(tmp_dir), "20250826", "120000",
-                mock_processing_context, mock_report_config
-            )
-            
-            # Should return list of paths
-            assert isinstance(result_paths, list)
-            # At minimum should have aggregate and status reports
-            assert len(result_paths) >= 2

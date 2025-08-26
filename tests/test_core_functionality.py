@@ -19,11 +19,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
 from pipeline.config_manager import QCConfig, get_config
-from pipeline.report_pipeline import (
-    run_report_pipeline, 
-    generate_tool_status_reports,
-    generate_aggregate_error_count_report
-)
+from pipeline.report_pipeline import run_report_pipeline
+from pipeline.reports import ReportFactory
+from pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 from pipeline.helpers import build_complete_visits_df
 
 
@@ -138,54 +136,91 @@ class TestReportGeneration:
             'error_type': ['validation'] * 2
         })
 
-    def test_generate_tool_status_reports(self, sample_processed_records, sample_errors_df):
-        """Test tool status report generation."""
+    def test_report_factory_status_reports(self, sample_processed_records, sample_errors_df):
+        """Test tool status report generation using ReportFactory."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Generate tool status reports
-            generate_tool_status_reports(
-                processed_records_df=sample_processed_records,
-                pass_fail_log=[],
+            # Set up contexts
+            processing_context = ProcessingContext(
+                data_df=sample_processed_records,
+                instrument_list=['a1'],
+                rules_cache={},
+                primary_key_field='ptid',
+                config=None
+            )
+            
+            export_config = ExportConfiguration(
                 output_dir=Path(temp_dir),
-                file_suffix='test',
+                date_tag='26AUG2025',
+                time_tag='140000'
+            )
+            
+            report_config = ReportConfiguration(
                 qc_run_by='tester',
                 primary_key_field='ptid',
-                errors_df=sample_errors_df,
                 instruments=['a1']
             )
             
-            # Check that report file was created
-            report_files = list(Path(temp_dir).glob('*Status_Report*'))
-            assert len(report_files) > 0
-            
-            # Check report content
-            report_file = report_files[0]
-            assert report_file.exists()
-            assert report_file.stat().st_size > 0
-
-    def test_generate_aggregate_error_count_report(self, sample_errors_df):
-        """Test aggregate error count report generation."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Create mock data for required parameters
-            all_records_df = pd.DataFrame({'ptid': ['TEST001', 'TEST002']})
-            instrument_list = ['a1', 'a2']
-            
-            # Generate aggregate error count report
-            generate_aggregate_error_count_report(
-                df_errors=sample_errors_df,
-                instrument_list=instrument_list,
-                all_records_df=all_records_df,
-                output_dir=Path(temp_dir),
-                primary_key_field='ptid'
+            # Generate tool status reports using ReportFactory
+            factory = ReportFactory(processing_context)
+            status_path = factory.generate_status_report(
+                all_records_df=sample_processed_records,
+                complete_visits_df=pd.DataFrame(),
+                detailed_validation_logs_df=pd.DataFrame(),
+                export_config=export_config,
+                report_config=report_config
             )
             
             # Check that report file was created
-            report_files = list(Path(temp_dir).glob('*ErrorCount*'))
-            assert len(report_files) > 0
+            assert status_path.exists()
             
             # Check report content
-            report_file = report_files[0]
-            assert report_file.exists()
-            assert report_file.stat().st_size > 0
+            report_df = pd.read_csv(status_path)
+            assert 'metric' in report_df.columns
+            assert status_path.stat().st_size > 0
+
+    def test_report_factory_aggregate_error_report(self, sample_errors_df):
+        """Test aggregate error count report generation using ReportFactory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create mock data for required parameters
+            all_records_df = pd.DataFrame({'ptid': ['TEST001', 'TEST002']})
+            
+            # Set up contexts
+            processing_context = ProcessingContext(
+                data_df=all_records_df,
+                instrument_list=['a1', 'a2'],
+                rules_cache={},
+                primary_key_field='ptid',
+                config=None
+            )
+            
+            export_config = ExportConfiguration(
+                output_dir=Path(temp_dir),
+                date_tag='26AUG2025',
+                time_tag='140000'
+            )
+            
+            report_config = ReportConfiguration(
+                qc_run_by='tester',
+                primary_key_field='ptid',
+                instruments=['a1', 'a2']
+            )
+            
+            # Generate aggregate error count report using ReportFactory
+            factory = ReportFactory(processing_context)
+            aggregate_path = factory.generate_aggregate_error_report(
+                df_errors=sample_errors_df,
+                all_records_df=all_records_df,
+                export_config=export_config,
+                report_config=report_config
+            )
+            
+            # Check that report file was created
+            assert aggregate_path.exists()
+            
+            # Check report content
+            report_df = pd.read_csv(aggregate_path)
+            assert 'ptid' in report_df.columns
+            assert aggregate_path.stat().st_size > 0
 
 
 class TestPipelineIntegration:
@@ -240,13 +275,16 @@ class TestPipelineIntegration:
         )
         
         # Run pipeline without datastore
-        with patch('pipeline.report_pipeline.export_results_to_csv') as mock_export:
+        with patch('pipeline.report_pipeline.ReportFactory') as mock_factory:
+            mock_factory_instance = mock_factory.return_value
+            mock_factory_instance.export_all_reports.return_value = []
+            
             run_report_pipeline(config=mock_config)
             
             # Verify that components were called
             mock_pipeline_run.assert_called_once()
             mock_process.assert_called_once()
-            mock_export.assert_called()
+            mock_factory.assert_called()
 
     @patch('pipeline.fetcher.RedcapETLPipeline.run')
     @patch('pipeline.helpers.load_rules_for_instruments')
@@ -276,13 +314,16 @@ class TestPipelineIntegration:
         mock_config.mode = 'complete_visits'
         
         # Run pipeline with datastore
-        with patch('pipeline.report_pipeline.export_results_to_csv') as mock_export:
+        with patch('pipeline.report_pipeline.ReportFactory') as mock_factory:
+            mock_factory_instance = mock_factory.return_value
+            mock_factory_instance.export_all_reports.return_value = []
+            
             run_report_pipeline(config=mock_config)
             
             # Verify that components were called
             mock_pipeline_run.assert_called_once()
             mock_process.assert_called_once()
-            mock_export.assert_called()
+            mock_factory.assert_called()
             mock_store_db.assert_called_once()
 
 

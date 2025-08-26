@@ -96,11 +96,14 @@ class TestPipelineIntegration:
         mock_load_rules.return_value = sample_validation_rules
         
         # Run the pipeline
-        with patch('pipeline.report_pipeline.export_results_to_csv') as mock_export:
-            run_report_pipeline(config=mock_config, enable_datastore=False)
+        with patch('pipeline.report_pipeline.ReportFactory') as mock_factory:
+            mock_factory_instance = mock_factory.return_value
+            mock_factory_instance.export_all_reports.return_value = []
+            
+            run_report_pipeline(config=mock_config)
             
             # Verify that results were exported
-            mock_export.assert_called()
+            mock_factory.assert_called()
             
             # Verify pipeline was called
             mock_pipeline_run.assert_called_once()

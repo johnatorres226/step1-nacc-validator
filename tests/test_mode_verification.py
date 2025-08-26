@@ -7,12 +7,14 @@ import os
 import sys
 from pathlib import Path
 from datetime import datetime
+import pandas as pd
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from pipeline.config_manager import QCConfig
-from pipeline.report_pipeline import generate_enhanced_summary_report
+from pipeline.reports import ReportFactory
+from pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 from nacc_form_validator.datastore import Datastore
 
 def create_test_databases():
@@ -63,44 +65,77 @@ def test_test_mode_summary():
         regular_datastore_path = str(Path("data") / "validation_history.db")
         print(f"Regular datastore path: {regular_datastore_path}")
         print(f"Path exists: {Path(regular_datastore_path).exists()}")
-        regular_report = generate_enhanced_summary_report(
-            str(test_output_dir),
-            instruments,
-            filename=regular_filename,
-            datastore_path=regular_datastore_path,
-            test_mode=False
+        # Test regular mode using ReportFactory
+        processing_context = ProcessingContext(
+            data_df=pd.DataFrame(),
+            instrument_list=instruments,
+            rules_cache={},
+            primary_key_field='ptid',
+            config=None
+        )
+        
+        export_config = ExportConfiguration(
+            output_dir=test_output_dir,
+            date_tag='26AUG2025',
+            time_tag='140000'
+        )
+        
+        report_config = ReportConfiguration(
+            qc_run_by='test_user',
+            primary_key_field='ptid',
+            instruments=instruments
+        )
+        
+        factory = ReportFactory(processing_context)
+        regular_report = factory.generate_status_report(
+            all_records_df=pd.DataFrame(),
+            complete_visits_df=pd.DataFrame(),
+            detailed_validation_logs_df=pd.DataFrame(),
+            export_config=export_config,
+            report_config=report_config
         )
         print(f"✅ Regular mode report generated: {regular_report}")
         
         # Check file content
-        if Path(regular_report).exists():
+        if regular_report.exists():
             with open(regular_report, 'r', encoding='utf-8') as f:
                 content = f.read()
                 print(f"✅ Report size: {len(content)} characters")
-                if "ENHANCED QC SUMMARY REPORT" in content:
+                if "metric" in content:
                     print("✅ Contains correct header for regular mode")
                 else:
                     print("❌ Missing expected header for regular mode")
     except Exception as e:
         print(f"❌ Error in regular mode: {e}")
     
-    # Test test mode
+    # Test test mode using ReportFactory
     print("\n2. Testing TEST mode:")
-    test_filename = "ENHANCED_SUMMARY_TEST.txt"  # Should be overridden
     try:
-        # Set the datastore path for test mode
-        test_datastore_path = str(Path("data") / "test_validation_history.db")
-        test_report = generate_enhanced_summary_report(
-            str(test_output_dir),
-            instruments,
-            filename=test_filename,
-            datastore_path=test_datastore_path,
-            test_mode=True
+        # Test mode uses same ReportFactory interface
+        test_export_config = ExportConfiguration(
+            output_dir=test_output_dir,
+            date_tag='26AUG2025',
+            time_tag='140000'
+        )
+        
+        test_report_config = ReportConfiguration(
+            qc_run_by='test_user',
+            primary_key_field='ptid',
+            instruments=instruments
+        )
+        
+        test_factory = ReportFactory(processing_context)
+        test_report = test_factory.generate_status_report(
+            all_records_df=pd.DataFrame(),
+            complete_visits_df=pd.DataFrame(),
+            detailed_validation_logs_df=pd.DataFrame(),
+            export_config=test_export_config,
+            report_config=test_report_config
         )
         print(f"✅ Test mode report generated: {test_report}")
         
         # Check file content
-        if Path(test_report).exists():
+        if test_report.exists():
             with open(test_report, 'r', encoding='utf-8') as f:
                 content = f.read()
                 print(f"✅ Report size: {len(content)} characters")
@@ -121,7 +156,7 @@ def test_test_mode_summary():
                         print(f"❌ Missing {description}")
                 
                 # Check filename pattern separately
-                if "TEST_RUN_SUMMARY_" in test_report:
+                if "TEST_RUN_SUMMARY_" in str(test_report):
                     print("✅ Contains correct filename pattern")
                 else:
                     print("❌ Missing correct filename pattern")

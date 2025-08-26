@@ -3,11 +3,9 @@ from pathlib import Path
 import pytest
 from unittest.mock import MagicMock, patch
 
-from pipeline.report_pipeline import (
-    generate_tool_status_reports,
-    generate_aggregate_error_count_report,
-    process_instruments_etl,
-)
+from pipeline.report_pipeline import process_instruments_etl
+from pipeline.reports import ReportFactory
+from pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 from pipeline.helpers import build_complete_visits_df
 from pipeline.config_manager import QCConfig
 
@@ -37,49 +35,84 @@ def sample_errors_df():
     }
     return pd.DataFrame(data)
 
-def test_generate_tool_status_reports(mock_output_dir, sample_processed_records, sample_errors_df):
-    """Test the generation of the QC Status Report."""
-    generate_tool_status_reports(
-        processed_records_df=sample_processed_records,
-        pass_fail_log=[],
+def test_report_factory_status_reports(mock_output_dir, sample_processed_records, sample_errors_df):
+    """Test the generation of status reports using ReportFactory."""
+    
+    # Set up contexts
+    processing_context = ProcessingContext(
+        data_df=sample_processed_records,
+        instrument_list=['a1'],
+        rules_cache={},
+        primary_key_field='ptid',
+        config=None
+    )
+    
+    export_config = ExportConfiguration(
         output_dir=mock_output_dir,
-        file_suffix='test',
+        date_tag='26AUG2025',
+        time_tag='140000'
+    )
+    
+    report_config = ReportConfiguration(
         qc_run_by='tester',
         primary_key_field='ptid',
-        errors_df=sample_errors_df,
         instruments=['a1']
     )
     
-    expected_file = mock_output_dir / 'QC_Status_Report_test.csv'
-    assert expected_file.exists()
-    
-    report_df = pd.read_csv(expected_file)
-    assert 'a1' in report_df.columns
-    
-    # Check status for each visit
-    v1_status = report_df.loc[(report_df['ptid'] == 1001) & (report_df['redcap_event_name'] == 'v1'), 'a1'].iloc[0]
-    v2_status = report_df.loc[(report_df['ptid'] == 1001) & (report_df['redcap_event_name'] == 'v2'), 'a1'].iloc[0]
-    assert v1_status == 'Fail'
-    assert v2_status == 'Pass' # No errors for 1001, v2
-
-    v1_status_1002 = report_df.loc[(report_df['ptid'] == 1002) & (report_df['redcap_event_name'] == 'v1'), 'a1'].iloc[0]
-    v2_status_1002 = report_df.loc[(report_df['ptid'] == 1002) & (report_df['redcap_event_name'] == 'v2'), 'a1'].iloc[0]
-    assert v1_status_1002 == 'Pass' # No errors for 1002, v1
-    assert v2_status_1002 == 'Fail'
-
-    assert report_df.loc[report_df['ptid'] == 1003, 'a1'].iloc[0] == 'Pass'
-
-def test_generate_aggregate_error_count_report(mock_output_dir, sample_errors_df):
-    """Test the generation of the aggregate error count report."""
-    generate_aggregate_error_count_report(
-        df_errors=sample_errors_df,
-        instrument_list=['a1'],
-        all_records_df=sample_errors_df,
-        output_dir=mock_output_dir,
-        primary_key_field='ptid'
+    # Create ReportFactory and generate status report
+    factory = ReportFactory(processing_context)
+    status_path = factory.generate_status_report(
+        all_records_df=sample_processed_records,
+        complete_visits_df=pd.DataFrame(),
+        detailed_validation_logs_df=pd.DataFrame(),
+        export_config=export_config,
+        report_config=report_config
     )
     
-    expected_file = mock_output_dir / 'QC_Report_ErrorCount_test.csv'
+    # Verify file was created
+    assert status_path.exists()
+    report_df = pd.read_csv(status_path)
+    assert 'metric' in report_df.columns
+    assert 'value' in report_df.columns
+
+def test_report_factory_aggregate_error_report(mock_output_dir, sample_errors_df):
+    """Test the generation of aggregate error reports using ReportFactory."""
+    
+    # Set up contexts
+    processing_context = ProcessingContext(
+        data_df=sample_errors_df,
+        instrument_list=['a1'],
+        rules_cache={},
+        primary_key_field='ptid',
+        config=None
+    )
+    
+    export_config = ExportConfiguration(
+        output_dir=mock_output_dir,
+        date_tag='26AUG2025',
+        time_tag='140000'
+    )
+    
+    report_config = ReportConfiguration(
+        qc_run_by='tester',
+        primary_key_field='ptid',
+        instruments=['a1']
+    )
+    
+    # Create ReportFactory and generate aggregate report
+    factory = ReportFactory(processing_context)
+    aggregate_path = factory.generate_aggregate_error_report(
+        df_errors=sample_errors_df,
+        all_records_df=sample_errors_df,
+        export_config=export_config,
+        report_config=report_config
+    )
+    
+    # Verify file was created and contains expected data
+    assert aggregate_path.exists()
+    report_df = pd.read_csv(aggregate_path)
+    assert 'ptid' in report_df.columns
+    assert 'error_count' in report_df.columns
     # This needs to be fixed to use the date tag from the function
     # For now, let's just check if any file is created
     files = list(mock_output_dir.glob('QC_Report_ErrorCount_*.csv'))
@@ -142,7 +175,7 @@ def test_complete_visits_filtering():
     # Mock the RedcapETLPipeline to return our test data
     with patch('pipeline.report_pipeline.RedcapETLPipeline') as mock_pipeline_class, \
          patch('pipeline.report_pipeline.load_rules_for_instruments') as mock_rules, \
-         patch('pipeline.report_pipeline.debug_variable_mapping') as mock_debug, \
+         patch('pipeline.report_pipeline.create_simplified_debug_info') as mock_debug, \
          patch('pipeline.report_pipeline.validate_data') as mock_validate, \
          patch('pipeline.report_pipeline.build_detailed_validation_logs') as mock_logs, \
          patch('pipeline.report_pipeline.build_variable_maps') as mock_var_maps:

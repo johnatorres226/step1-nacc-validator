@@ -24,7 +24,7 @@ class ProcessingContext:
     instrument_list: List[str]
     rules_cache: Dict[str, Any]
     primary_key_field: str
-    config: QCConfig
+    config: Optional[QCConfig] = None
     
     @property
     def is_empty(self) -> bool:
