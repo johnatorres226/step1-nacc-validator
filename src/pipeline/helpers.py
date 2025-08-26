@@ -248,11 +248,23 @@ def debug_variable_mapping(
 ) -> Dict[str, Any]:
     """
     Debug helper to analyze variable mapping between data and JSON rules.
-
-    This function compares the columns in the DataFrame with the variables
-    defined in the JSON rules for a list of instruments. It helps identify
-    missing variables and columns that are present in the data but not
-    defined in any rule.
+    
+    **DEPRECATED**: This function will be removed in version 2.0.0 (Target: March 2026).
+    Use `create_simplified_debug_info` from `analytics.py` instead.
+    
+    The new analytics module provides:
+    - Configurable verbosity levels
+    - Better structured output
+    - Improved performance
+    - More maintainable code
+    
+    Migration example:
+        # Old way:
+        debug_info = debug_variable_mapping(data_df, instruments, rules_cache)
+        
+        # New way:
+        from .analytics import create_simplified_debug_info
+        debug_info = create_simplified_debug_info(data_df, instruments, rules_cache, "detailed")
 
     Args:
         data_df: The DataFrame containing the data to analyze.
@@ -262,6 +274,14 @@ def debug_variable_mapping(
     Returns:
         A dictionary with detailed diagnostic information.
     """
+    import warnings
+    warnings.warn(
+        "debug_variable_mapping is deprecated and will be removed in version 2.0.0 "
+        "(Target: March 2026). Use create_simplified_debug_info from analytics.py instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     debug_info = {
         'data_columns': list(data_df.columns),
         'instruments': {},
@@ -590,6 +610,9 @@ def build_complete_visits_df(
 
     A visit (a unique primary_key-event combination) is considered complete if all
     expected instruments for that visit are present and marked as complete ('2').
+    
+    **PERFORMANCE OPTIMIZED**: Uses vectorized operations instead of nested loops
+    for significantly better performance on large datasets.
 
     Args:
         data_df: The DataFrame containing all data.
@@ -618,8 +641,94 @@ def build_complete_visits_df(
     for col in completion_cols:
         df_copy[col] = df_copy[col].astype(str)
 
-    # For each visit (primary_key + event), check if ALL records have ALL instruments marked as complete
-    # This means every single row for a visit must have all completion columns equal to '2'
+    # VECTORIZED APPROACH: Use pandas operations instead of nested loops
+    primary_key_field = get_config().primary_key_field
+    
+    # Create a boolean mask for completion status (all completion columns must be '2')
+    completion_mask = (df_copy[completion_cols] == '2').all(axis=1)
+    
+    # Add the completion mask as a temporary column for groupby operations
+    df_copy['_temp_all_complete'] = completion_mask
+    
+    # For each visit, check if ALL records in that visit are complete
+    # A visit is complete if all its records have all instruments complete
+    visit_completion = df_copy.groupby([primary_key_field, 'redcap_event_name'])['_temp_all_complete'].all()
+    
+    # Get complete visits (where the aggregated result is True)
+    complete_visits_series = visit_completion[visit_completion]
+    complete_visits = list(complete_visits_series.index)
+
+    # Clean up temporary column
+    df_copy.drop('_temp_all_complete', axis=1, inplace=True)
+
+    if not complete_visits:
+        logger.debug("ETL identified 0 truly complete visits.")
+        return pd.DataFrame(), []
+
+    # Create the summary DataFrame
+    complete_visits_summary = pd.DataFrame(complete_visits, columns=[primary_key_field, 'redcap_event_name'])
+    
+    # Create the final report DataFrame
+    report_df = complete_visits_summary.copy()
+    report_df['complete_instruments_count'] = len(completion_cols)
+    report_df['completion_status'] = 'All Complete'
+
+    # Get the list of (primary_key, event) tuples for downstream filtering
+    complete_visits_tuples = list(complete_visits_summary[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
+
+    logger.debug(f"ETL identified {len(report_df)} truly complete visits (optimized).")
+    
+    return report_df, complete_visits_tuples
+
+
+def build_complete_visits_df_legacy(
+    data_df: pd.DataFrame,
+    instrument_list: List[str]
+) -> Tuple[pd.DataFrame, List[Tuple[str, str]]]:
+    """
+    Legacy version of build_complete_visits_df using nested loops.
+    
+    **DEPRECATED**: This function will be removed in version 2.0.0 (Target: March 2026).
+    Use the optimized `build_complete_visits_df()` instead.
+    
+    Kept for performance comparison and backward compatibility testing.
+    
+    Args:
+        data_df: The DataFrame containing all data.
+        instrument_list: The list of all instruments to check for completion.
+
+    Returns:
+        A tuple containing:
+        - A DataFrame summarizing the complete visits.
+        - A list of tuples, each with (primary_key, redcap_event_name) for a complete visit.
+    """
+    import warnings
+    warnings.warn(
+        "build_complete_visits_df_legacy is deprecated and will be removed in version 2.0.0 "
+        "(Target: March 2026). Use the optimized build_complete_visits_df instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
+    if data_df.empty:
+        logger.warning("Cannot build complete visits dataset from empty DataFrame.")
+        return pd.DataFrame(), []
+
+    # List of completion columns to check, excluding form_header as it's not a clinical instrument
+    completion_cols = [f"{inst}_complete" for inst in instrument_list if inst.lower() != "form_header"]
+    
+    # Ensure all required completion columns exist in the DataFrame for the check
+    df_copy = data_df.copy()
+    for col in completion_cols:
+        if col not in df_copy.columns:
+            logger.warning(f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
+            df_copy[col] = '0'  # Default to incomplete if the column is missing
+
+    # Convert all completion columns to string to handle mixed types (e.g., 2.0, '2', 2)
+    for col in completion_cols:
+        df_copy[col] = df_copy[col].astype(str)
+
+    # ORIGINAL NESTED LOOP APPROACH: For each visit, check if ALL records have ALL instruments marked as complete
     complete_visits = []
     primary_key_field = get_config().primary_key_field
     
@@ -652,7 +761,7 @@ def build_complete_visits_df(
     # Get the list of (primary_key, event) tuples for downstream filtering
     complete_visits_tuples = list(complete_visits_summary[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
 
-    logger.debug(f"ETL identified {len(report_df)} truly complete visits.")
+    logger.debug(f"ETL identified {len(report_df)} truly complete visits (legacy).")
     
     return report_df, complete_visits_tuples
 

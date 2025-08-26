@@ -51,13 +51,15 @@ from pipeline.helpers import (
     build_complete_visits_df,
     build_detailed_validation_logs,
     build_variable_maps,
-    debug_variable_mapping,
+    debug_variable_mapping,  # Deprecated - use analytics.create_simplified_debug_info
     load_rules_for_instruments,
     load_json_rules_for_instrument,
     prepare_instrument_data_cache,
     _preprocess_cast_types,
     load_dynamic_rules_for_instrument,
 )
+from pipeline.analytics import create_simplified_debug_info
+from pipeline.reports import ReportFactory
 from pipeline.schema_builder import build_cerberus_schema_for_instrument
 from nacc_form_validator.utils import (
     convert_to_date,
@@ -602,9 +604,15 @@ def process_instruments_etl(
 
     # Step 4: Prepare data and mappings with filtered data
     if not data_df.empty:
-        debug_info = debug_variable_mapping(data_df, config.instruments, rules_cache)
-        logger.debug(f"Variable mapping analysis: {debug_info['mapping_summary']['overall_coverage']:.1f}% coverage")
-        for instrument, missing_vars in debug_info['missing_variables'].items():
+        # Use new simplified analytics instead of deprecated debug_variable_mapping
+        debug_info = create_simplified_debug_info(data_df, config.instruments, rules_cache, "summary")
+        if 'summary' in debug_info:
+            coverage = debug_info['summary'].get('overall_coverage', 'N/A')
+            logger.debug(f"Variable mapping analysis: {coverage} coverage")
+        
+        # For backwards compatibility, also run old function (with deprecation warning)
+        old_debug_info = debug_variable_mapping(data_df, config.instruments, rules_cache)
+        for instrument, missing_vars in old_debug_info['missing_variables'].items():
             if missing_vars:
                 logger.warning(f"Missing variables for {instrument}: {missing_vars[:5]}{'...' if len(missing_vars) > 5 else ''}")
 
@@ -699,8 +707,23 @@ def export_results_to_csv(
     """
     Exports the results of the ETL process to CSV files in organized directories.
 
-    This function now uses ExportConfiguration for better parameter management.
-    Legacy interface maintained for backward compatibility.
+    **DEPRECATED**: This function will be removed in version 2.0.0 (Target: March 2026).
+    Use `ReportFactory.export_all_reports()` from `reports.py` instead.
+    
+    The new ReportFactory provides:
+    - Unified report generation interface
+    - Better organization and naming consistency
+    - Improved metadata tracking
+    - More maintainable code structure
+    
+    Migration example:
+        # Old way:
+        export_results_to_csv(df_errors, df_logs, df_passed, ...)
+        
+        # New way:
+        from .reports import ReportFactory
+        factory = ReportFactory(processing_context)
+        factory.export_all_reports(df_errors, df_logs, df_passed, ..., export_config, report_config)
 
     Args:
         df_errors: DataFrame of all validation errors.
@@ -713,6 +736,14 @@ def export_results_to_csv(
         date_tag: Date tag string for consistent naming.
         time_tag: Time tag string for consistent naming.
     """
+    import warnings
+    warnings.warn(
+        "export_results_to_csv is deprecated and will be removed in version 2.0.0 "
+        "(Target: March 2026). Use ReportFactory.export_all_reports from reports.py instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    
     # Import here to avoid circular dependencies
     from .context import ExportConfiguration
     
@@ -796,7 +827,8 @@ def generate_aggregate_error_count_report(
     """
     Summarizes error counts per ptid & event, writing the report to the output directory.
     
-    Legacy interface maintained for backward compatibility.
+    **DEPRECATED**: This function will be removed in version 2.0.0 (Target: March 2026).
+    Use `ReportFactory.generate_aggregate_error_report()` from `reports.py` instead.
     
     Args:
         df_errors: DataFrame containing all validation errors.
@@ -807,6 +839,13 @@ def generate_aggregate_error_count_report(
         date_tag: Date tag string for consistent naming.
         time_tag: Time tag string for consistent naming.
     """
+    import warnings
+    warnings.warn(
+        "generate_aggregate_error_count_report is deprecated and will be removed in version 2.0.0 "
+        "(Target: March 2026). Use ReportFactory.generate_aggregate_error_report from reports.py instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     # Import here to avoid circular dependencies
     from .context import ProcessingContext, ExportConfiguration, ReportConfiguration
     from .config_manager import get_config
@@ -913,6 +952,9 @@ def generate_tool_status_reports(
     Generates a single QC status report CSV in the specified wide format.
     Also exports a JSON file with selected columns.
 
+    **DEPRECATED**: This function will be removed in version 2.0.0 (Target: March 2026).
+    Use `ReportFactory.generate_status_report()` from `reports.py` instead.
+
     Args:
         processed_records_df: DataFrame with information on all processed records.
         pass_fail_log: List of pass/fail logs for each record and instrument.
@@ -923,6 +965,13 @@ def generate_tool_status_reports(
         errors_df: DataFrame containing all validation errors.
         instruments: List of all instruments in the run.
     """
+    import warnings
+    warnings.warn(
+        "generate_tool_status_reports is deprecated and will be removed in version 2.0.0 "
+        "(Target: March 2026). Use ReportFactory.generate_status_report from reports.py instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
     if processed_records_df.empty:
         logger.warning("No processed records found — skipping status report.")
         return
