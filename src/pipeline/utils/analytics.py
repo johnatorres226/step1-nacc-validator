@@ -10,13 +10,13 @@ from typing import Dict, List, Any, Set, Optional, Tuple
 import pandas as pd
 import logging
 
-from .helpers import (
-    is_dynamic_rule_instrument, 
-    DynamicInstrumentProcessor,
+from ..config_manager import (
+    is_dynamic_rule_instrument,
     get_core_columns,
     get_completion_columns,
     get_special_columns
 )
+from ..processors.instrument_processors import DynamicInstrumentProcessor
 
 logger = logging.getLogger(__name__)
 

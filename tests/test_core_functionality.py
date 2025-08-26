@@ -22,7 +22,7 @@ from pipeline.config_manager import QCConfig, get_config
 from pipeline.report_pipeline import run_report_pipeline
 from pipeline.reports import ReportFactory
 from pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
-from pipeline.helpers import build_complete_visits_df
+from pipeline.core.visit_processing import build_complete_visits_df
 
 
 class TestConfigurationSystem:

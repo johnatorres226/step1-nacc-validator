@@ -10,13 +10,13 @@ import json
 from pathlib import Path
 from typing import Dict, Any
 
-from .config_manager import (
+from ..config_manager import (
     get_config,
     is_dynamic_rule_instrument,
     get_rule_mappings,
     instrument_json_mapping,
 )
-from .logging_config import get_logger
+from ..logging_config import get_logger
 
 logger = get_logger(__name__)
 

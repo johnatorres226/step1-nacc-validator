@@ -20,7 +20,7 @@ from pipeline.config_manager import QCConfig, get_config
 from pipeline.report_pipeline import run_report_pipeline, validate_data
 from nacc_form_validator.quality_check import QualityCheck
 from nacc_form_validator.datastore import Datastore
-from pipeline.helpers import build_complete_visits_df
+from pipeline.core.visit_processing import build_complete_visits_df
 from pipeline.fetcher import RedcapETLPipeline
 
 

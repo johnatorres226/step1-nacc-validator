@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from pipeline.report_pipeline import process_instruments_etl
 from pipeline.reports import ReportFactory
 from pipeline.context import ProcessingContext, ExportConfiguration, ReportConfiguration
-from pipeline.helpers import build_complete_visits_df
+from pipeline.core.visit_processing import build_complete_visits_df
 from pipeline.config_manager import QCConfig
 
 @pytest.fixture
