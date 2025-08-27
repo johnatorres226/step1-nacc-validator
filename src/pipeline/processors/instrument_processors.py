@@ -429,7 +429,7 @@ class InstrumentDataCache:
         self._variables_map[instrument] = variables
         
         # Log results
-        from .logging_config import get_logger
+        from ..logging_config import get_logger
         logger = get_logger(__name__)
         logger.debug(
             f"Prepared {len(instrument_df)} records for instrument '{instrument}' "

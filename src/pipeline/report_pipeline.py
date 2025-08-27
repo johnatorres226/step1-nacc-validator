@@ -308,7 +308,11 @@ class _SchemaAndRulesCache:
                         from pipeline.utils.instrument_mapping import load_json_rules_for_instrument
                         rules = load_json_rules_for_instrument(instrument_name)
                     
-                    schema = build_cerberus_schema_for_instrument(instrument_name)
+                    # Build schema without temporal rules since no datastore is available
+                    schema = build_cerberus_schema_for_instrument(
+                        instrument_name, 
+                        include_temporal_rules=False
+                    )
                     self._cache[cache_key] = (schema, rules)
                 except Exception as e:
                     logger.warning(f"Failed to load rules for {instrument_name}: {e}")
@@ -332,7 +336,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         validation_rules: Dict[str, Dict[str, Any]],
         instrument_name: str,
         primary_key_field: str,
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Optimized validation using cached schemas and rules.
         
@@ -343,47 +347,84 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
             primary_key_field: Primary key field name
             
         Returns:
-            Tuple of (errors, logs)
+            Tuple of (errors, logs, passed_records)
         """
         errors = []
         logs = []
+        passed_records = []
         
         for index, record in data.iterrows():
             record_dict = record.to_dict()
             
-            # Get schema and rules from cache
-            schema, rules = self._get_cached_schema_and_rules(instrument_name)
+            # Get schema and rules from cache - handle dynamic instruments properly
+            if is_dynamic_rule_instrument(instrument_name):
+                # For dynamic instruments, we need to get the discriminant variable value
+                discriminant_var = get_discriminant_variable(instrument_name)
+                discriminant_value = record_dict.get(discriminant_var, '')
+                
+                # Get the cached schema structure (which contains variants)
+                schema_variants, rules = self._get_cached_schema_and_rules(instrument_name)
+                
+                # Select the appropriate schema variant
+                if discriminant_value in schema_variants:
+                    schema = schema_variants[discriminant_value]
+                else:
+                    # Fallback to first available variant if discriminant value not found
+                    available_variants = list(schema_variants.keys())
+                    if available_variants:
+                        schema = schema_variants[available_variants[0]]
+                        logger.warning(f"Discriminant value '{discriminant_value}' not found for {instrument_name}, using {available_variants[0]}")
+                    else:
+                        schema = {}
+                        logger.error(f"No schema variants available for {instrument_name}")
+            else:
+                # For standard instruments, get schema directly
+                schema, rules = self._get_cached_schema_and_rules(instrument_name)
             
-            # Create QualityCheck instance
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field)
+            # Create QualityCheck instance without datastore (temporal rules already excluded from schema)
+            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
             
             # Validate record
-            record_errors = qc.validate_record(record_dict)
+            validation_result = qc.validate_record(record_dict)
             
             # Process results
             pk_value = record_dict.get(primary_key_field, 'unknown')
             
-            if record_errors:
-                for error in record_errors:
-                    errors.append({
-                        primary_key_field: pk_value,
-                        'instrument_name': instrument_name,
-                        'variable': error.get('variable', ''),
-                        'error_message': error.get('message', ''),
-                        'current_value': error.get('current_value', ''),
-                        'rule_type': error.get('rule_type', ''),
-                        'expected_value': error.get('expected_value', ''),
-                        'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    })
+            # Check if validation failed or had system errors
+            if not validation_result.passed or validation_result.sys_failure:
+                # Extract errors from the ValidationResult object
+                record_errors = validation_result.errors
+                
+                # Process each field that has errors
+                for field_name, field_errors in record_errors.items():
+                    for error_message in field_errors:
+                        errors.append({
+                            primary_key_field: pk_value,
+                            'instrument_name': instrument_name,
+                            'variable': field_name,
+                            'error_message': error_message,
+                            'current_value': record_dict.get(field_name, ''),
+                            'rule_type': 'validation_error',
+                            'expected_value': '',
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                        })
                 
                 logs.append({
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
-                    'error_count': len(record_errors),
+                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
             else:
+                # Record passed validation
+                passed_records.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'PASSED',
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                })
+                
                 logs.append({
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
@@ -392,7 +433,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
         
-        return errors, logs
+        return errors, logs, passed_records
         
     def _log_validation_results_optimized(
         self,
@@ -427,7 +468,7 @@ def validate_data(
     validation_rules: Dict[str, Dict[str, Any]],
     instrument_name: str,
     primary_key_field: str,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Validate data against validation rules.
 
@@ -438,9 +479,10 @@ def validate_data(
         primary_key_field: Name of the primary key field.
 
     Returns:
-        Tuple of (errors, logs) where:
+        Tuple of (errors, logs, passed_records) where:
         - errors: List of validation error dictionaries
         - logs: List of validation log dictionaries
+        - passed_records: List of passed record dictionaries
     """
     return _optimized_cache.validate_data_optimized(
         data=data,
@@ -475,7 +517,11 @@ def _get_schema_and_rules_for_record(
         cache_key = instrument_name
     
     rules = validation_rules_cache.get(cache_key, {})
-    schema = build_cerberus_schema_for_instrument(instrument_name)
+    # Build schema without temporal rules since no datastore is available
+    schema = build_cerberus_schema_for_instrument(
+        instrument_name, 
+        include_temporal_rules=False
+    )
     
     return schema, rules
 

@@ -159,6 +159,11 @@ KEY_MAP = {
     "allowed": "allowed",
     "forbidden": "forbidden",
     "filled": "filled",
+    "required": "required",
+    "anyof": "anyof",
+    "oneof": "oneof",
+    "allof": "allof",
+    "formatting": "formatting",  # Custom formatting rule
     "compatibility": "compatibility", # "compatibility" will be handled by NACCValidator's _validate_compatibility
 }
 
@@ -352,6 +357,7 @@ class QCConfig:
     output_path: str = field(default_factory=lambda: os.getenv('OUTPUT_PATH', str(project_root / "output")))
     log_path: Optional[str] = field(default_factory=lambda: os.getenv('LOG_PATH'))
     status_path: Optional[str] = field(default_factory=lambda: os.getenv('STATUS_PATH'))
+    upload_ready_path: Optional[str] = field(default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
     
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
@@ -404,6 +410,8 @@ class QCConfig:
             self.log_path = str(Path(self.log_path).resolve())
         if self.status_path:
             self.status_path = str(Path(self.status_path).resolve())
+        if self.upload_ready_path:
+            self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
         self._validate_config()
 
     def _validate_config(self):
@@ -554,7 +562,8 @@ class CerberusCompatibilityAdapter:
     
     def __init__(self):
         self.supported_cerberus_rules = {
-            "type", "nullable", "min", "max", "regex", "allowed", "forbidden", "filled"
+            "type", "nullable", "min", "max", "regex", "allowed", "forbidden", "filled",
+            "required", "anyof", "oneof", "allof", "formatting"
         }
         self.custom_rules = {
             "compatibility", "temporalrules"
@@ -629,7 +638,7 @@ class ModernSchemaBuilder:
     def _build_standard_schema(self, instrument_name: str) -> Dict[str, Any]:
         """Build schema for standard instruments."""
         # Import here to avoid circular dependencies
-        from .helpers import load_json_rules_for_instrument
+        from .utils.instrument_mapping import load_json_rules_for_instrument
         
         raw_rules = load_json_rules_for_instrument(instrument_name)
         
@@ -653,7 +662,7 @@ class ModernSchemaBuilder:
     def _build_dynamic_schema(self, instrument_name: str) -> Dict[str, Any]:
         """Build schema for dynamic rule instruments."""
         # Import here to avoid circular dependencies
-        from .instrument_mapping import load_dynamic_rules_for_instrument
+        from .utils.instrument_mapping import load_dynamic_rules_for_instrument
         
         raw_rule_map = load_dynamic_rules_for_instrument(instrument_name)
         

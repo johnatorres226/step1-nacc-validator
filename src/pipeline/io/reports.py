@@ -70,8 +70,8 @@ class ReportFactory:
             return None
         
         # Create standardized filename
-        filename = f"qc_errors_dataset_{export_config.date_tag}_{export_config.time_tag}.csv"
-        output_path = export_config.output_dir / "error_reports" / filename
+        filename = f"Final_Error_Dataset_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Errors" / filename
         
         # Ensure directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,21 +98,16 @@ class ReportFactory:
         export_config: ExportConfiguration
     ) -> Optional[Path]:
         """
-        Generate comprehensive validation logs report.
+        Generate Event Completeness Screening log report.
         
-        Args:
-            df_logs: DataFrame containing all validation logs
-            export_config: Export configuration
-            
-        Returns:
-            Path to generated logs report file or None if no logs
+        Format: ptid, redcap_event_name, instrument_name, target_variable, completeness_status, processing_status, pass_fail, error
         """
         if df_logs.empty:
             logger.info("No validation logs found - skipping logs report")
             return None
         
-        filename = f"qc_validation_logs_{export_config.date_tag}_{export_config.time_tag}.csv"
-        output_path = export_config.output_dir / "validation_logs" / filename
+        filename = f"Log_EventCompletenessScreening_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Validation_Logs" / filename
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df_logs.to_csv(output_path, index=False)
@@ -135,14 +130,9 @@ class ReportFactory:
         export_config: ExportConfiguration
     ) -> Optional[Path]:
         """
-        Generate passed validations report.
+        Generate passed validations report with detailed rule information.
         
-        Args:
-            df_passed: DataFrame containing passed validations
-            export_config: Export configuration
-            
-        Returns:
-            Path to generated report file or None if not included
+        Format: ptid, variable, current_value, json_rule, rule_file, redcap_event_name, instrument_name
         """
         if not export_config.include_passed:
             logger.info("Passed validations export disabled - skipping")
@@ -152,8 +142,8 @@ class ReportFactory:
             logger.info("No passed validations found - skipping passed report")
             return None
         
-        filename = f"qc_passed_validations_{export_config.date_tag}_{export_config.time_tag}.csv"
-        output_path = export_config.output_dir / "passed_validations" / filename
+        filename = f"Log_PassedValidations_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Validation_Logs" / filename
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df_passed.to_csv(output_path, index=False)
@@ -178,55 +168,65 @@ class ReportFactory:
         report_config: ReportConfiguration
     ) -> Path:
         """
-        Generate aggregate error count report per subject/event.
+        Generate aggregate error count report per subject/event with error counts per instrument.
         
-        Args:
-            df_errors: DataFrame containing all validation errors
-            all_records_df: DataFrame containing all processed records
-            export_config: Export configuration
-            report_config: Report configuration
-            
-        Returns:
-            Path to generated aggregate report file
+        Format: ptid, redcap_event_name, [instrument columns with error counts], total_error_count
         """
-        # Calculate error counts per subject/event
-        if df_errors.empty:
-            error_counts = pd.DataFrame(columns=[report_config.primary_key_field, 'redcap_event_name', 'error_count'])
-        else:
-            error_counts = (df_errors.groupby([report_config.primary_key_field, 'redcap_event_name'])
-                          .size()
-                          .reset_index(name='error_count'))
+        # Get all instruments from config
+        from ..config_manager import get_instruments
+        instruments = get_instruments()
         
-        # Merge with all records to show zero counts
-        aggregate_df = all_records_df[[report_config.primary_key_field, 'redcap_event_name']].merge(
-            error_counts, 
-            on=[report_config.primary_key_field, 'redcap_event_name'], 
-            how='left'
-        )
-        aggregate_df['error_count'] = aggregate_df['error_count'].fillna(0).astype(int)
+        # Get unique participants and events (remove duplicates from all_records_df)
+        unique_records = all_records_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
         
-        # Add summary statistics
-        aggregate_df['total_instruments'] = len(self.context.instrument_list)
-        aggregate_df['qc_run_by'] = report_config.qc_run_by
-        aggregate_df = aggregate_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        # Initialize result with unique participants and events
+        result_df = unique_records.copy()
+        
+        # Initialize all instrument columns with 0
+        for instrument in instruments:
+            result_df[instrument] = 0
+        
+        # Count errors per instrument per participant/event
+        if not df_errors.empty:
+            error_counts = df_errors.groupby([
+                report_config.primary_key_field, 
+                'redcap_event_name', 
+                'instrument_name'
+            ]).size().reset_index(name='error_count')
+            
+            # Pivot to get instruments as columns
+            for _, row in error_counts.iterrows():
+                mask = (
+                    (result_df[report_config.primary_key_field] == row[report_config.primary_key_field]) & 
+                    (result_df['redcap_event_name'] == row['redcap_event_name'])
+                )
+                if row['instrument_name'] in instruments:
+                    result_df.loc[mask, row['instrument_name']] = row['error_count']
+        
+        # Calculate total error count
+        instrument_cols = [col for col in result_df.columns if col in instruments]
+        result_df['total_error_count'] = result_df[instrument_cols].sum(axis=1)
+        
+        # Sort by ptid and event
+        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
         
         # Export
-        filename = f"qc_aggregate_error_counts_{export_config.date_tag}_{export_config.time_tag}.csv"
-        output_path = export_config.output_dir / "aggregate_reports" / filename
+        filename = f"QC_Report_ErrorCount_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Reports" / filename
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        aggregate_df.to_csv(output_path, index=False)
+        result_df.to_csv(output_path, index=False)
         
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
         self._generated_reports.append(ReportMetadata(
             report_type="aggregate_errors",
             filename=filename,
-            rows_exported=len(aggregate_df),
+            rows_exported=len(result_df),
             file_size_mb=file_size_mb,
             export_timestamp=datetime.now()
         ))
         
-        logger.info(f"Generated aggregate error report: {filename} ({len(aggregate_df)} records)")
+        logger.info(f"Generated aggregate error report: {filename} ({len(result_df)} records)")
         return output_path
     
     def generate_status_report(
@@ -235,86 +235,260 @@ class ReportFactory:
         complete_visits_df: pd.DataFrame,
         detailed_validation_logs_df: pd.DataFrame,
         export_config: ExportConfiguration,
-        report_config: ReportConfiguration
+        report_config: ReportConfiguration,
+        df_errors: pd.DataFrame
     ) -> Path:
         """
-        Generate tool status and processing summary report.
+        Generate QC Status Report with Pass/Fail status per instrument per participant.
         
-        Args:
-            all_records_df: DataFrame containing all processed records
-            complete_visits_df: DataFrame of completed visits
-            detailed_validation_logs_df: DataFrame of pre-validation logs
-            export_config: Export configuration
-            report_config: Report configuration
-            
-        Returns:
-            Path to generated status report file
+        Format: ptid, redcap_event_name, [instrument Pass/Fail columns], qc_status_complete, qc_run_by, qc_last_run, qc_status, quality_control_check_complete
         """
-        # Create comprehensive status report
-        status_data = []
+        from ..config_manager import get_instruments
+        instruments = get_instruments()
         
-        # Processing summary
-        status_data.append({
-            'metric': 'total_records_processed',
-            'value': len(all_records_df),
-            'category': 'processing'
-        })
+        # Get unique participants and events (remove duplicates from all_records_df)
+        unique_records = all_records_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
         
-        status_data.append({
-            'metric': 'complete_visits_found',
-            'value': len(complete_visits_df),
-            'category': 'processing'
-        })
+        # Initialize result with unique participants and events
+        result_df = unique_records.copy()
         
-        status_data.append({
-            'metric': 'instruments_validated',
-            'value': len(self.context.instrument_list),
-            'category': 'validation'
-        })
+        # Initialize all instrument columns with "Pass"
+        for instrument in instruments:
+            result_df[instrument] = "Pass"
         
-        # Validation summary from logs
-        if not detailed_validation_logs_df.empty:
-            status_data.append({
-                'metric': 'pre_validation_logs',
-                'value': len(detailed_validation_logs_df),
-                'category': 'validation'
-            })
+        # Mark instruments with errors as "Fail"
+        if not df_errors.empty:
+            error_groups = df_errors.groupby([
+                report_config.primary_key_field, 
+                'redcap_event_name', 
+                'instrument_name'
+            ]).size().reset_index(name='error_count')
+            
+            for _, row in error_groups.iterrows():
+                mask = (
+                    (result_df[report_config.primary_key_field] == row[report_config.primary_key_field]) & 
+                    (result_df['redcap_event_name'] == row['redcap_event_name'])
+                )
+                if row['instrument_name'] in instruments:
+                    result_df.loc[mask, row['instrument_name']] = "Fail"
         
-        # Tool configuration
-        status_data.append({
-            'metric': 'primary_key_field',
-            'value': report_config.primary_key_field,
-            'category': 'configuration'
-        })
+        # Add QC status columns
+        result_df['qc_status_complete'] = 0
+        result_df['qc_run_by'] = report_config.qc_run_by
+        result_df['qc_last_run'] = datetime.now().strftime("%Y-%m-%d")
         
-        status_data.append({
-            'metric': 'qc_run_by',
-            'value': report_config.qc_run_by,
-            'category': 'configuration'
-        })
+        # Generate qc_status based on failed instruments
+        def get_qc_status(row):
+            failed_instruments = []
+            for instrument in instruments:
+                if row[instrument] == "Fail":
+                    failed_instruments.append(instrument)
+            
+            if failed_instruments:
+                return f"Failed in instruments: {', '.join(failed_instruments)}"
+            else:
+                return "Pass"
         
-        # Create DataFrame and export
-        status_df = pd.DataFrame(status_data)
-        status_df['timestamp'] = datetime.now().isoformat()
-        status_df['run_date'] = export_config.date_tag
-        status_df['run_time'] = export_config.time_tag
+        result_df['qc_status'] = result_df.apply(get_qc_status, axis=1)
+        result_df['quality_control_check_complete'] = 0
         
-        filename = f"qc_tool_status_{export_config.date_tag}_{export_config.time_tag}.csv"
-        output_path = export_config.output_dir / "status_reports" / filename
+        # Sort by ptid and event
+        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        
+        # Export
+        
+        filename = f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Reports" / filename
         
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        status_df.to_csv(output_path, index=False)
+        result_df.to_csv(output_path, index=False)
         
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
         self._generated_reports.append(ReportMetadata(
             report_type="tool_status",
             filename=filename,
+            rows_exported=len(result_df),
+            file_size_mb=file_size_mb,
+            export_timestamp=datetime.now()
+        ))
+        
+        logger.info(f"Generated status report: {filename} ({len(result_df)} metrics)")
+        return output_path
+    
+    def generate_ptid_completed_visits_report(
+        self,
+        complete_visits_df: pd.DataFrame,
+        export_config: ExportConfiguration,
+        report_config: ReportConfiguration
+    ) -> Path:
+        """
+        Generate PTID Completed Visits report.
+        
+        Format: ptid, redcap_event_name, complete_instruments_count, completion_status
+        """
+        from ..config_manager import get_instruments
+        instruments = get_instruments()
+        
+        # Get unique participants and events (remove duplicates)
+        unique_records = complete_visits_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
+        
+        # Calculate completed instruments count
+        result_df = unique_records.copy()
+        result_df['complete_instruments_count'] = len(instruments) - 1  # Exclude quality_control_check
+        result_df['completion_status'] = 'All Complete'
+        
+        # Sort by ptid and event
+        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        
+        # Export
+        filename = f"PTID_CompletedVisits_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Completed_Visits" / filename
+        
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        result_df.to_csv(output_path, index=False)
+        
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+        self._generated_reports.append(ReportMetadata(
+            report_type="ptid_completed_visits",
+            filename=filename,
+            rows_exported=len(result_df),
+            file_size_mb=file_size_mb,
+            export_timestamp=datetime.now()
+        ))
+        
+        logger.info(f"Generated PTID completed visits report: {filename} ({len(result_df)} records)")
+        return output_path
+    
+    def generate_rules_validation_log(
+        self,
+        all_records_df: pd.DataFrame,
+        export_config: ExportConfiguration,
+        report_config: ReportConfiguration
+    ) -> Path:
+        """
+        Generate Rules Validation log with all validation rules that were checked.
+        
+        Format: ptid, variable, json_rule, rule_file, redcap_event_name, instrument_name
+        """
+        # This would need to be populated during validation - for now create a basic structure
+        # Import validation rules and create entries for all variables
+        from ..config_manager import get_instruments, get_instrument_json_mapping
+        from ..utils.instrument_mapping import load_json_rules_for_instrument
+        
+        instruments = get_instruments()
+        records = []
+        
+        for _, record in all_records_df.iterrows():
+            ptid = record[report_config.primary_key_field]
+            event = record['redcap_event_name']
+            
+            for instrument in instruments:
+                try:
+                    rules = load_json_rules_for_instrument(instrument)
+                    instrument_mapping = get_instrument_json_mapping()
+                    rule_files = instrument_mapping.get(instrument, [])
+                    
+                    for variable, rule_data in rules.items():
+                        for rule_file in rule_files:
+                            records.append({
+                                'ptid': ptid,
+                                'variable': variable,
+                                'json_rule': str(rule_data),
+                                'rule_file': rule_file,
+                                'redcap_event_name': event,
+                                'instrument_name': instrument
+                            })
+                except Exception as e:
+                    logger.warning(f"Could not load rules for instrument {instrument}: {e}")
+                    continue
+        
+        result_df = pd.DataFrame(records)
+        
+        # Export
+        filename = f"Log_RulesValidation_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Validation_Logs" / filename
+        
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        result_df.to_csv(output_path, index=False)
+        
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+        self._generated_reports.append(ReportMetadata(
+            report_type="rules_validation_log",
+            filename=filename,
+            rows_exported=len(result_df),
+            file_size_mb=file_size_mb,
+            export_timestamp=datetime.now()
+        ))
+        
+        logger.info(f"Generated rules validation log: {filename} ({len(result_df)} records)")
+        return output_path
+    
+    def generate_json_status_report(
+        self,
+        status_report_path: Path,
+        export_config: ExportConfiguration
+    ) -> Path:
+        """
+        Generate JSON report from the QC Status Report CSV and save to UPLOAD_READY_PATH.
+        """
+        import json
+        from ..config_manager import get_config
+        
+        # Read the CSV status report
+        status_df = pd.read_csv(status_report_path)
+        
+        # Convert to JSON format
+        json_data = {
+            "qc_run_metadata": {
+                "run_date": export_config.date_tag,
+                "run_time": export_config.time_tag,
+                "total_participants": len(status_df)
+            },
+            "participant_status": []
+        }
+        
+        for _, row in status_df.iterrows():
+            participant_data = {
+                "ptid": row['ptid'],
+                "redcap_event_name": row['redcap_event_name'],
+                "qc_status": row['qc_status'],
+                "qc_run_by": row['qc_run_by'],
+                "qc_last_run": row['qc_last_run'],
+                "instruments": {}
+            }
+            
+            # Add instrument status
+            from ..config_manager import get_instruments
+            instruments = get_instruments()
+            for instrument in instruments:
+                if instrument in row:
+                    participant_data["instruments"][instrument] = row[instrument]
+            
+            json_data["participant_status"].append(participant_data)
+        
+        # Get upload ready path from config
+        config = get_config()
+        if config.upload_ready_path:
+            upload_dir = Path(config.upload_ready_path)
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            output_path = upload_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+        else:
+            # Fallback to export_config output_dir if no upload path configured
+            output_path = export_config.output_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+        
+        with open(output_path, 'w') as f:
+            json.dump(json_data, f, indent=2)
+        
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+        self._generated_reports.append(ReportMetadata(
+            report_type="json_status_report",
+            filename=output_path.name,
             rows_exported=len(status_df),
             file_size_mb=file_size_mb,
             export_timestamp=datetime.now()
         ))
         
-        logger.info(f"Generated status report: {filename} ({len(status_df)} metrics)")
+        logger.info(f"Generated JSON status report: {output_path}")
         return output_path
     
     def export_all_reports(
@@ -367,9 +541,25 @@ class ReportFactory:
         
         status_path = self.generate_status_report(
             all_records_df, complete_visits_df, detailed_validation_logs_df,
-            export_config, report_config
+            export_config, report_config, df_errors
         )
         generated_files.append(status_path)
+        
+        # Generate PTID Completed Visits report
+        ptid_path = self.generate_ptid_completed_visits_report(
+            complete_visits_df, export_config, report_config
+        )
+        generated_files.append(ptid_path)
+        
+        # Generate Rules Validation log
+        rules_log_path = self.generate_rules_validation_log(
+            all_records_df, export_config, report_config
+        )
+        generated_files.append(rules_log_path)
+        
+        # Generate JSON status report
+        json_path = self.generate_json_status_report(status_path, export_config)
+        generated_files.append(json_path)
         
         # Create summary report of all generated files
         self._create_generation_summary(export_config)
@@ -390,7 +580,7 @@ class ReportFactory:
             for report in self._generated_reports
         ])
         
-        filename = f"qc_generation_summary_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Generation_Summary_{export_config.date_tag}_{export_config.time_tag}.csv"
         output_path = export_config.output_dir / filename
         
         summary_df.to_csv(output_path, index=False)

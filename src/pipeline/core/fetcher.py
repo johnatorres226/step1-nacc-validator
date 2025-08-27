@@ -267,9 +267,9 @@ class DataSaver:
             logger.warning("No output path configured, skipping save")
             return None
         
-        # Create ETL_Data subdirectory
+        # Create Data_Fetched subdirectory
         etl_dir = (self.context.output_path / 
-                  f"ETL_Data_{self.context.run_date}_{self.context.time_stamp}")
+                  f"Data_Fetched")
         etl_dir.mkdir(parents=True, exist_ok=True)
         
         filename = f"{filename_prefix}_{self.context.run_date}_{self.context.time_stamp}.csv"

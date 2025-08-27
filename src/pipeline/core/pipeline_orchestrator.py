@@ -77,7 +77,7 @@ class PipelineOrchestrator:
         try:
             # Stage 1: Data Fetching
             self.logger.info("STAGE 1: Data Fetching")
-            data_fetch_result = self._execute_data_fetch_stage(output_path, date_tag, time_tag)
+            data_fetch_result = self._execute_data_fetch_stage(output_dir, date_tag, time_tag)
             self.logger.info(f"✅ Data fetch completed: {data_fetch_result.records_processed} records in {data_fetch_result.execution_time:.2f}s")
             
             # Stage 2: Rules Loading
@@ -167,7 +167,7 @@ class PipelineOrchestrator:
     
     def _execute_data_fetch_stage(
         self, 
-        output_path: Optional[Union[str, Path]], 
+        output_dir: Path, 
         date_tag: Optional[str], 
         time_tag: Optional[str]
     ) -> DataFetchResult:
@@ -181,7 +181,7 @@ class PipelineOrchestrator:
             pipeline = RedcapETLPipeline(self.config)
             
             self.logger.info("Fetching data from REDCap...")
-            etl_result = pipeline.run(output_path, date_tag, time_tag)
+            etl_result = pipeline.run(output_dir, date_tag, time_tag)
             
             execution_time = time.time() - stage_start
             
@@ -371,12 +371,15 @@ class PipelineOrchestrator:
                 all_logs.extend(logs)
                 all_passed.extend(passed_records)
                 
-                # Collect records for status
-                records_for_status.append(
-                    _collect_processed_records_info(
-                        df, instrument, primary_key_field=self.config.primary_key_field
-                    )
-                )
+                # Collect records for status - create simple record info with instrument name
+                if not df.empty:
+                    record_df = df[[self.config.primary_key_field, 'redcap_event_name']].copy()
+                    record_df['instrument_name'] = instrument
+                    records_for_status.append(record_df)
+                else:
+                    # Create empty DataFrame with proper columns
+                    empty_df = pd.DataFrame(columns=[self.config.primary_key_field, 'redcap_event_name', 'instrument_name'])
+                    records_for_status.append(empty_df)
             
             # Create result DataFrames
             errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
@@ -441,10 +444,16 @@ class PipelineOrchestrator:
             )
             
             # Create export configuration
+            # Ensure we have proper date and time tags
+            if date_tag is None or time_tag is None:
+                current_datetime = datetime.now()
+                date_tag = date_tag or current_datetime.strftime("%d%b%Y").upper()
+                time_tag = time_tag or current_datetime.strftime("%H%M%S")
+            
             export_config = ExportConfiguration(
                 output_dir=output_dir,
-                date_tag=date_tag or "unknown",
-                time_tag=time_tag or "unknown"
+                date_tag=date_tag,
+                time_tag=time_tag
             )
             
             # Create report configuration
