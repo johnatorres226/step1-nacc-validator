@@ -137,18 +137,6 @@ class PacketRuleRouter:
             logger.error(f"Failed to load default rules for {instrument_name}: {e}")
             return {}
     
-    def clear_cache(self):
-        """Clear the rule cache."""
-        self._rule_cache.clear()
-        logger.debug("Rule cache cleared")
-    
-    def get_cache_stats(self) -> Dict[str, Any]:
-        """Get statistics about the rule cache."""
-        return {
-            'cache_size': len(self._rule_cache),
-            'cached_keys': list(self._rule_cache.keys())
-        }
-    
     def is_packet_supported(self, packet: str) -> bool:
         """
         Check if a packet type is supported.
@@ -178,6 +166,25 @@ class PacketRuleRouter:
         if self.config.json_rules_path_f and Path(self.config.json_rules_path_f).exists():
             available.append('F')
         return available
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """
+        Get cache statistics for monitoring and optimization.
+        
+        Returns:
+            Dictionary containing cache performance metrics
+        """
+        return {
+            'cache_size': len(self._rule_cache),
+            'cached_keys': list(self._rule_cache.keys())
+        }
+    
+    def clear_cache(self) -> None:
+        """
+        Clear all cached rules for memory management.
+        """
+        self._rule_cache.clear()
+        logger.info("Cleared packet rule router cache")
 
 
 def create_packet_router(config: Optional[QCConfig] = None) -> PacketRuleRouter:
