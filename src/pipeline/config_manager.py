@@ -553,7 +553,7 @@ def get_status_path() -> Optional[Path]:
 def get_core_columns() -> List[str]:
     """Returns the core REDCap columns."""
     config = get_config()
-    return [config.primary_key_field, "redcap_event_name"]
+    return [config.primary_key_field, "redcap_event_name", "packet"]
 
 
 def get_completion_columns() -> List[str]:

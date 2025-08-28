@@ -324,13 +324,13 @@ class ReportFactory:
         """
         Generate PTID Completed Visits report.
         
-        Format: ptid, redcap_event_name, complete_instruments_count, completion_status
+        Format: ptid, redcap_event_name, packet, complete_instruments_count, completion_status
         """
         from ..config_manager import get_instruments
         instruments = get_instruments()
         
-        # Get unique participants and events (remove duplicates)
-        unique_records = complete_visits_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
+        # Get unique participants, events, and packets (remove duplicates while preserving packet info)
+        unique_records = complete_visits_df[[report_config.primary_key_field, 'redcap_event_name', 'packet']].drop_duplicates()
         
         # Calculate completed instruments count
         result_df = unique_records.copy()
@@ -368,36 +368,37 @@ class ReportFactory:
         """
         Generate Rules Validation log with all validation rules that were checked.
         
-        Format: ptid, variable, json_rule, rule_file, redcap_event_name, instrument_name
+        Format: ptid, variable, json_rule, json_rule_path, redcap_event_name, instrument_name
         """
         # This would need to be populated during validation - for now create a basic structure
         # Import validation rules and create entries for all variables
-        from ..config_manager import get_instruments, get_instrument_json_mapping
+        from ..config_manager import get_instruments, get_instrument_json_mapping, get_config
         from ..utils.instrument_mapping import load_json_rules_for_instrument
         
         instruments = get_instruments()
+        config = get_config()
         records = []
         
         for _, record in all_records_df.iterrows():
             ptid = record[report_config.primary_key_field]
             event = record['redcap_event_name']
+            packet_value = record.get('packet', 'unknown')
             
             for instrument in instruments:
                 try:
                     rules = load_json_rules_for_instrument(instrument)
-                    instrument_mapping = get_instrument_json_mapping()
-                    rule_files = instrument_mapping.get(instrument, [])
+                    # Get the full rules path based on packet type
+                    rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
                     
                     for variable, rule_data in rules.items():
-                        for rule_file in rule_files:
-                            records.append({
-                                'ptid': ptid,
-                                'variable': variable,
-                                'json_rule': str(rule_data),
-                                'rule_file': rule_file,
-                                'redcap_event_name': event,
-                                'instrument_name': instrument
-                            })
+                        records.append({
+                            'ptid': ptid,
+                            'variable': variable,
+                            'json_rule': str(rule_data),
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': event,
+                            'instrument_name': instrument
+                        })
                 except Exception as e:
                     logger.warning(f"Could not load rules for instrument {instrument}: {e}")
                     continue

@@ -421,7 +421,6 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
-                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
                     'packet': packet_value,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
@@ -454,7 +453,6 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'PASSED',
-                    'error_count': 0,
                     'packet': packet_value,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
@@ -510,7 +508,8 @@ def validate_data(
         - logs: List of validation log dictionaries
         - passed_records: List of passed record dictionaries
     """
-    return _optimized_cache.validate_data_optimized(
+    # Use the migration-aware validation that includes packet handling and json_rule_path
+    return validate_data_with_migration_support(
         data=data,
         validation_rules=validation_rules,
         instrument_name=instrument_name,
@@ -785,7 +784,6 @@ def validate_data_with_packet_routing(
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
-                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                     'packet': packet_value,
                 })
@@ -820,7 +818,6 @@ def validate_data_with_packet_routing(
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'PASSED',
-                    'error_count': 0,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                     'packet': packet_value,
                 })
@@ -968,7 +965,6 @@ def validate_data_with_migration_support(
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
-                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                     'packet': packet_value,
                     'routing_info': routing_info,
@@ -1003,7 +999,6 @@ def validate_data_with_migration_support(
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'PASSED',
-                    'error_count': 0,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                     'packet': packet_value,
                     'routing_info': routing_info,
