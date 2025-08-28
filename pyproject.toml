@@ -2,6 +2,7 @@
 name = "udsv4-redcap-qc-validator"         # The name of your Python project/package
 version = "0.1.0"                          # Initial version of the project
 description = "QC validator for UDSv4 REDCap data"  # Short description of the project
+license = "Mozilla Public License 2.0"                            # License for the project
 authors = [
     { name="John Torres", email="sdccunm.john@gmail.com" }
 ]

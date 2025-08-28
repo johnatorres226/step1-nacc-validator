@@ -2,6 +2,12 @@
 
 A comprehensive Quality Control (QC) pipeline for validating NACC UDSv4 REDCap data with enhanced database tracking, trend analysis, and team collaboration features. This Windows-compatible system provides both standard validation and enhanced modes with historical error tracking on network drives.
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Important**: This project incorporates code from [`naccdata/nacc-form-validator`](https://github.com/naccdata/nacc-form-validator) which is licensed under the Mozilla Public License 2.0. See the [Third-Party Code Disclosure](#-third-party-code-disclosure) section below for complete licensing information.
+
 ## ✨ Key Features
 
 - **Modern CLI Interface**: Professional command-line tool (`udsv4-qc`) with rich output formatting
@@ -222,21 +228,45 @@ flake8 src/ tests/
 
 ## 📢 Third-Party Code Disclosure
 
-This project incorporates code from the following scripts originally developed in the [`naccdata/nacc-form-validator`](https://github.com/naccdata/nacc-form-validator) repository:
+### NACC Form Validator Components
 
-- `datastore.py`
-- `errors.py`
-- `json_logic.py`
-- `keys.py`
-- `nacc_validator.py`
-- `quality_check.py`
-- `utils.py`
+This project incorporates substantial code from the [`naccdata/nacc-form-validator`](https://github.com/naccdata/nacc-form-validator) repository, which is licensed under the **Mozilla Public License Version 2.0 (MPL v2.0)**.
 
-These files are subject to the [Mozilla Public License Version 2.0 (MPL v2.0)](https://www.mozilla.org/en-US/MPL/2.0/). If a copy of the MPL was not distributed with this project, you can obtain one at [mozilla.org/MPL/2.0/](https://www.mozilla.org/MPL/2.0/).
+#### Files Subject to MPL v2.0
 
-Please refer to the original repository for further details and source history.
+The following files in the `nacc_form_validator/` directory are derived from or substantially incorporate code from the original NACC form validator:
+
+- `datastore.py` - Data storage and persistence functionality
+- `errors.py` - Error handling and validation error definitions  
+- `json_logic.py` - JSON logic evaluation engine
+- `keys.py` - Key management and validation utilities
+- `nacc_validator.py` - Core validation logic and rules engine
+- `quality_check.py` - Quality control checks and validation routines
+- `utils.py` - Shared utility functions and helpers
+
+#### Mozilla Public License v2.0 Compliance
+
+**Source Code Availability**: The original source code for these components is available at:
+- **Original Repository**: https://github.com/naccdata/nacc-form-validator
+- **License Text**: https://www.mozilla.org/en-US/MPL/2.0/
+- **License File**: [MPL-2.0-LICENSE](MPL-2.0-LICENSE) (included in this repository)
+
+**Notice Requirements**: As required by MPL v2.0, Section 3.3:
+- The above files retain their original copyright notices where applicable
+- This notice serves as the required disclosure of MPL v2.0 covered source code
+- Any modifications to the original MPL v2.0 files are documented in version control history
+
+**License Compatibility**: The MPL v2.0 license is compatible with this project's MIT license for the combined work. The MPL v2.0 components remain under MPL v2.0, while the rest of the project is under MIT license.
+
+#### Attribution
+
+Original work by the NACC (National Alzheimer's Coordinating Center) team.  
+Repository: https://github.com/naccdata/nacc-form-validator  
+License: Mozilla Public License Version 2.0
+
+For the complete license text and terms, see: https://www.mozilla.org/en-US/MPL/2.0/
 
 **Project Status**: Production Ready  
 **Version**: 1.0.0  
 **Target Environment**: Windows with Network Drive Support  
-**Last Updated**: July 16, 2025
+**Last Updated**: August 28, 2025

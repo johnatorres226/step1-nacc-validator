@@ -212,6 +212,9 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# Test Folders
+tests/
+
 # # Output folder
 /output/
 /output
