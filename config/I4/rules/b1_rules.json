@@ -1,0 +1,386 @@
+{
+    "frmdateb1": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langb1": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modeb1": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "b1not": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb1": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "b1not": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb1": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "b1not": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            94,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "height": {
+        "required": true,
+        "type": "float",
+        "anyof": [
+            {
+                "min": 36.0,
+                "max": 87.9
+            },
+            {
+                "allowed": [
+                    88.8
+                ]
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "height": {
+                        "forbidden": [
+                            88.8
+                        ]
+                    }
+                },
+                "then": {
+                    "height": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "height": {
+                                        "forbidden": [
+                                            88.8
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "height": {
+                                        "compare_with": {
+                                            "comparator": "<=",
+                                            "base": "height",
+                                            "previous_record": true,
+                                            "op": "abs",
+                                            "adjustment": 5
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "weight": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 50,
+                "max": 400
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "weight": {
+                        "forbidden": [
+                            888
+                        ]
+                    }
+                },
+                "then": {
+                    "weight": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "weight": {
+                                        "forbidden": [
+                                            888
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "weight": {
+                                        "compare_with": {
+                                            "comparator": "<=",
+                                            "base": "weight",
+                                            "previous_record": true,
+                                            "op": "abs",
+                                            "adjustment": 50
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "waist1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 20,
+                "max": 60
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ],
+        "compare_with": {
+            "comparator": "<=",
+            "base": "waist2",
+            "op": "abs",
+            "adjustment": 1
+        }
+    },
+    "waist2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 20,
+                "max": 60
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "hip1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 25,
+                "max": 70
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ],
+        "compare_with": {
+            "comparator": "<=",
+            "base": "hip2",
+            "op": "abs",
+            "adjustment": 1
+        }
+    },
+    "hip2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 25,
+                "max": 70
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpsysl1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 70,
+                "max": 230
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpdiasl1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 30,
+                "max": 140
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpsysl2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 70,
+                "max": 230
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpdiasl2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 30,
+                "max": 140
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpsysr1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 70,
+                "max": 230
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpdiasr1": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 30,
+                "max": 140
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpsysr2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 70,
+                "max": 230
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "bpdiasr2": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 30,
+                "max": 140
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "hrate": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 33,
+                "max": 160
+            },
+            {
+                "allowed": [
+                    888
+                ]
+            }
+        ]
+    },
+    "initialsb1": {
+        "nullable": true
+    }
+}

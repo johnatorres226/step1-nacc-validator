@@ -1,0 +1,3958 @@
+{
+    "frmdatec2c2t": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langc2c2t": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modec2c2t": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            2
+        ]
+    },
+    "rmreasc2c2t": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodec2c2t": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "mocacomp": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "mocareas": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocareas": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocareas": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocalan": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocalan": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocalan": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "mocalan": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "langc2c2t": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "mocalan": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "langc2c2t": {
+                        "forbidden": [
+                            2
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3
+        ]
+    },
+    "mocalanx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocalan": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "mocalanx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocalan": {
+                        "forbidden": [
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "mocalanx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "mocahear": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocahear": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocahear": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "mocahear": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "resphear": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "mocbtots": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocbtots": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocbtots": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "or",
+                "if": {
+                    "mocadigi": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocalett": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaser7": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocarepe": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaflue": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaabst": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocarecn": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaordt": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaormo": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaoryr": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaordy": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaorpl": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "mocaorct": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "mocbtots": {
+                        "allowed": [
+                            88
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "and",
+                "if": {
+                    "mocadigi": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocalett": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaser7": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocarepe": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaflue": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaabst": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocarecn": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaordt": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaormo": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaoryr": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaordy": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaorpl": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "mocaorct": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    }
+                },
+                "then": {
+                    "mocbtots": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    {
+                                        "var": "mocbtots"
+                                    },
+                                    {
+                                        "+": [
+                                            {
+                                                "var": "mocadigi"
+                                            },
+                                            {
+                                                "var": "mocalett"
+                                            },
+                                            {
+                                                "var": "mocaser7"
+                                            },
+                                            {
+                                                "var": "mocarepe"
+                                            },
+                                            {
+                                                "var": "mocaflue"
+                                            },
+                                            {
+                                                "var": "mocaabst"
+                                            },
+                                            {
+                                                "var": "mocarecn"
+                                            },
+                                            {
+                                                "var": "mocaordt"
+                                            },
+                                            {
+                                                "var": "mocaormo"
+                                            },
+                                            {
+                                                "var": "mocaoryr"
+                                            },
+                                            {
+                                                "var": "mocaordy"
+                                            },
+                                            {
+                                                "var": "mocaorpl"
+                                            },
+                                            {
+                                                "var": "mocaorct"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 22
+            },
+            {
+                "allowed": [
+                    88
+                ]
+            }
+        ]
+    },
+    "mocadigi": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocadigi": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocadigi": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocalett": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocalett": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocalett": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaser7": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaser7": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaser7": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocarepe": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarepe": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarepe": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaflue": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaflue": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaflue": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaabst": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaabst": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaabst": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocarecn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocarecc": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecc": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecc": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            88
+        ]
+    },
+    "mocarecr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocarecr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            88
+        ]
+    },
+    "mocaordt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaordt": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaordt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaormo": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaormo": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaormo": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaoryr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaoryr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaoryr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaordy": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaordy": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaordy": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaorpl": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaorpl": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaorpl": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "mocaorct": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaorct": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "mocacomp": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mocaorct": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "npsylan": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "npsylan": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "langc2c2t": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "npsylan": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "langc2c2t": {
+                        "forbidden": [
+                            2
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "npsylanx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "npsylan": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "npsylanx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "npsylan": {
+                        "forbidden": [
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "npsylanx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "craftvrs": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 44
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "crafturs": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "craftvrs": {
+                        "min": 0,
+                        "max": 44
+                    }
+                },
+                "then": {
+                    "crafturs": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "craftvrs": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "crafturs": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 25
+    },
+    "digforct": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 14
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "digforsl": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "digforct": {
+                        "min": 0,
+                        "max": 14
+                    }
+                },
+                "then": {
+                    "digforsl": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "digforct": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "digforsl": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+        ]
+    },
+    "digbacct": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 14
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "digbacls": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "digbacct": {
+                        "min": 0,
+                        "max": 14
+                    }
+                },
+                "then": {
+                    "digbacls": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "digbacct": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "digbacls": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+        ]
+    },
+    "verbaltest": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "verbaltest": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "rey1rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey1int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey2rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey2int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey3rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey3int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey4rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey4int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey5rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey5int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reybrec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reybint": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey6rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rey6int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reydrec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reydint": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reydti": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reymethod": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reytcor": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "reyfpos": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "verbaltest": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "cerad1rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad1read": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad1int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad2rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad2read": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad2int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad3rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad3read": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "cerad3int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "ceraddti": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "ceradj6rec": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "ceradj6int": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "ceradj7yes": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "ceradj7no": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "rey1rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "verbaltest": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rey1rec": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 15
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "rey1int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey1int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey1int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "rey2rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey2rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey2rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "rey2int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey2int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey2int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "rey3rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey3rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey3rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "rey3int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey3int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey3int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "rey4rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey4rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey4rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "rey4int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey4int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey4int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "rey5rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey5rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey5rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "rey5int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey5int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey5int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "reybrec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reybrec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reybrec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "reybint": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reybint": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reybint": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "rey6rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey6rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey6rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "rey6int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "rey6int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "rey1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "rey6int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "cerad1rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "verbaltest": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "cerad1rec": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 10
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "cerad1int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "cerad1int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "cerad1int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "cerad2rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "cerad2rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "cerad2rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 10
+    },
+    "cerad2int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "cerad2int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "cerad2int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "cerad3rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "cerad3rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "cerad3rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 10
+    },
+    "cerad3int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "cerad3int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "cerad3int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "animals": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 77
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "veg": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 77
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "ceraddti": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "ceraddti": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "ceraddti": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 85
+            },
+            {
+                "allowed": [
+                    99
+                ]
+            }
+        ]
+    },
+    "ceradj6rec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "ceradj6rec": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "ceradj6rec": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 10
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "ceradj6int": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ceradj6rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "ceradj6int": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ceradj6rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "ceradj6int": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "ceradj7yes": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cerad1rec": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "ceradj7yes": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cerad1rec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "ceradj7yes": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 10
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "ceradj7no": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ceradj7yes": {
+                        "min": 0,
+                        "max": 10
+                    }
+                },
+                "then": {
+                    "ceradj7no": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ceradj7yes": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "ceradj7no": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 10
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "otraila": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 100
+            },
+            {
+                "allowed": [
+                    888,
+                    995,
+                    996,
+                    997,
+                    998
+                ]
+            }
+        ]
+    },
+    "otrlarr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "otraila": {
+                        "min": 0,
+                        "max": 100
+                    }
+                },
+                "then": {
+                    "otrlarr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "otraila": {
+                        "allowed": [
+                            888,
+                            995,
+                            996,
+                            997,
+                            998
+                        ]
+                    }
+                },
+                "then": {
+                    "otrlarr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "otrlali": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "otraila": {
+                        "min": 0,
+                        "max": 100
+                    }
+                },
+                "then": {
+                    "otrlali": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "otraila": {
+                        "allowed": [
+                            888,
+                            995,
+                            996,
+                            997,
+                            998
+                        ]
+                    }
+                },
+                "then": {
+                    "otrlali": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 25
+    },
+    "otrailb": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 300
+            },
+            {
+                "allowed": [
+                    888,
+                    995,
+                    996,
+                    997,
+                    998
+                ]
+            }
+        ]
+    },
+    "otrlbrr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "otrailb": {
+                        "min": 0,
+                        "max": 300
+                    }
+                },
+                "then": {
+                    "otrlbrr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "otrailb": {
+                        "allowed": [
+                            888,
+                            995,
+                            996,
+                            997,
+                            998
+                        ]
+                    }
+                },
+                "then": {
+                    "otrlbrr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "otrlbli": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "otrailb": {
+                        "min": 0,
+                        "max": 300
+                    }
+                },
+                "then": {
+                    "otrlbli": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "otrailb": {
+                        "allowed": [
+                            888,
+                            995,
+                            996,
+                            997,
+                            998
+                        ]
+                    }
+                },
+                "then": {
+                    "otrlbli": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 25
+    },
+    "craftdvr": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 44
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "craftdre": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "craftdvr": {
+                        "min": 0,
+                        "max": 44
+                    }
+                },
+                "then": {
+                    "craftdre": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "craftdvr": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "craftdre": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 25
+    },
+    "craftdti": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "craftdvr": {
+                        "min": 0,
+                        "max": 44
+                    }
+                },
+                "then": {
+                    "craftdti": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "craftdvr": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "craftdti": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 85
+            },
+            {
+                "allowed": [
+                    99
+                ]
+            }
+        ]
+    },
+    "craftcue": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "craftdvr": {
+                        "min": 0,
+                        "max": 44
+                    }
+                },
+                "then": {
+                    "craftcue": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "craftdvr": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "craftcue": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "udsverfc": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 40
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "udsverfn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "udsverfc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsverfn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "udsverfc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsverfn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "udsvernf": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "udsverfc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsvernf": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "udsverfc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsvernf": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "udsverlc": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 40
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "udsverlr": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "udsverlc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsverlr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "udsverlc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsverlr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "udsverln": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "udsverlc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsverln": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "udsverlc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsverln": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 15
+    },
+    "udsvertn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "udsverfc": {
+                        "min": 0,
+                        "max": 40
+                    },
+                    "udsverlc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsvertn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "udsverfc": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "udsverlc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsvertn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "udsverfc": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    },
+                    "udsverlc": {
+                        "forbidden": [
+                            95,
+                            96,
+                            97,
+                            98
+                        ]
+                    }
+                },
+                "then": {
+                    "udsvertn": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    {
+                                        "var": "udsvertn"
+                                    },
+                                    {
+                                        "+": [
+                                            {
+                                                "var": "udsverfc"
+                                            },
+                                            {
+                                                "var": "udsverlc"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 80
+    },
+    "udsverte": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "udsverfn": {
+                        "min": 0,
+                        "max": 15
+                    },
+                    "udsverlr": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "udsverte": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "udsverfc": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "udsverlc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsverte": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "udsverfn": {
+                        "min": 0,
+                        "max": 15
+                    },
+                    "udsverlr": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "udsverte": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    {
+                                        "var": "udsverte"
+                                    },
+                                    {
+                                        "+": [
+                                            {
+                                                "var": "udsverfn"
+                                            },
+                                            {
+                                                "var": "udsverlr"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 30
+    },
+    "udsverti": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "udsverfc": {
+                        "min": 0,
+                        "max": 40
+                    },
+                    "udsverlc": {
+                        "min": 0,
+                        "max": 40
+                    }
+                },
+                "then": {
+                    "udsverti": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "udsverfc": {
+                        "min": 95,
+                        "max": 98
+                    },
+                    "udsverlc": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "udsverti": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "udsvernf": {
+                        "min": 0,
+                        "max": 15
+                    },
+                    "udsverln": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "udsverti": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    {
+                                        "var": "udsverti"
+                                    },
+                                    {
+                                        "+": [
+                                            {
+                                                "var": "udsvernf"
+                                            },
+                                            {
+                                                "var": "udsverln"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 30
+    },
+    "reydrec": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "verbaltest": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "rey1rec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reydrec": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 15
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "reydint": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "reydrec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reydint": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "reydrec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reydint": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "min": 0,
+        "max": 99
+    },
+    "reydti": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "reydrec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reydti": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "reydrec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reydti": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 85
+            },
+            {
+                "allowed": [
+                    99
+                ]
+            }
+        ]
+    },
+    "reytcor": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "reydrec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reytcor": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "reydrec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reytcor": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 15
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "reyfpos": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "reydrec": {
+                        "min": 0,
+                        "max": 15
+                    }
+                },
+                "then": {
+                    "reyfpos": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "reydrec": {
+                        "min": 95,
+                        "max": 98
+                    }
+                },
+                "then": {
+                    "reyfpos": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "anyof": [
+            {
+                "min": 0,
+                "max": 15
+            },
+            {
+                "allowed": [
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "vnttotw": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 50
+            },
+            {
+                "allowed": [
+                    88,
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "vntpcnc": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 50
+            },
+            {
+                "allowed": [
+                    88,
+                    95,
+                    96,
+                    97,
+                    98
+                ]
+            }
+        ]
+    },
+    "cogstat": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogstat": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "max": 1
+                    }
+                }
+            }
+        ]
+    },
+    "respval": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "respval": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "resphear": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respdist": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respintr": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respdisn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respfatg": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respemot": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respasst": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "respoth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "respval": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "resphear": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respdist": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respintr": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respdisn": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respfatg": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respemot": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respasst": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "respoth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "resphear": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respdist": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respintr": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respdisn": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respfatg": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respemot": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respasst": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respoth": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "respothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "respoth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "respothx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "respoth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "respothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "initialsc2c2t": {
+        "nullable": true
+    }
+}

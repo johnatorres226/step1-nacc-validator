@@ -1,0 +1,81 @@
+{
+    "inrelto": {
+        "nullable": true,
+        "filled": false
+    },
+    "inknown": {
+        "nullable": true,
+        "filled": false
+    },
+    "inlivwth": {
+        "nullable": true,
+        "filled": false
+    },
+    "incntmod": {
+        "nullable": true,
+        "filled": false
+    },
+    "incntmdx": {
+        "nullable": true,
+        "filled": false
+    },
+    "incntfrq": {
+        "nullable": true,
+        "filled": false
+    },
+    "incnttim": {
+        "nullable": true,
+        "filled": false
+    },
+    "inrely": {
+        "nullable": true,
+        "filled": false
+    },
+    "inmemwors": {
+        "nullable": true,
+        "filled": false
+    },
+    "inmemtroub": {
+        "nullable": true,
+        "filled": false
+    },
+    "inmemten": {
+        "nullable": true,
+        "filled": false
+    },
+    "frmdatea2": {
+        "nullable": true
+    },
+    "langa2": {
+        "nullable": true
+    },
+    "modea2": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0
+        ]
+    },
+    "rmreasa2": {
+        "nullable": true,
+        "filled": false
+    },
+    "rmmodea2": {
+        "nullable": true,
+        "filled": false
+    },
+    "a2not": {
+        "type": "integer",
+        "allowed": [
+            92,
+            95,
+            96,
+            97,
+            98
+        ],
+        "required": true
+    },
+    "initialsa2": {
+        "nullable": true
+    }
+}

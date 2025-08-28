@@ -1,0 +1,726 @@
+{
+    "frmdateb4": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langb4": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modeb4": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "rmreasb4": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb4": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb4": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb4": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb4": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodeb4": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb4": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb4": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb4": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb4": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "memory": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogmem": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "memory": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogmem": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "memory": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "orient": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogori": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "orient": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogori": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "orient": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "judgment": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cogjudg": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "judgment": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cogjudg": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "judgment": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "commun": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ]
+    },
+    "homehobb": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ]
+    },
+    "perscare": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0
+        ]
+    },
+    "cdrsum": {
+        "required": true,
+        "type": "float",
+        "anyof": [
+            {
+                "min": 0.0,
+                "max": 16.0
+            },
+            {
+                "allowed": [
+                    17.0,
+                    18.0,
+                    99.0
+                ]
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "memory": {
+                        "forbidden": [
+                            99
+                        ]
+                    },
+                    "orient": {
+                        "forbidden": [
+                            99
+                        ]
+                    },
+                    "judgment": {
+                        "forbidden": [
+                            99
+                        ]
+                    },
+                    "commun": {
+                        "forbidden": [
+                            99
+                        ]
+                    },
+                    "homehobb": {
+                        "forbidden": [
+                            99
+                        ]
+                    },
+                    "perscare": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrsum": {
+                        "logic": {
+                            "formula": {
+                                "==": [
+                                    {
+                                        "var": "cdrsum"
+                                    },
+                                    {
+                                        "+": [
+                                            {
+                                                "var": "memory"
+                                            },
+                                            {
+                                                "var": "orient"
+                                            },
+                                            {
+                                                "var": "judgment"
+                                            },
+                                            {
+                                                "var": "commun"
+                                            },
+                                            {
+                                                "var": "homehobb"
+                                            },
+                                            {
+                                                "var": "perscare"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "memory": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "orient": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "judgment": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "commun": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "homehobb": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "perscare": {
+                        "allowed": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrsum": {
+                        "allowed": [
+                            99
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrsum": {
+                        "max": 5
+                    }
+                }
+            }
+        ]
+    },
+    "cdrglob": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "memory": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "orient": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "judgment": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "commun": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "homehobb": {
+                        "allowed": [
+                            99
+                        ]
+                    },
+                    "perscare": {
+                        "allowed": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "allowed": [
+                            99
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "rmmodec2c2t": {
+                        "allowed": [
+                            2
+                        ],
+                        "nullable": true
+                    },
+                    "mocatots": {
+                        "max": 3
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "forbidden": [
+                            0.0,
+                            0.5
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "rmmodec2c2t": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "mocbtots": {
+                        "max": 3
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "forbidden": [
+                            0.0,
+                            0.5
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 4,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 5,
+                "if": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "forbidden": [
+                            0.0,
+                            0.5
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 6,
+                "if": {
+                    "normcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 7,
+                "if": {
+                    "cdrglob": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "cdrglob": {
+                                        "forbidden": [
+                                            99
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "cdrglob": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "cdrglob",
+                                            "previous_record": true,
+                                            "op": "-",
+                                            "adjustment": 1
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "comport": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ]
+    },
+    "cdrlang": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            99.0,
+            0.5
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "coglang": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrlang": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "coglang": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrlang": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "initialsb4": {
+        "nullable": true
+    }
+}

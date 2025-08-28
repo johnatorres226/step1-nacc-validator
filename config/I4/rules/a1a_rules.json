@@ -1,0 +1,1135 @@
+{
+    "ownscar": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "trspaccess": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "transprob": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "transworry": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "trspmed": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "incomeyr": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8,
+            9
+        ]
+    },
+    "finsatis": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "billpay": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "finupset": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8
+        ]
+    },
+    "eatless": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "eatlessyr": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "eatless": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "eatlessyr": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "lessmeds": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "lessmedsyr": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "lessmeds": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "lessmedsyr": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "compcomm": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 1,
+                "max": 10
+            },
+            {
+                "allowed": [
+                    88
+                ]
+            }
+        ]
+    },
+    "guardedu": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9
+        ]
+    },
+    "emptiness": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "misspeople": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "friends": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "abandoned": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "closefrnd": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "parentcomm": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "childcomm": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "incntfrq": {
+                        "allowed": [
+                            6
+                        ]
+                    }
+                },
+                "then": {
+                    "childcomm": {
+                        "allowed": [
+                            0,
+                            1,
+                            2,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "incntfrq": {
+                        "max": 5
+                    }
+                },
+                "then": {
+                    "childcomm": {
+                        "allowed": [
+                            3,
+                            4,
+                            5,
+                            8
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "friendcomm": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "incntfrq": {
+                        "allowed": [
+                            6
+                        ]
+                    }
+                },
+                "then": {
+                    "friendcomm": {
+                        "allowed": [
+                            0,
+                            1,
+                            2,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "incntfrq": {
+                        "max": 5
+                    }
+                },
+                "then": {
+                    "friendcomm": {
+                        "allowed": [
+                            3,
+                            4,
+                            5,
+                            8
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "participate": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "safehome": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8
+        ]
+    },
+    "safecomm": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8
+        ]
+    },
+    "delaymed": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "scriptprob": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "missedfup": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "docadvice": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "healthacc": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8
+        ]
+    },
+    "lesscourt": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+        ]
+    },
+    "poorserv": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+        ]
+    },
+    "notsmart": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+        ]
+    },
+    "actafraid": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+        ]
+    },
+    "threatened": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8
+        ]
+    },
+    "poormedtrt": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ]
+    },
+    "expancest": {
+        "nullable": true,
+        "type": "integer",
+        "logic": {
+            "formula": {
+                ">=": [
+                    {
+                        "count": [
+                            {
+                                "var": "expancest"
+                            },
+                            {
+                                "var": "expgender"
+                            },
+                            {
+                                "var": "exprace"
+                            },
+                            {
+                                "var": "expage"
+                            },
+                            {
+                                "var": "exprelig"
+                            },
+                            {
+                                "var": "expheight"
+                            },
+                            {
+                                "var": "expweight"
+                            },
+                            {
+                                "var": "expappear"
+                            },
+                            {
+                                "var": "expsexorn"
+                            },
+                            {
+                                "var": "expeducinc"
+                            },
+                            {
+                                "var": "expdisab"
+                            },
+                            {
+                                "var": "expskin"
+                            },
+                            {
+                                "var": "expother"
+                            },
+                            {
+                                "var": "expnotapp"
+                            },
+                            {
+                                "var": "expnoans"
+                            }
+                        ]
+                    },
+                    1
+                ]
+            }
+        },
+        "allowed": [
+            1
+        ]
+    },
+    "expgender": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "exprace": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expage": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "exprelig": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expheight": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expweight": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expappear": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expsexorn": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expeducinc": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expdisab": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expskin": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expother": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "expnotapp": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "expancest": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expgender": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprace": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expage": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprelig": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expheight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expweight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expappear": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expsexorn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expeducinc": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expdisab": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expskin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expother": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expnoans": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "expnotapp": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "expnoans": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "expancest": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expgender": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprace": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expage": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprelig": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expheight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expweight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expappear": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expsexorn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expeducinc": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expdisab": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expskin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expother": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expnotapp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "expnoans": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "expstrs": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "expnotapp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "expstrs": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "expnotapp": {
+                        "forbidden": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "expstrs": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            8,
+            9
+        ]
+    },
+    "frmdatea1a": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langa1a": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modea1a": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "rmreasa1a": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea1a": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa1a": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea1a": {
+                        "forbidden": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa1a": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodea1a": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea1a": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea1a": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea1a": {
+                        "forbidden": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea1a": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4
+        ]
+    },
+    "admina1a": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "a1anot": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea1a": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "a1anot": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea1a": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "a1anot": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            93
+        ]
+    },
+    "initialsa1a": {
+        "nullable": true
+    }
+}

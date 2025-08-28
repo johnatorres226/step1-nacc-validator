@@ -1,0 +1,2494 @@
+{
+    "neurexam": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            3
+        ]
+    },
+    "normnrexam": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "neurexam": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "normnrexam": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "neurexam": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "normnrexam": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "parksign": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normnrexam": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "parksign": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "neurexam": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "normnrexam": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "parksign": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "slowingfm": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "tremrest": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "trempost": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "tremkine": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "rigidarm": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "rigidleg": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "dystarm": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "dystleg": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "chorea": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "ampmotor": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "axialrig": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "postinst": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "masking": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "stooped": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "pd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "pdothr": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 4,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdsyn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 5,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdsyn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 6,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdsynt": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 7,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdsynt": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 8,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdis": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 9,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdis": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "slowingfm": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "slowingfm": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "slowingfm": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "tremrest": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "tremrest": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tremrest": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "trestrhd": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "trestlhd": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "trestrft": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "trestlft": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "tremrest": {
+                        "forbidden": [
+                            1,
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "trestrhd": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "or": [
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "trestrhd"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "trestlhd"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "trestrft"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "trestlft"
+                                            },
+                                            4
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "then": {
+                    "tremrest": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "trempost": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "trempost": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "trempost": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "tremkine": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "tremkine": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tremkine": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "tractrhd": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "tractlhd": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "tremkine": {
+                        "forbidden": [
+                            1,
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "tractrhd": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "or": [
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "tractrhd"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "tractlhd"
+                                            },
+                                            4
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "then": {
+                    "tremkine": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "rigidarm": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rigidarm": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "rigidarm": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "rigduprt": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "rigduplf": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "rigdlort": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "rigdlolf": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "rigidarm": {
+                        "forbidden": [
+                            1,
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "rigduprt": {
+                        "nullable": true,
+                        "logic": {
+                            "formula": {
+                                "or": [
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "rigduprt"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "rigduplf"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "rigdlort"
+                                            },
+                                            4
+                                        ]
+                                    },
+                                    {
+                                        "<=": [
+                                            1,
+                                            {
+                                                "var": "rigdlolf"
+                                            },
+                                            4
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "then": {
+                    "rigidarm": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "rigidleg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rigidleg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "rigidleg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "dystarm": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "dystarm": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "dystarm": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "dystleg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "dystleg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "dystleg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "chorea": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "chorea": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "chorea": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "ampmotor": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ampmotor": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ampmotor": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "axialrig": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "axialrig": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "axialrig": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "postinst": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "postinst": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "postinst": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "posstab": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "postinst": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "masking": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "masking": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "masking": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "stooped": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "stooped": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "parksign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "stooped": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "posture": {
+                        "allowed": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "stooped": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "othersign": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normnrexam": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othersign": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "neurexam": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "normnrexam": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "othersign": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "limbaprax": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "umndist": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "lmndist": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "vfieldcut": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "limbatax": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "myoclon": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "unisomato": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "aphasia": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "alienlimb": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "hspatneg": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "pspoagno": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "smtagno": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "opticatax": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "apraxgaze": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "vhgazepal": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "dysarth": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    },
+                    "apraxsp": {
+                        "allowed": [
+                            1,
+                            2,
+                            3
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "limbaprax": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "limbaprax": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "limbaprax": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "umndist": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "umndist": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "umndist": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "lmndist": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lmndist": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "lmndist": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "vfieldcut": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "vfieldcut": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "vfieldcut": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "limbatax": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "limbatax": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "limbatax": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "myoclon": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "myoclon": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "myoclon": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3,
+            8
+        ]
+    },
+    "unisomato": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "unisomato": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "unisomato": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "aphasia": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "aphasia": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "aphasia": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "alienlimb": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "alienlimb": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "alienlimb": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "hspatneg": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "hspatneg": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "hspatneg": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "pspoagno": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "pspoagno": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "pspoagno": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "smtagno": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "smtagno": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "smtagno": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "opticatax": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "opticatax": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "opticatax": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "apraxgaze": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "apraxgaze": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "apraxgaze": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "vhgazepal": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "vhgazepal": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "vhgazepal": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "dysarth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "dysarth": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "dysarth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "apraxsp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othersign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "apraxsp": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othersign": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "apraxsp": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "gaitabn": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "normnrexam": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "gaitabn": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "neurexam": {
+                        "allowed": [
+                            0
+                        ]
+                    },
+                    "normnrexam": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "gaitabn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if_op": "and",
+                "if": {
+                    "modeb3": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "gait": {
+                        "allowed": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "gaitabn": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
+    "gaitfind": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "gaitabn": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "gaitfind": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "gaitabn": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "gaitfind": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ]
+    },
+    "gaitothrx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "gaitfind": {
+                        "allowed": [
+                            7
+                        ]
+                    }
+                },
+                "then": {
+                    "gaitothrx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "gaitfind": {
+                        "forbidden": [
+                            7
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "gaitothrx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "frmdateb8": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langb8": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modeb8": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "rmreasb8": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb8": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb8": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb8": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasb8": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodeb8": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb8": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb8": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb8": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodeb8": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            2
+        ]
+    },
+    "initialsb8": {
+        "nullable": true
+    }
+}

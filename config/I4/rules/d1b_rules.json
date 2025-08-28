@@ -1,0 +1,4425 @@
+{
+    "frmdated1b": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langd1b": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "biomarkdx": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "fluidbiom": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "fluidbiom": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "fluidbiom": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "bloodad": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "bloodftld": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "bloodlbd": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "bloodoth": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "csfad": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "csfftld": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "csflbd": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "csfoth": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3
+        ]
+    },
+    "bloodad": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "bloodad": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bloodad": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "bloodftld": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "bloodftld": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bloodftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "bloodlbd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "bloodlbd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bloodlbd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "bloodoth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "bloodoth": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bloodoth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "bloodothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "bloodoth": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "bloodothx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "bloodoth": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "bloodothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "csfad": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "csfad": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "csfad": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "amylcsf": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "csftau": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "csfad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "csfftld": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "csfftld": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "csfftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "csflbd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "csflbd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "csflbd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "csfoth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fluidbiom": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "csfoth": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fluidbiom": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "csfoth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "csfothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "csfoth": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "csfothx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "csfoth": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "csfothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "imagingdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imagingdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "imagingdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "petdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    },
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    },
+                    "datscandx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    },
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2,
+            3
+        ]
+    },
+    "petdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "petdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagingdx": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "petdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "petdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "amylpet": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "taupet": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "amylpet": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "petdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "amylpet": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "petdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "amylpet": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "amylpet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "amylpet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "taupet": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "petdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "taupet": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "petdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "taupet": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "taupetad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "taupet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "fdgpetdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "fdgpetdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagingdx": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdgpetdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "fdgad": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "fdgftld": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "fdglbd": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "fdgoth": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "fdgad": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "fdgad": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fdgpetdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdgad": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "fdgad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "fdgad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "fdgftld": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "fdgftld": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fdgpetdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdgftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "fdglbd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "fdglbd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fdgpetdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdglbd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "fdgoth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fdgpetdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "fdgoth": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fdgpetdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdgoth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "fdgothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "fdgoth": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "fdgothx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "fdgoth": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "fdgothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "datscandx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "datscandx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagingdx": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "datscandx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "datscan": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "datscandx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "tracothdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            1,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "tracothdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagingdx": {
+                        "forbidden": [
+                            1,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracothdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "tracerad": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "tracerftld": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "tracerlbd": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "traceroth": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "tracothdxx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "tracothdxx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tracothdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracothdxx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "tracerad": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "tracerad": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tracothdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracerad": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "tracerftld": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "tracerftld": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tracothdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracerftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "tracerlbd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "tracerlbd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tracothdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracerlbd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "traceroth": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "tracothdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "traceroth": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "tracothdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "traceroth": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "tracerothx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "traceroth": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "tracerothx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "traceroth": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "tracerothx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "structdx": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagingdx": {
+                        "allowed": [
+                            2,
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "structdx": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagingdx": {
+                        "forbidden": [
+                            2,
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "structdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "structdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "structad": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "structftld": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "structcvd": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "structad": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "structad": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "structad": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "structftld": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "structftld": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "structftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "structcvd": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structdx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "structcvd": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structdx": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "structcvd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "imaglinf": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "imaglac": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "imagmach": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "imagmich": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "imagwmh": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "imaglinf": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imaglinf": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structcvd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imaglinf": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imaglinf": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imaglinf": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "imaglac": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imaglac": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structcvd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imaglac": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imaglac": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imaglac": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "imagmach": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imagmach": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structcvd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imagmach": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imagmach": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagmach": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "imagmich": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imagmich": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structcvd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imagmich": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imagmich": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagmich": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "imagwmh": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imagwmh": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "structcvd": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imagwmh": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "imagmwmh": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "imagewmh": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagwmh": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "imagwmhsev": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "imagwmh": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "imagwmhsev": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "imagwmh": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "imagwmhsev": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "othbiom1": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiom1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiom1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "biomad1": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomftld1": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomlbd1": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomoth1": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "othbiomx1": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiomx1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othbiomx1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "biomad1": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomad1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomad1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomftld1": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomftld1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomftld1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomlbd1": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomlbd1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomlbd1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomoth1": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomoth1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomoth1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomothx1": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomoth1": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "biomothx1": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomoth1": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomothx1": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "othbiom2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom1": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiom2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom1": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othbiom2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "biomad2": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomftld2": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomlbd2": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomoth2": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "othbiomx2": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiomx2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othbiomx2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "biomad2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomad2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomad2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomftld2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomftld2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomftld2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomlbd2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomlbd2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomlbd2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomoth2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomoth2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomoth2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomothx2": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomoth2": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "biomothx2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomoth2": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomothx2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "othbiom3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiom3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom2": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othbiom3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "biomad3": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomftld3": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomlbd3": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    },
+                    "biomoth3": {
+                        "forbidden": [
+                            8
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "othbiomx3": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "othbiomx3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom3": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othbiomx3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "biomad3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomad3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom3": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomad3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomftld3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomftld3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom3": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomftld3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomlbd3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomlbd3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom3": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomlbd3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomoth3": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othbiom3": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "biomoth3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othbiom3": {
+                        "forbidden": [
+                            1,
+                            2
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomoth3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            8,
+            9
+        ]
+    },
+    "biomothx3": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomoth3": {
+                        "allowed": [
+                            0,
+                            1,
+                            9
+                        ]
+                    }
+                },
+                "then": {
+                    "biomothx3": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomoth3": {
+                        "forbidden": [
+                            0,
+                            1,
+                            9
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "biomothx3": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "autdommut": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "autdommut": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "biomarkdx": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "autdommut": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1,
+            9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "admut": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "ftldmut": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "othmut": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "autdommut": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "alzdis": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "bloodad": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "csfad": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "fdgad": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "tracerad": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "structad": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomad1": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomad2": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomad3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "alzdis": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "alzdisif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "alzdis": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "alzdisif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "logic": {
+            "formula": {
+                "<=": [
+                    {
+                        "count_exact": [
+                            1,
+                            {
+                                "var": "alzdisif"
+                            },
+                            {
+                                "var": "lbdif"
+                            },
+                            {
+                                "var": "pspif"
+                            },
+                            {
+                                "var": "cortif"
+                            },
+                            {
+                                "var": "ftldmoif"
+                            },
+                            {
+                                "var": "ftldnoif"
+                            },
+                            {
+                                "var": "cvdif"
+                            },
+                            {
+                                "var": "msaif"
+                            },
+                            {
+                                "var": "cteif"
+                            },
+                            {
+                                "var": "downsif"
+                            },
+                            {
+                                "var": "huntif"
+                            },
+                            {
+                                "var": "prionif"
+                            },
+                            {
+                                "var": "caaif"
+                            },
+                            {
+                                "var": "lateif"
+                            },
+                            {
+                                "var": "othcogif"
+                            }
+                        ]
+                    },
+                    1
+                ]
+            }
+        }
+    },
+    "lbdis": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "or",
+                "if": {
+                    "bloodlbd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "csflbd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "fdglbd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "tracerlbd": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomlbd1": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomlbd2": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomlbd3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "lbdis": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "lbdif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "lbdis": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "lbdif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ftld": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "psp": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "cort": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "ftldmo": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "ftldnos": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "or",
+                "if": {
+                    "bloodftld": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "csfftld": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "fdgftld": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "tracerftld": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "structftld": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomftld1": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomftld2": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "biomftld3": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ftld": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "psp": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "psp": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "pspif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "psp": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "pspif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "cort": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "cort": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "cortif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cort": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cortif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ftldmo": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "ftldmo": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "ftldmoif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftldmo": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ftldmoif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ftldnos": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "ftldnos": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "ftldnoif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftldnos": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ftldnoif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ftldsubt": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftld": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "ftldsubt": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ftld": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ftldsubt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            9
+        ]
+    },
+    "ftldsubx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "ftldsubt": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "then": {
+                    "ftldsubx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "ftldsubt": {
+                        "forbidden": [
+                            3
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "ftldsubx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "cvd": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "structcvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "cvd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "cvdif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cvd": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "cvdif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "msa": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "msaif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "msa": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "msaif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "cte": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "cteif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cte": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "cteif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "ctecert": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "cte": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "ctecert": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "cte": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "ctecert": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
+    },
+    "downs": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "downsif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "downs": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "downsif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "hunt": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "huntif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "hunt": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "huntif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "prion": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "prionif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "prion": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "prionif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "caa": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "caaif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "caa": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "caaif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "late": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1
+        ]
+    },
+    "lateif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "late": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                },
+                "then": {
+                    "lateif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "othcog": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "othcogif": {
+        "nullable": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othcog": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othcogif": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "othcogx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "othcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "othcogx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "othcog": {
+                        "allowed": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "othcogx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "initialsd1b": {
+        "nullable": true
+    }
+}
