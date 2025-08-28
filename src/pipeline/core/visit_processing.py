@@ -58,6 +58,11 @@ def ensure_completion_columns_exist(df: pd.DataFrame, completion_cols: List[str]
     """
     df_copy = df.copy()
     
+    # Ensure packet column exists
+    if 'packet' not in df_copy.columns:
+        df_copy['packet'] = 'unknown'
+        logger.debug("Added default 'packet' column with value 'unknown'")
+    
     for col in completion_cols:
         if col not in df_copy.columns:
             logger.warning(f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
@@ -103,7 +108,7 @@ def create_completion_mask(df: pd.DataFrame, completion_cols: List[str]) -> pd.S
     return completion_mask
 
 
-def identify_complete_visits(df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str]]:
+def identify_complete_visits(df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str, str]]:
     """
     Identify visits where all records are complete.
     
@@ -112,21 +117,29 @@ def identify_complete_visits(df: pd.DataFrame, primary_key_field: str) -> List[T
         primary_key_field: Name of the primary key field.
         
     Returns:
-        List of tuples representing complete visits (primary_key, event_name).
+        List of tuples representing complete visits (primary_key, event_name, packet).
     """
     # For each visit, check if ALL records in that visit are complete
     # A visit is complete if all its records have all instruments complete
     visit_completion = df.groupby([primary_key_field, 'redcap_event_name'])['_temp_all_complete'].all()
     
+    # Get packet information for each visit (take the first packet value for each visit)
+    visit_packets = df.groupby([primary_key_field, 'redcap_event_name'])['packet'].first()
+    
     # Get complete visits (where the aggregated result is True)
     complete_visits_series = visit_completion[visit_completion]
-    complete_visits = list(complete_visits_series.index)
+    
+    # Combine visit data with packet information
+    complete_visits = []
+    for (pk, event) in complete_visits_series.index:
+        packet = visit_packets.get((pk, event), 'unknown')
+        complete_visits.append((pk, event, packet))
     
     return complete_visits
 
 
 def create_complete_visits_summary(
-    complete_visits: List[Tuple[str, str]], 
+    complete_visits: List[Tuple[str, str, str]], 
     completion_cols: List[str],
     primary_key_field: str
 ) -> pd.DataFrame:
@@ -134,19 +147,19 @@ def create_complete_visits_summary(
     Create summary dataframe of complete visits.
     
     Args:
-        complete_visits: List of complete visit tuples.
+        complete_visits: List of complete visit tuples (pk, event, packet).
         completion_cols: List of completion column names.
         primary_key_field: Name of the primary key field.
         
     Returns:
-        DataFrame summarizing complete visits.
+        DataFrame summarizing complete visits with packet information.
     """
     if not complete_visits:
         logger.debug("ETL identified 0 truly complete visits.")
         return pd.DataFrame()
     
-    # Create the summary DataFrame
-    complete_visits_summary = pd.DataFrame(complete_visits, columns=[primary_key_field, 'redcap_event_name'])
+    # Create the summary DataFrame with packet information
+    complete_visits_summary = pd.DataFrame(complete_visits, columns=[primary_key_field, 'redcap_event_name', 'packet'])
     
     # Create the final report DataFrame
     report_df = complete_visits_summary.copy()
@@ -162,6 +175,9 @@ def extract_complete_visits_tuples(summary_df: pd.DataFrame, primary_key_field: 
     """
     Extract list of complete visit tuples from summary dataframe.
     
+    Note: This function maintains backward compatibility by returning only (pk, event) tuples,
+    but the summary dataframe now includes packet information.
+    
     Args:
         summary_df: Summary dataframe of complete visits.
         primary_key_field: Name of the primary key field.
@@ -172,6 +188,7 @@ def extract_complete_visits_tuples(summary_df: pd.DataFrame, primary_key_field: 
     if summary_df.empty:
         return []
     
+    # Return only pk and event for backward compatibility with existing code
     return list(summary_df[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
 
 

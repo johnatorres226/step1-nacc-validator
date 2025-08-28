@@ -401,6 +401,9 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                 # Extract errors from the ValidationResult object
                 record_errors = validation_result.errors
                 
+                # Get packet value for tracking
+                packet_value = record_dict.get('packet', 'unknown')
+                
                 # Process each field that has errors
                 for field_name, field_errors in record_errors.items():
                     for error_message in field_errors:
@@ -410,8 +413,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                             'variable': field_name,
                             'error_message': error_message,
                             'current_value': record_dict.get(field_name, ''),
-                            'rule_type': 'validation_error',
-                            'expected_value': '',
+                            'packet': packet_value,
                             'redcap_event_name': record_dict.get('redcap_event_name', ''),
                         })
                 
@@ -420,22 +422,40 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
                     'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
+                    'packet': packet_value,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
             else:
-                # Record passed validation
-                passed_records.append({
-                    primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                })
+                # Record passed validation - capture detailed information for each validated field
+                packet_value = record_dict.get('packet', 'unknown')
+                rule_file = f"{instrument_name}_rules.json"
+                
+                # Log detailed passed validations for each field that has rules
+                for field_name, field_value in record_dict.items():
+                    # Skip metadata fields
+                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                        continue
+                        
+                    # Get the JSON rule for this field if it exists in validation_rules
+                    json_rule = validation_rules.get(field_name, {})
+                    if json_rule:  # Only log fields that have validation rules
+                        passed_records.append({
+                            primary_key_field: pk_value,
+                            'variable': field_name,
+                            'current_value': field_value,
+                            'json_rule': json.dumps(json_rule),
+                            'rule_file': rule_file,
+                            'packet': packet_value,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'instrument_name': instrument_name,
+                        })
                 
                 logs.append({
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'PASSED',
                     'error_count': 0,
+                    'packet': packet_value,
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
         
@@ -564,6 +584,9 @@ def validate_data_with_hierarchical_routing(
             pk_value = record_dict.get(primary_key_field, 'unknown')
             packet_value = record_dict.get('packet', 'unknown')
             
+            # Get the rules path for this packet
+            rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+            
             # Add discriminant info for dynamic instruments  
             discriminant_info = ''
             if is_dynamic_rule_instrument(instrument_name):
@@ -584,10 +607,9 @@ def validate_data_with_hierarchical_routing(
                             'variable': field_name,
                             'error_message': error_message,
                             'current_value': record_dict.get(field_name, ''),
-                            'rule_type': 'validation_error',
-                            'expected_value': '',
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
                             'packet': packet_value,
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
                             'discriminant': discriminant_info,  # Enhanced routing info
                         })
                 
@@ -601,15 +623,30 @@ def validate_data_with_hierarchical_routing(
                     'discriminant': discriminant_info,
                 })
             else:
-                # Record passed validation
-                passed_records.append({
-                    primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
-                    'discriminant': discriminant_info,
-                })
+                # Record passed validation - capture detailed information for each validated field
+                rule_file = f"{instrument_name}_rules.json"
+                
+                # Log detailed passed validations for each field that has rules
+                for field_name, field_value in record_dict.items():
+                    # Skip metadata fields
+                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                        continue
+                        
+                    # Get the JSON rule for this field if it exists in resolved_rules
+                    json_rule = resolved_rules.get(field_name, {})
+                    if json_rule:  # Only log fields that have validation rules
+                        passed_records.append({
+                            primary_key_field: pk_value,
+                            'variable': field_name,
+                            'current_value': field_value,
+                            'json_rule': json.dumps(json_rule),
+                            'rule_file': rule_file,
+                            'packet': packet_value,
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'instrument_name': instrument_name,
+                            'discriminant': discriminant_info,
+                        })
                 
                 logs.append({
                     primary_key_field: pk_value,
@@ -625,6 +662,7 @@ def validate_data_with_hierarchical_routing(
             logger.error(f"Validation error for record {record_dict.get(primary_key_field, 'unknown')}: {e}")
             pk_value = record_dict.get(primary_key_field, 'unknown')
             packet_value = record_dict.get('packet', 'unknown')
+            rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
             
             errors.append({
                 primary_key_field: pk_value,
@@ -632,10 +670,9 @@ def validate_data_with_hierarchical_routing(
                 'variable': 'system_error',
                 'error_message': f"System validation error: {str(e)}",
                 'current_value': '',
-                'rule_type': 'system_error',
-                'expected_value': '',
-                'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 'packet': packet_value,
+                'json_rule_path': rules_path,
+                'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 'discriminant': '',
             })
     
@@ -726,6 +763,10 @@ def validate_data_with_packet_routing(
                 # Extract errors from the ValidationResult object
                 record_errors = validation_result.errors
                 
+                # Get the packet-specific rules path for error tracking
+                packet_value = record_dict.get('packet', 'unknown')
+                rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+                
                 # Process each field that has errors
                 for field_name, field_errors in record_errors.items():
                     for error_message in field_errors:
@@ -735,10 +776,9 @@ def validate_data_with_packet_routing(
                             'variable': field_name,
                             'error_message': error_message,
                             'current_value': record_dict.get(field_name, ''),
-                            'rule_type': 'validation_error',
-                            'expected_value': '',
+                            'packet': packet_value,
+                            'json_rule_path': rules_path,
                             'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                            'packet': packet_value,  # Add packet info for debugging
                         })
                 
                 logs.append({
@@ -750,14 +790,31 @@ def validate_data_with_packet_routing(
                     'packet': packet_value,
                 })
             else:
-                # Record passed validation
-                passed_records.append({
-                    primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
-                })
+                # Record passed validation - capture detailed information for each validated field
+                packet_value = record_dict.get('packet', 'unknown')
+                rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+                rule_file = f"{instrument_name}_rules.json"
+                
+                # Log detailed passed validations for each field that has rules
+                for field_name, field_value in record_dict.items():
+                    # Skip metadata fields
+                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                        continue
+                        
+                    # Get the JSON rule for this field if it exists in final_rules
+                    json_rule = final_rules.get(field_name, {})
+                    if json_rule:  # Only log fields that have validation rules
+                        passed_records.append({
+                            primary_key_field: pk_value,
+                            'variable': field_name,
+                            'current_value': field_value,
+                            'json_rule': json.dumps(json_rule),
+                            'rule_file': rule_file,
+                            'packet': packet_value,
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'instrument_name': instrument_name,
+                        })
                 
                 logs.append({
                     primary_key_field: pk_value,
@@ -771,16 +828,18 @@ def validate_data_with_packet_routing(
         except Exception as e:
             logger.error(f"Error validating record {record_dict.get(primary_key_field, 'unknown')}: {e}")
             # Add system error entry
+            packet_value = record_dict.get('packet', 'unknown')
+            rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+            
             errors.append({
                 primary_key_field: record_dict.get(primary_key_field, 'unknown'),
                 'instrument_name': instrument_name,
                 'variable': 'system',
                 'error_message': f"System error during validation: {str(e)}",
                 'current_value': '',
-                'rule_type': 'system_error',
-                'expected_value': '',
+                'packet': packet_value,
+                'json_rule_path': rules_path,
                 'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                'packet': record_dict.get('packet', 'unknown'),
             })
     
     logger.info(f"Packet-based validation complete for {instrument_name}: "
@@ -874,6 +933,12 @@ def validate_data_with_migration_support(
             packet_value = record_dict.get('packet', 'unknown')
             routing_info = f"mode={routing_mode.value}"
             
+            # Get the rules path for this packet/routing mode
+            if routing_mode == RoutingMode.LEGACY:
+                rules_path = config.json_rules_path
+            else:
+                rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+            
             # Add routing context for debugging and migration monitoring
             if is_dynamic_rule_instrument(instrument_name):
                 discriminant_var = get_discriminant_variable(instrument_name)
@@ -893,10 +958,9 @@ def validate_data_with_migration_support(
                             'variable': field_name,
                             'error_message': error_message,
                             'current_value': record_dict.get(field_name, ''),
-                            'rule_type': 'validation_error',
-                            'expected_value': '',
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
                             'packet': packet_value,
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
                             'routing_info': routing_info,  # Migration context
                         })
                 
@@ -910,15 +974,30 @@ def validate_data_with_migration_support(
                     'routing_info': routing_info,
                 })
             else:
-                # Record passed validation
-                passed_records.append({
-                    primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
-                    'routing_info': routing_info,
-                })
+                # Record passed validation - capture detailed information for each validated field
+                rule_file = f"{instrument_name}_rules.json"
+                
+                # Log detailed passed validations for each field that has rules
+                for field_name, field_value in record_dict.items():
+                    # Skip metadata fields
+                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                        continue
+                        
+                    # Get the JSON rule for this field if it exists in resolved_rules
+                    json_rule = resolved_rules.get(field_name, {})
+                    if json_rule:  # Only log fields that have validation rules
+                        passed_records.append({
+                            primary_key_field: pk_value,
+                            'variable': field_name,
+                            'current_value': field_value,
+                            'json_rule': json.dumps(json_rule),
+                            'rule_file': rule_file,
+                            'packet': packet_value,
+                            'json_rule_path': rules_path,
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'instrument_name': instrument_name,
+                            'routing_info': routing_info,
+                        })
                 
                 logs.append({
                     primary_key_field: pk_value,
@@ -935,16 +1014,21 @@ def validate_data_with_migration_support(
             pk_value = record_dict.get(primary_key_field, 'unknown')
             packet_value = record_dict.get('packet', 'unknown')
             
+            # Get the rules path for error tracking
+            if routing_mode == RoutingMode.LEGACY:
+                rules_path = config.json_rules_path
+            else:
+                rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+            
             errors.append({
                 primary_key_field: pk_value,
                 'instrument_name': instrument_name,
                 'variable': 'system_error',
                 'error_message': f"System validation error: {str(e)}",
                 'current_value': '',
-                'rule_type': 'system_error',
-                'expected_value': '',
-                'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 'packet': packet_value,
+                'json_rule_path': rules_path,
+                'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 'routing_info': f"mode={routing_mode.value},error=true",
             })
     
