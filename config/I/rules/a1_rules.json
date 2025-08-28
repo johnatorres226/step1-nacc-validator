@@ -3,17 +3,33 @@
         "required": true,
         "type": "integer",
         "min": 1,
-        "max": 12
+        "max": 12,
+        "compare_with": {
+            "comparator": "==",
+            "base": "birthmo",
+            "previous_record": true
+        }
     },
     "birthyr": {
         "required": true,
         "type": "integer",
-        "min": 1850,
+        "allof": [
+            {
+                "min": 1850
+            },
+            {
+                "compare_with": {
+                    "comparator": "<=",
+                    "base": "current_year",
+                    "op": "-",
+                    "adjustment": 15
+                }
+            }
+        ],
         "compare_with": {
-            "comparator": "<=",
-            "base": "current_year",
-            "op": "-",
-            "adjustment": 15
+            "comparator": "==",
+            "base": "birthyr",
+            "previous_record": true
         }
     },
     "chldhdctry": {
@@ -95,7 +111,37 @@
                     }
                 ]
             }
-        }
+        },
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "race": {
+                        "allowed": [
+                            3
+                        ]
+                    },
+                    "racesec": {
+                        "allowed": [
+                            3
+                        ]
+                    },
+                    "raceter": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "raceaian": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
+        ]
     },
     "raceaianx": {
         "nullable": true,
@@ -123,6 +169,36 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "race": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "racesec": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "raceter": {
+                        "allowed": [
+                            5
+                        ]
+                    }
+                },
+                "current": {
+                    "raceasian": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "ethchinese": {
@@ -200,6 +276,36 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "race": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "racesec": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "raceter": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "raceblack": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "ethafamer": {
@@ -277,6 +383,25 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hispanic": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "ethispanic": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "ethmexican": {
@@ -431,6 +556,36 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "race": {
+                        "allowed": [
+                            4
+                        ]
+                    },
+                    "racesec": {
+                        "allowed": [
+                            4
+                        ]
+                    },
+                    "raceter": {
+                        "allowed": [
+                            4
+                        ]
+                    }
+                },
+                "current": {
+                    "racenhpi": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "ethhawaii": {
@@ -508,6 +663,36 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "race": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "racesec": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "raceter": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "racewhite": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "ethenglish": {
@@ -952,6 +1137,42 @@
             2,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "sex": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "birthsex": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "previous": {
+                    "sex": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "birthsex": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                }
+            }
         ]
     },
     "intersex": {
@@ -1229,6 +1450,42 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "primlang": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "predomlan": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "previous": {
+                    "primlang": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "predomlan": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                }
+            }
         ]
     },
     "predomlanx": {
@@ -1276,6 +1533,42 @@
             2,
             3,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "handed": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "handed": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "previous": {
+                    "handed": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "handed": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                }
+            }
         ]
     },
     "educ": {
@@ -1290,6 +1583,45 @@
                 "allowed": [
                     99
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "educ": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "current": {
+                    "educ": {
+                        "compare_with": {
+                            "comparator": ">=",
+                            "base": "educ",
+                            "previous_record": true
+                        }
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "previous": {
+                    "educ": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "current": {
+                    "educ": {
+                        "nullable": true,
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                }
             }
         ]
     },
@@ -1317,6 +1649,29 @@
             5,
             6,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "maristat": {
+                        "allowed": [
+                            1,
+                            2,
+                            3,
+                            4
+                        ]
+                    }
+                },
+                "current": {
+                    "maristat": {
+                        "nullable": true,
+                        "forbidden": [
+                            5
+                        ]
+                    }
+                }
+            }
         ]
     },
     "livsitua": {

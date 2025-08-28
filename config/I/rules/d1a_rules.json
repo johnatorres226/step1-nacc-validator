@@ -318,6 +318,26 @@
         "allowed": [
             0,
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "demented": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "normcog": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "mcicritcln": {

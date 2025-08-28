@@ -909,17 +909,21 @@ def validate_data_with_migration_support(
                 continue
             
             # Build schema from resolved rules
-            from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
-            try:
-                # Try to build schema from rules directly  
-                schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
-                
-                # For dynamic instruments, the compatibility manager already handles routing
-                if is_dynamic_rule_instrument(instrument_name):
-                    schema.update(resolved_rules)
-            except Exception as e:
-                logger.warning(f"Failed to build schema for {instrument_name}: {e}, using resolved rules directly")
-                schema = resolved_rules
+            # The HierarchicalRuleResolver already provides the correct flat rule structure
+            # No need to use build_cerberus_schema_for_instrument for dynamic instruments
+            if is_dynamic_rule_instrument(instrument_name):
+                # For dynamic instruments, use resolved rules directly as they are already flat
+                from pipeline.utils.schema_builder import _build_schema_from_raw
+                schema = _build_schema_from_raw(resolved_rules, include_temporal_rules=False)
+            else:
+                # For standard instruments, use the existing schema builder
+                from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
+                try:
+                    schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
+                except Exception as e:
+                    logger.warning(f"Failed to build schema for {instrument_name}: {e}, using resolved rules directly")
+                    from pipeline.utils.schema_builder import _build_schema_from_raw
+                    schema = _build_schema_from_raw(resolved_rules, include_temporal_rules=False)
             
             # Perform validation using existing QualityCheck engine
             qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)

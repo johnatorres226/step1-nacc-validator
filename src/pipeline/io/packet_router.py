@@ -87,6 +87,9 @@ class PacketRuleRouter:
         """
         Load rules from a specific path using the existing instrument mapping.
         
+        For dynamic instruments, this builds the nested structure that 
+        HierarchicalRuleResolver expects.
+        
         Args:
             rules_path: Path to the rules directory
             instrument_name: Name of the instrument
@@ -94,7 +97,13 @@ class PacketRuleRouter:
         Returns:
             Dictionary containing the loaded rules
         """
-        # Get the rule files for this instrument from the mapping
+        from ..config_manager import is_dynamic_rule_instrument, get_rule_mappings
+        
+        # Handle dynamic instruments differently - they need nested structure
+        if is_dynamic_rule_instrument(instrument_name):
+            return self._load_dynamic_rules_from_path(rules_path, instrument_name)
+        
+        # Standard instruments - merge all rule files as before
         rule_files = self.config.get_instrument_json_mapping().get(instrument_name, [])
         
         if not rule_files:
@@ -120,6 +129,41 @@ class PacketRuleRouter:
                 logger.warning(f"Rule file not found: {file_path}")
         
         return combined_rules
+
+    def _load_dynamic_rules_from_path(self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
+        """
+        Load dynamic instrument rules with nested structure for HierarchicalRuleResolver.
+        
+        Args:
+            rules_path: Path to the rules directory
+            instrument_name: Name of the dynamic instrument
+            
+        Returns:
+            Dictionary with variant keys (C2, C2T) containing their respective rules
+        """
+        from ..config_manager import get_rule_mappings
+        
+        rule_mappings = get_rule_mappings(instrument_name)
+        rule_map = {}
+        rules_dir = Path(rules_path)
+        
+        for variant, filename in rule_mappings.items():
+            file_path = rules_dir / filename
+            if file_path.exists():
+                try:
+                    with file_path.open('r') as f:
+                        rules = json.load(f)
+                        rule_map[variant] = rules
+                        logger.debug(f"Loaded {len(rules)} rules for {variant} from {file_path}")
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
+                except Exception as e:
+                    logger.error(f"Error loading rule file: {file_path} - {e}")
+            else:
+                logger.warning(f"Rule file not found for {variant}: {file_path}")
+        
+        logger.debug(f"Loaded dynamic rules for {instrument_name}: {list(rule_map.keys())}")
+        return rule_map
     
     def _load_default_rules(self, instrument_name: str) -> Dict[str, Any]:
         """

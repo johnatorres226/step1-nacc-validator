@@ -410,6 +410,31 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "amylcsf": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "csftau": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "csfad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "csfftld": {
@@ -788,6 +813,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "amylpet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "amylpet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "taupet": {
@@ -834,6 +878,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "taupetad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "taupet": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "fdgpetdx": {
@@ -963,6 +1026,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "fdgad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "fdgad": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "fdgftld": {
@@ -1188,6 +1270,25 @@
             0,
             1,
             2
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "datscan": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "datscandx": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "tracothdx": {
@@ -1842,6 +1943,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imaglinf": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imaglinf": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "imaglac": {
@@ -1886,6 +2006,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imaglac": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imaglac": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "imagmach": {
@@ -1930,6 +2069,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imagmach": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagmach": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "imagmich": {
@@ -1974,6 +2132,25 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "imagmich": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagmich": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "imagwmh": {
@@ -2018,6 +2195,31 @@
             1,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "imagmwmh": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "imagewmh": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "imagwmh": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "imagwmhsev": {
@@ -3143,6 +3345,36 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "prev_op": "or",
+                "previous": {
+                    "admut": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "ftldmut": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "othmut": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "autdommut": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "alzdis": {
@@ -3221,8 +3453,8 @@
                 "index": 0,
                 "if": {
                     "alzdis": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3364,8 +3596,8 @@
                 "index": 0,
                 "if": {
                     "lbdis": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3514,8 +3746,8 @@
                 "index": 0,
                 "if": {
                     "psp": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3569,8 +3801,8 @@
                 "index": 0,
                 "if": {
                     "cort": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3624,8 +3856,8 @@
                 "index": 0,
                 "if": {
                     "ftldmo": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3679,8 +3911,8 @@
                 "index": 0,
                 "if": {
                     "ftldnos": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3814,8 +4046,8 @@
                 "index": 0,
                 "if": {
                     "cvd": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3850,8 +4082,8 @@
                 "index": 0,
                 "if": {
                     "msa": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3960,8 +4192,8 @@
                 "index": 0,
                 "if": {
                     "downs": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -3996,8 +4228,8 @@
                 "index": 0,
                 "if": {
                     "hunt": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -4032,8 +4264,8 @@
                 "index": 0,
                 "if": {
                     "prion": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -4134,8 +4366,8 @@
                 "index": 0,
                 "if": {
                     "othcog": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }
@@ -4172,8 +4404,8 @@
                 "index": 1,
                 "if": {
                     "othcog": {
-                        "forbidden": [
-                            1
+                        "allowed": [
+                            0
                         ],
                         "nullable": true
                     }

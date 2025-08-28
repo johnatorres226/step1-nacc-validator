@@ -113,6 +113,25 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "tobac100": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "tobac100": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "smokyrs": {
@@ -148,6 +167,41 @@
                     "smokyrs": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "smokyrs": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "smokyrs": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "smokyrs": {
+                                        "forbidden": [
+                                            99
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "smokyrs": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "smokyrs",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -514,6 +568,26 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hattmult": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "hrtattmult": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hrtattage": {
@@ -634,6 +708,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvafib": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvafib": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cvangio": {
@@ -644,6 +739,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvangio": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvangio": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cvbypass": {
@@ -654,6 +770,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvbypass": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvbypass": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "bypassage": {
@@ -714,6 +851,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvpacdef": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvpacdef": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "pacdefage": {
@@ -774,6 +932,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvchf": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvchf": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cvhvalve": {
@@ -784,6 +963,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvhvalve": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvhvalve": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "valveage": {
@@ -844,6 +1044,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cvothr": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cvothr": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cvothrx": {
@@ -893,6 +1114,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cbstroke": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cbstroke": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "strokmul": {
@@ -937,6 +1179,25 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "strokmul": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "strokmul": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "strokage": {
@@ -1135,6 +1396,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cbtia": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cbtia": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "tiaage": {
@@ -1194,6 +1476,26 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pd": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "pd": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "pdage": {
@@ -1252,6 +1554,26 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pdothr": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "pdothr": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "pdothrage": {
@@ -1327,6 +1649,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "seizures": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "seizures": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -1750,6 +2093,27 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "tbi": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "headinjury": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "headinjunc": {
@@ -2082,6 +2446,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "diabetes": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "diabetes": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "diabtype": {
@@ -2230,6 +2615,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hyperten": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hyperten": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hypertage": {
@@ -2290,6 +2696,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hypercho": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hypercho": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hyperchage": {
@@ -2350,6 +2777,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "b12def": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "b12def": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "thyroid": {
@@ -2360,6 +2808,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "thyroid": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "thyroid": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "arthrit": {
@@ -2508,6 +2977,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "arthrit": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "arthrit": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "arthrrheum": {
@@ -2614,6 +3104,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "incontu": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "incontu": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "incontf": {
@@ -2624,6 +3135,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "incontf": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "incontf": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "apnea": {
@@ -2650,6 +3182,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "apnea": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "apnea": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -2789,6 +3342,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "rbd": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "rbd": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "insomn": {
@@ -2799,6 +3373,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "insomn": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "insomn": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "othsleep": {
@@ -3933,6 +4528,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bipolar": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "bipolar": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "schiz": {
@@ -3962,6 +4578,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "schiz": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "schiz": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "anxiety": {
@@ -3988,6 +4625,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "anxiety": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "anxiety": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -4177,6 +4835,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "ocd": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "ocd": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "othanxdis": {
@@ -4301,6 +4980,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "ptsd": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "ptsd": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
