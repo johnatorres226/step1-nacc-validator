@@ -54,6 +54,7 @@ from pipeline.core.pipeline_results import PipelineExecutionResult
 # Import packet router for enhanced validation
 from pipeline.io.packet_router import PacketRuleRouter
 from pipeline.io.hierarchical_router import HierarchicalRuleResolver
+from pipeline.io.compatibility_manager import CompatibilityManager, MigrationSettings, RoutingMode
 
 # Legacy imports for backward compatibility
 from pipeline.core.fetcher import RedcapETLPipeline
@@ -784,6 +785,174 @@ def validate_data_with_packet_routing(
     
     logger.info(f"Packet-based validation complete for {instrument_name}: "
                f"{len(passed_records)} passed, {len(errors)} errors")
+    
+    return errors, logs, passed_records
+
+
+def validate_data_with_migration_support(
+    data: pd.DataFrame,
+    validation_rules: Dict[str, Dict[str, Any]],
+    instrument_name: str,
+    primary_key_field: str,
+    migration_settings: Optional[MigrationSettings] = None,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Migration-aware validation with automatic routing mode detection (Phase 3).
+    
+    This function provides backward compatibility during migration from legacy
+    rule loading to packet-based routing. It automatically detects the appropriate
+    routing mode based on configuration and migration settings.
+    
+    DEPRECATION WARNING: This function contains temporary compatibility features
+    that will be removed once migration to packet-based routing is complete.
+    
+    Items marked for future removal:
+    - migration_settings parameter
+    - Automatic fallback to legacy routing
+    - Performance comparison between routing modes
+    - Migration validation and warnings
+    
+    Args:
+        data: DataFrame containing the data to validate.
+        validation_rules: Dictionary of validation rules (legacy parameter, may be ignored).
+        instrument_name: Name of the instrument being validated.
+        primary_key_field: Name of the primary key field.
+        migration_settings: Optional migration control settings (DEPRECATED).
+        
+    Returns:
+        Tuple of (errors, logs, passed_records) where:
+        - errors: List of validation error dictionaries
+        - logs: List of validation log dictionaries  
+        - passed_records: List of passed record dictionaries
+    """
+    config = get_config()
+    compatibility_manager = CompatibilityManager(config, migration_settings)
+    
+    errors = []
+    logs = []
+    passed_records = []
+    
+    routing_mode = compatibility_manager.get_routing_mode()
+    logger.debug(f"Starting migration-aware validation for {instrument_name} using {routing_mode.value} mode with {len(data)} records")
+    
+    # Validate migration readiness if in legacy mode
+    if compatibility_manager.is_legacy_mode():
+        readiness_report = compatibility_manager.validate_migration_readiness()
+        if not readiness_report['ready_for_migration']:
+            logger.warning(f"Migration readiness issues detected: {readiness_report['issues']}")
+    
+    for index, record in data.iterrows():
+        record_dict = record.to_dict()
+        
+        try:
+            # Use compatibility manager for unified rule loading
+            resolved_rules = compatibility_manager.get_rules_with_fallback(record_dict, instrument_name)
+            
+            if not resolved_rules:
+                logger.warning(f"No rules resolved for {instrument_name}, skipping record {record_dict.get(primary_key_field, 'unknown')}")
+                continue
+            
+            # Build schema from resolved rules
+            from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
+            try:
+                # Try to build schema from rules directly  
+                schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
+                
+                # For dynamic instruments, the compatibility manager already handles routing
+                if is_dynamic_rule_instrument(instrument_name):
+                    schema.update(resolved_rules)
+            except Exception as e:
+                logger.warning(f"Failed to build schema for {instrument_name}: {e}, using resolved rules directly")
+                schema = resolved_rules
+            
+            # Perform validation using existing QualityCheck engine
+            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            validation_result = qc.validate_record(record_dict)
+            
+            # Process results using existing logic pattern
+            pk_value = record_dict.get(primary_key_field, 'unknown')
+            packet_value = record_dict.get('packet', 'unknown')
+            routing_info = f"mode={routing_mode.value}"
+            
+            # Add routing context for debugging and migration monitoring
+            if is_dynamic_rule_instrument(instrument_name):
+                discriminant_var = get_discriminant_variable(instrument_name)
+                discriminant_value = record_dict.get(discriminant_var, '')
+                routing_info += f",discriminant={discriminant_var}={discriminant_value}"
+            
+            if not validation_result.passed or validation_result.sys_failure:
+                # Extract errors from the ValidationResult object
+                record_errors = validation_result.errors
+                
+                # Process each field that has errors
+                for field_name, field_errors in record_errors.items():
+                    for error_message in field_errors:
+                        errors.append({
+                            primary_key_field: pk_value,
+                            'instrument_name': instrument_name,
+                            'variable': field_name,
+                            'error_message': error_message,
+                            'current_value': record_dict.get(field_name, ''),
+                            'rule_type': 'validation_error',
+                            'expected_value': '',
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'packet': packet_value,
+                            'routing_info': routing_info,  # Migration context
+                        })
+                
+                logs.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'FAILED',
+                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                    'routing_info': routing_info,
+                })
+            else:
+                # Record passed validation
+                passed_records.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'PASSED',
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                    'routing_info': routing_info,
+                })
+                
+                logs.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'PASSED',
+                    'error_count': 0,
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                    'routing_info': routing_info,
+                })
+        
+        except Exception as e:
+            logger.error(f"Migration-aware validation error for record {record_dict.get(primary_key_field, 'unknown')}: {e}")
+            pk_value = record_dict.get(primary_key_field, 'unknown')
+            packet_value = record_dict.get('packet', 'unknown')
+            
+            errors.append({
+                primary_key_field: pk_value,
+                'instrument_name': instrument_name,
+                'variable': 'system_error',
+                'error_message': f"System validation error: {str(e)}",
+                'current_value': '',
+                'rule_type': 'system_error',
+                'expected_value': '',
+                'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                'packet': packet_value,
+                'routing_info': f"mode={routing_mode.value},error=true",
+            })
+    
+    # Log performance statistics for migration monitoring
+    perf_stats = compatibility_manager.get_performance_stats()
+    logger.info(f"Migration-aware validation completed for {instrument_name}: "
+               f"{len(errors)} errors, {len(passed_records)} passed "
+               f"(routing_mode={routing_mode.value}, stats={perf_stats['stats']})")
     
     return errors, logs, passed_records
 
