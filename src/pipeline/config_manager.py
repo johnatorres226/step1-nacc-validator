@@ -359,6 +359,11 @@ class QCConfig:
     status_path: Optional[str] = field(default_factory=lambda: os.getenv('STATUS_PATH'))
     upload_ready_path: Optional[str] = field(default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
     
+    # --- Packet-based Rule Paths ---
+    json_rules_path_i: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I', ''))
+    json_rules_path_i4: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I4', ''))
+    json_rules_path_f: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_F', ''))
+    
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
     
@@ -412,6 +417,15 @@ class QCConfig:
             self.status_path = str(Path(self.status_path).resolve())
         if self.upload_ready_path:
             self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
+        
+        # Resolve packet-specific rule paths
+        if self.json_rules_path_i:
+            self.json_rules_path_i = str(Path(self.json_rules_path_i).resolve())
+        if self.json_rules_path_i4:
+            self.json_rules_path_i4 = str(Path(self.json_rules_path_i4).resolve())
+        if self.json_rules_path_f:
+            self.json_rules_path_f = str(Path(self.json_rules_path_f).resolve())
+        
         self._validate_config()
 
     def _validate_config(self):
@@ -445,6 +459,15 @@ class QCConfig:
     def get_instrument_json_mapping(self) -> Dict[str, List[str]]:
         """Returns the mapping of instruments to JSON rule files."""
         return self.instrument_json_mapping
+    
+    def get_rules_path_for_packet(self, packet: str) -> str:
+        """Get the appropriate rules path for a packet type."""
+        packet_paths = {
+            'I': self.json_rules_path_i,
+            'I4': self.json_rules_path_i4,
+            'F': self.json_rules_path_f
+        }
+        return packet_paths.get(packet.upper(), self.json_rules_path)  # Fallback to default
 
     def validate(self) -> List[str]:
         """

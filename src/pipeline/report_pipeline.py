@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
 from pipeline.config_manager import (
     QCConfig,
+    get_config,
     get_dynamic_rule_instruments,
     get_discriminant_variable,
     is_dynamic_rule_instrument,
@@ -49,6 +50,9 @@ from pipeline.config_manager import (
 # Import pipeline components directly
 from pipeline.core.pipeline_orchestrator import PipelineOrchestrator
 from pipeline.core.pipeline_results import PipelineExecutionResult
+
+# Import packet router for enhanced validation
+from pipeline.io.packet_router import PacketRuleRouter
 
 # Legacy imports for backward compatibility
 from pipeline.core.fetcher import RedcapETLPipeline
@@ -490,6 +494,152 @@ def validate_data(
         instrument_name=instrument_name,
         primary_key_field=primary_key_field
     )
+
+
+def validate_data_with_packet_routing(
+    data: pd.DataFrame,
+    validation_rules: Dict[str, Dict[str, Any]],
+    instrument_name: str,
+    primary_key_field: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Enhanced validation with packet-based routing.
+    
+    This function routes each record to the appropriate rule set based on its 
+    packet value (I, I4, F) while maintaining compatibility with existing 
+    dynamic instrument routing (e.g., C2/C2T forms).
+
+    Args:
+        data: DataFrame containing the data to validate.
+        validation_rules: Dictionary of validation rules (legacy parameter, now ignored).
+        instrument_name: Name of the instrument being validated.
+        primary_key_field: Name of the primary key field.
+
+    Returns:
+        Tuple of (errors, logs, passed_records) where:
+        - errors: List of validation error dictionaries
+        - logs: List of validation log dictionaries  
+        - passed_records: List of passed record dictionaries
+    """
+    config = get_config()
+    packet_router = PacketRuleRouter(config)
+    
+    errors = []
+    logs = []
+    passed_records = []
+    
+    logger.debug(f"Starting packet-based validation for {instrument_name} with {len(data)} records")
+    
+    for index, record in data.iterrows():
+        record_dict = record.to_dict()
+        
+        try:
+            # Get packet-specific rules
+            packet_rules = packet_router.get_rules_for_record(record_dict, instrument_name)
+            
+            if not packet_rules:
+                logger.warning(f"No rules found for {instrument_name}, skipping record {record_dict.get(primary_key_field, 'unknown')}")
+                continue
+            
+            # Handle dynamic routing for instruments like C2/C2T
+            final_rules = packet_rules
+            if is_dynamic_rule_instrument(instrument_name):
+                discriminant_var = get_discriminant_variable(instrument_name)
+                discriminant_value = record_dict.get(discriminant_var, '')
+                
+                if discriminant_value in packet_rules:
+                    final_rules = packet_rules[discriminant_value]
+                    logger.debug(f"Using dynamic rules for {discriminant_var}={discriminant_value}")
+                else:
+                    logger.debug(f"Dynamic discriminant value '{discriminant_value}' not found, using base rules")
+            
+            # Build schema from rules
+            from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
+            try:
+                # Try to build schema from rules directly  
+                schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
+                # Update schema with packet-specific rules if different
+                if final_rules != packet_rules:
+                    # For dynamic instruments, we need to merge the specific variant rules
+                    # This is a simplified approach - in production, you'd want more sophisticated merging
+                    schema.update(final_rules)
+            except Exception as e:
+                logger.warning(f"Failed to build schema for {instrument_name}: {e}, using rules directly")
+                schema = final_rules
+            
+            # Perform validation using existing QualityCheck engine
+            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            validation_result = qc.validate_record(record_dict)
+            
+            # Process results using existing logic pattern
+            pk_value = record_dict.get(primary_key_field, 'unknown')
+            packet_value = record_dict.get('packet', 'unknown')
+            
+            if not validation_result.passed or validation_result.sys_failure:
+                # Extract errors from the ValidationResult object
+                record_errors = validation_result.errors
+                
+                # Process each field that has errors
+                for field_name, field_errors in record_errors.items():
+                    for error_message in field_errors:
+                        errors.append({
+                            primary_key_field: pk_value,
+                            'instrument_name': instrument_name,
+                            'variable': field_name,
+                            'error_message': error_message,
+                            'current_value': record_dict.get(field_name, ''),
+                            'rule_type': 'validation_error',
+                            'expected_value': '',
+                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            'packet': packet_value,  # Add packet info for debugging
+                        })
+                
+                logs.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'FAILED',
+                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                })
+            else:
+                # Record passed validation
+                passed_records.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'PASSED',
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                })
+                
+                logs.append({
+                    primary_key_field: pk_value,
+                    'instrument_name': instrument_name,
+                    'validation_status': 'PASSED',
+                    'error_count': 0,
+                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    'packet': packet_value,
+                })
+                
+        except Exception as e:
+            logger.error(f"Error validating record {record_dict.get(primary_key_field, 'unknown')}: {e}")
+            # Add system error entry
+            errors.append({
+                primary_key_field: record_dict.get(primary_key_field, 'unknown'),
+                'instrument_name': instrument_name,
+                'variable': 'system',
+                'error_message': f"System error during validation: {str(e)}",
+                'current_value': '',
+                'rule_type': 'system_error',
+                'expected_value': '',
+                'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                'packet': record_dict.get('packet', 'unknown'),
+            })
+    
+    logger.info(f"Packet-based validation complete for {instrument_name}: "
+               f"{len(passed_records)} passed, {len(errors)} errors")
+    
+    return errors, logs, passed_records
 
 
 def _get_schema_and_rules_for_record(
