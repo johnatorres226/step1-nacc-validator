@@ -1,0 +1,208 @@
+site: https://mermaid.live/
+
+flowchart TD
+    %% Start and Configuration Phase
+    A[🚀 UDSv4 QC Validator Start] --> B[📋 Configuration Management]
+    
+    B --> B1[🔧 Load Environment Variables]
+    B --> B2[📁 Validate Paths & Settings]
+    B --> B3[🔍 Load JSON Rule Mappings]
+    
+    B1 --> C{✅ Configuration Valid?}
+    B2 --> C
+    B3 --> C
+    
+    C -->|❌ No| C1[📝 Log Configuration Errors]
+    C1 --> C2[🛑 Exit with Error Code]
+    
+    C -->|✅ Yes| D[🔄 Initialize ETL Pipeline]
+    
+    %% Data Fetching Phase
+    D --> E[🌐 REDCap Data Fetching]
+    
+    E --> E1[🔑 API Authentication]
+    E --> E2[🎯 Apply Filter Logic]
+    E --> E3[📊 Fetch Raw Data]
+    
+    E1 --> F{🔐 Authentication Success?}
+    E2 --> F
+    E3 --> F
+    
+    F -->|❌ No| F1[📝 Log API Errors]
+    F1 --> F2[🛑 Exit with API Error]
+    
+    F -->|✅ Yes| G[🔧 Data Processing Pipeline]
+    
+    %% Data Processing and Validation
+    G --> G1[🧹 Data Validation & Cleaning]
+    G --> G2[🔄 Data Transformation]
+    G --> G3[📋 Record Type Detection]
+    
+    G1 --> H{📊 Data Valid?}
+    G2 --> H
+    G3 --> H
+    
+    H -->|❌ No| H1[📝 Log Data Quality Issues]
+    H1 --> H2[⚠️ Generate Error Reports]
+    
+    H -->|✅ Yes| I[🎯 Quality Control Engine]
+    
+    %% QC Validation Engine
+    I --> I1{📋 Determine Packet Type}
+    
+    I1 --> I2[📝 Form A1 - Initial Visit]
+    I1 --> I3[📝 Form B1 - Follow-up]
+    I1 --> I4[📝 Form C2 - Neuropsych]
+    I1 --> I5[📝 Form I4 - Initial (Form 4)]
+    I1 --> I6[📂 Other Forms]
+    
+    I2 --> J1[📖 Load a1.json Rules]
+    I3 --> J2[📖 Load b1.json Rules]
+    I4 --> J3[📖 Load c2.json Rules]
+    I5 --> J4[📖 Load i4.json Rules]
+    I6 --> J5[📖 Load Respective Rules]
+    
+    J1 --> K[🔍 Apply Schema Validation]
+    J2 --> K
+    J3 --> K
+    J4 --> K
+    J5 --> K
+    
+    K --> L[🧪 Custom NACC Validation]
+    L --> M[🔬 Field-Level Validation]
+    M --> N[📊 Cross-Field Logic Checks]
+    
+    N --> O{✅ Validation Results}
+    
+    %% Results Processing
+    O -->|✅ Pass| P1[✅ Record Accepted]
+    O -->|❌ Fail| P2[❌ Validation Errors Found]
+    O -->|⚠️ Warning| P3[⚠️ Validation Warnings]
+    
+    P1 --> Q[📈 Results Aggregation]
+    P2 --> Q
+    P3 --> Q
+    
+    %% Output and Reporting Phase
+    Q --> R[📊 Output Management System]
+    
+    R --> R1[📁 Create Timestamped Directory]
+    R --> R2[📋 Generate CSV Reports]
+    R --> R3[📄 Generate JSON Outputs]
+    R --> R4[🌐 Generate HTML Dashboards]
+    
+    R1 --> S[📈 Report Generation]
+    R2 --> S
+    R3 --> S
+    R4 --> S
+    
+    S --> S1[📊 Validation Summary Report]
+    S --> S2[❌ Error Details Report]
+    S --> S3[📈 Quality Metrics Dashboard]
+    S --> S4[🔍 Audit Trail Documentation]
+    
+    %% Logging and Monitoring
+    S1 --> T[📝 Comprehensive Logging]
+    S2 --> T
+    S3 --> T
+    S4 --> T
+    
+    T --> T1[📊 Performance Metrics]
+    T --> T2[🔍 Audit Trail Logging]
+    T --> T3[⚠️ Error & Warning Logs]
+    T --> T4[💾 Database Tracking]
+    
+    T1 --> U[✅ Process Completion]
+    T2 --> U
+    T3 --> U
+    T4 --> U
+    
+    U --> V[📬 Final Output Delivery]
+    
+    %% Error Handling Flows
+    H2 --> W[🔄 Continue Processing]
+    W --> I
+    
+    %% Styling for better visualization
+    
+    %% Configuration Phase - Blue tones
+    style A fill:#e1f5fe,stroke:#0277bd,stroke-width:3px
+    style B fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style B1 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
+    style B2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
+    style B3 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px
+    
+    %% Decision Points - Yellow/Orange
+    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style F fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style H fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style I1 fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    style O fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    %% Error States - Red tones
+    style C1 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    style C2 fill:#ffcdd2,stroke:#c62828,stroke-width:3px
+    style F1 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    style F2 fill:#ffcdd2,stroke:#c62828,stroke-width:3px
+    style H1 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    style H2 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    style P2 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    
+    %% Data Processing - Green tones
+    style D fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    style E fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    style G fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    style E1 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    style E2 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    style E3 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    style G1 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    style G2 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    style G3 fill:#f1f8e9,stroke:#689f38,stroke-width:1px
+    
+    %% QC Validation - Purple tones
+    style I fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style I2 fill:#fce4ec,stroke:#c2185b,stroke-width:1px
+    style I3 fill:#fce4ec,stroke:#c2185b,stroke-width:1px
+    style I4 fill:#fce4ec,stroke:#c2185b,stroke-width:1px
+    style I5 fill:#fce4ec,stroke:#c2185b,stroke-width:1px
+    style I6 fill:#fce4ec,stroke:#c2185b,stroke-width:1px
+    style J1 fill:#f8bbd9,stroke:#ad1457,stroke-width:1px
+    style J2 fill:#f8bbd9,stroke:#ad1457,stroke-width:1px
+    style J3 fill:#f8bbd9,stroke:#ad1457,stroke-width:1px
+    style J4 fill:#f8bbd9,stroke:#ad1457,stroke-width:1px
+    style J5 fill:#f8bbd9,stroke:#ad1457,stroke-width:1px
+    style K fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
+    style L fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
+    style M fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
+    style N fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
+    
+    %% Success States - Light Green
+    style P1 fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    style P3 fill:#fff8e1,stroke:#ffa000,stroke-width:2px
+    
+    %% Output and Reporting - Cyan tones
+    style Q fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+    style R fill:#e0f2f1,stroke:#00796b,stroke-width:3px
+    style S fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+    style R1 fill:#e0f7fa,stroke:#0097a7,stroke-width:1px
+    style R2 fill:#e0f7fa,stroke:#0097a7,stroke-width:1px
+    style R3 fill:#e0f7fa,stroke:#0097a7,stroke-width:1px
+    style R4 fill:#e0f7fa,stroke:#0097a7,stroke-width:1px
+    style S1 fill:#b2dfdb,stroke:#00695c,stroke-width:1px
+    style S2 fill:#b2dfdb,stroke:#00695c,stroke-width:1px
+    style S3 fill:#b2dfdb,stroke:#00695c,stroke-width:1px
+    style S4 fill:#b2dfdb,stroke:#00695c,stroke-width:1px
+    
+    %% Logging - Gray/Silver tones
+    style T fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    style T1 fill:#fafafa,stroke:#757575,stroke-width:1px
+    style T2 fill:#fafafa,stroke:#757575,stroke-width:1px
+    style T3 fill:#fafafa,stroke:#757575,stroke-width:1px
+    style T4 fill:#fafafa,stroke:#757575,stroke-width:1px
+    
+    %% Final Steps - Success Green
+    style U fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
+    style V fill:#a5d6a7,stroke:#1b5e20,stroke-width:3px
+    
+    %% Continue Processing - Light Blue
+    style W fill:#e1f5fe,stroke:#0288d1,stroke-width:2px

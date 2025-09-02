@@ -1,0 +1,177 @@
+%%{init: {
+  "themeVariables": {
+    "fontFamily":"Inter,Segoe UI,Arial,sans-serif",
+    "fontSize":"14px",
+    "primaryColor":"#ffffff",
+    "primaryBorderColor":"#9aa4b2",
+    "lineColor":"#9aa4b2",
+    "textColor":"#222"
+  },
+  "flowchart": {"defaultRenderer":"elk", "curve":"catmullRom"}
+}}%%
+flowchart TD
+  %% --- INPUT & INITIALIZATION ---
+  A[Record Input]
+
+  subgraph S1["Initialization"]
+    direction TB
+    B{{Schema Available?}}
+    C[Load Packet Schema]
+    D[Initialize NACCValidator]
+    E[Create Custom Error Handler]
+  end
+
+  %% --- MAIN VALIDATION FLOW ---
+  subgraph S2["Validation Stages"]
+    direction TB
+    F[Begin Validation Process]
+    G[Basic Schema Validation]
+    H{{Basic Validation Passed?}}
+    I[Collect Basic Errors]
+    J[Apply Custom Validation Methods]
+    K[Compatibility Rules]
+    L{{Compatibility Check}}
+    M[Add Compatibility Errors]
+    N[Temporal Rules]
+    O{{Previous Visit Required?}}
+    P[Retrieve Previous Visit Data]
+    R{{Previous Data Found?}}
+    S[Add Temporal Error]
+    T[Apply Temporal Rules]
+    U{{Temporal Rules Pass?}}
+    V[Add Temporal Errors]
+    Q[Logic Validation]
+    W[Apply Logic Rules]
+    X{{Logic Validation Pass?}}
+    Y[Add Logic Errors]
+    Z[Computed Field Validation]
+  end
+
+  %% --- SPECIALIZED VALIDATIONS ---
+  subgraph S3["Specialized Checks"]
+    direction TB
+    AA[GDS Score Computation]
+    BB{{GDS Rules Pass?}}
+    CC[Add GDS Errors]
+    DD[Cross-Field Comparisons]
+    EE[Compare With Current Fields]
+    FF{{Current Comparison Pass?}}
+    GG[Add Comparison Errors]
+    HH[Compare With Previous Visit]
+    II{{Previous Comparison Pass?}}
+    JJ[Add Previous Visit Errors]
+    KK[Age Validation]
+    LL[Date Range Validation]
+    MM{{Date Ranges Valid?}}
+    NN[Add Date Errors]
+    OO[Fill Requirement Validation]
+    PP{{Fill Requirements Met?}}
+    QQ[Add Fill Errors]
+  end
+
+  %% --- EXTERNAL DATA CHECKS ---
+  subgraph S4["External Data Validation"]
+    direction TB
+    RR[External Data Validation]
+    SS[RXNORM Drug Code Check]
+    TT{{External Validation Pass?}}
+    UU[Add External Errors]
+  end
+
+  %% --- RESULT PROCESSING ---
+  subgraph S5["Result Generation & Logging"]
+    direction TB
+    VV[Compile Results]
+    WW{{Any Errors Collected?}}
+    XX[Create Failed ValidationResult]
+    YY[Create Passed ValidationResult]
+    ZZ[Generate Error Messages]
+    AAA[Map Error Codes to Messages]
+    BBB[Create Error Tree Structure]
+    CCC[Return ValidationResult]
+    DDD[Log Validation Outcome]
+    EEE[Update Validation Metrics]
+    FFF(((End Process)))
+  end
+
+  %% --- SYSTEM FAILURE PATH ---
+  subgraph S6["System Failure Handling"]
+    direction TB
+    GGG[System Failure]
+    HHH[Create System Failure Result]
+    III[Log System Error]
+  end
+
+  %% --- FLOW EDGES ---
+  A --> B
+  B -- "No" --> C --> D
+  B -- "Yes" --> D
+  D --> E --> F --> G --> H
+  H -- "No" --> I
+  H -- "Yes" --> J --> K --> L
+  L -- "Fail" --> M
+  L -- "Pass" --> N --> O
+  O -- "Yes" --> P --> R
+  O -- "No" --> Q
+  R -- "No" --> S
+  R -- "Yes" --> T --> U
+  U -- "Fail" --> V
+  U -- "Pass" --> Q
+  Q --> W --> X
+  X -- "Fail" --> Y
+  X -- "Pass" --> Z --> AA --> BB
+  BB -- "Fail" --> CC
+  BB -- "Pass" --> DD --> EE --> FF
+  FF -- "Fail" --> GG
+  FF -- "Pass" --> HH --> II
+  II -- "Fail" --> JJ
+  II -- "Pass" --> KK --> LL --> MM
+  MM -- "Fail" --> NN
+  MM -- "Pass" --> OO --> PP
+  PP -- "Fail" --> QQ
+  PP -- "Pass" --> RR --> SS --> TT
+  TT -- "Fail" --> UU
+  TT -- "Pass" --> VV
+
+  %% Errors collected into results
+  I --> VV
+  M --> VV
+  S --> VV
+  V --> VV
+  Y --> VV
+  CC --> VV
+  GG --> VV
+  JJ --> VV
+  NN --> VV
+  QQ --> VV
+  UU --> VV
+
+  VV --> WW
+  WW -- "Yes" --> XX --> ZZ --> AAA --> BBB --> CCC
+  WW -- "No" --> YY --> CCC
+  CCC --> DDD --> EEE --> FFF
+
+  %% --- SYSTEM FAILURE FLOW ---
+  B -- "Schema Load Error" --> GGG
+  P -- "Database Error" --> GGG
+  W -- "Expression Error" --> GGG
+  AA -- "Computation Error" --> GGG
+  SS -- "External Service Error" --> GGG
+  GGG --> HHH --> III --> FFF
+
+  %% --- LIGHTWEIGHT STYLES ---
+  %% Subgraphs: soft panels
+  style S1 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+  style S2 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+  style S3 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+  style S4 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+  style S5 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+  style S6 fill:#f8f9fb,stroke:#dcdfe4,stroke-width:1px
+
+  %% Node classes (minimal color)
+  classDef subtle fill:#f6f8fa,stroke:#9aa4b2,color:#222;
+  classDef errorNode fill:#fdecea,stroke:#e07a7a,color:#5b3838;
+
+  %% Apply minimal accents
+  class A,VV,CCC,FFF subtle
+  class I,M,S,V,Y,CC,GG,JJ,NN,QQ,UU,XX errorNode

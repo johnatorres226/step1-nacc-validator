@@ -1,0 +1,114 @@
+graph TD
+    A[Record Input] --> B{Schema Available?}
+    B -->|No| C[Load Packet Schema]
+    B -->|Yes| D[Initialize NACCValidator]
+    C --> D
+    
+    D --> E[Create Custom Error Handler]
+    E --> F[Begin Validation Process]
+    
+    F --> G[Basic Schema Validation]
+    G --> H{Basic Validation Passed?}
+    H -->|No| I[Collect Basic Errors]
+    H -->|Yes| J[Apply Custom Validation Methods]
+    
+    J --> K[Compatibility Rules]
+    K --> L{Compatibility Check}
+    L -->|Fail| M[Add Compatibility Errors]
+    L -->|Pass| N[Temporal Rules]
+    
+    N --> O{Previous Visit Required?}
+    O -->|Yes| P[Retrieve Previous Visit Data]
+    O -->|No| Q[Logic Validation]
+    P --> R{Previous Data Found?}
+    R -->|No| S[Add Temporal Error]
+    R -->|Yes| T[Apply Temporal Rules]
+    T --> U{Temporal Rules Pass?}
+    U -->|Fail| V[Add Temporal Errors]
+    U -->|Pass| Q
+    
+    Q --> W[Apply Logic Rules]
+    W --> X{Logic Validation Pass?}
+    X -->|Fail| Y[Add Logic Errors]
+    X -->|Pass| Z[Computed Field Validation]
+    
+    Z --> AA[GDS Score Computation]
+    AA --> BB{GDS Rules Pass?}
+    BB -->|Fail| CC[Add GDS Errors]
+    BB -->|Pass| DD[Cross-Field Comparisons]
+    
+    DD --> EE[Compare With Current Fields]
+    EE --> FF{Current Comparison Pass?}
+    FF -->|Fail| GG[Add Comparison Errors]
+    FF -->|Pass| HH[Compare With Previous Visit]
+    
+    HH --> II{Previous Comparison Pass?}
+    II -->|Fail| JJ[Add Previous Visit Errors]
+    II -->|Pass| KK[Age Validation]
+    
+    KK --> LL[Date Range Validation]
+    LL --> MM{Date Ranges Valid?}
+    MM -->|Fail| NN[Add Date Errors]
+    MM -->|Pass| OO[Fill Requirement Validation]
+    
+    OO --> PP{Fill Requirements Met?}
+    PP -->|Fail| QQ[Add Fill Errors]
+    PP -->|Pass| RR[External Data Validation]
+    
+    RR --> SS[RXNORM Drug Code Check]
+    SS --> TT{External Validation Pass?}
+    TT -->|Fail| UU[Add External Errors]
+    TT -->|Pass| VV[Compile Results]
+    
+    I --> VV
+    M --> VV
+    S --> VV
+    V --> VV
+    Y --> VV
+    CC --> VV
+    GG --> VV
+    JJ --> VV
+    NN --> VV
+    QQ --> VV
+    UU --> VV
+    
+    VV --> WW{Any Errors Collected?}
+    WW -->|Yes| XX[Create Failed ValidationResult]
+    WW -->|No| YY[Create Passed ValidationResult]
+    
+    XX --> ZZ[Generate Error Messages]
+    ZZ --> AAA[Map Error Codes to Messages]
+    AAA --> BBB[Create Error Tree Structure]
+    BBB --> CCC[Return ValidationResult]
+    
+    YY --> CCC
+    
+    CCC --> DDD[Log Validation Outcome]
+    DDD --> EEE[Update Validation Metrics]
+    EEE --> FFF[End Process]
+    
+    %% System Failure Paths
+    B -->|Schema Load Error| GGG[System Failure]
+    P -->|Database Error| GGG
+    W -->|Expression Error| GGG
+    AA -->|Computation Error| GGG
+    SS -->|External Service Error| GGG
+    
+    GGG --> HHH[Create System Failure Result]
+    HHH --> III[Log System Error]
+    III --> FFF
+    
+    %% Styling
+    classDef inputNode fill:#e1f5fe
+    classDef processNode fill:#f3e5f5
+    classDef decisionNode fill:#fff3e0
+    classDef errorNode fill:#ffebee
+    classDef resultNode fill:#e8f5e8
+    classDef systemFailure fill:#ff1744,color:#fff
+    
+    class A inputNode
+    class D,E,F,G,J,K,N,Q,W,Z,AA,DD,EE,HH,KK,LL,OO,RR,SS,VV,ZZ,AAA,BBB,DDD,EEE processNode
+    class B,H,L,O,R,U,X,BB,FF,II,MM,PP,TT,WW decisionNode
+    class I,M,S,V,Y,CC,GG,JJ,NN,QQ,UU,XX errorNode
+    class YY,CCC,FFF resultNode
+    class GGG,HHH,III systemFailure

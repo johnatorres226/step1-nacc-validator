@@ -48,6 +48,7 @@ upload_ready_path = os.getenv('UPLOAD_READY_PATH')
 
 # UPDATE more instrument details -- HERE -- as they are needed
 instruments = [
+    # I and I4 packets instruments
     "form_header",
     "a1_participant_demographics", 
     "a3_participant_family_history",
@@ -67,10 +68,12 @@ instruments = [
     "d1a_clinical_syndrome",
     "d1b_etiological_diagnosis_and_biomarker_support",
     "c2c2t_neuropsychological_battery_scores"
+
+    # UPDATE_MARKER Insert F packet instruments here as they are needed
 ]
 
-# UPDATE_MARKER more mapping details -- HERE -- as they are needed
 instrument_json_mapping = {
+    # I and I4 packets instruments
     "form_header": ["header_rules.json"],
     "a1_participant_demographics": ["a1_rules.json"],
     "a3_participant_family_history": ["a3_rules.json"],
@@ -93,6 +96,8 @@ instrument_json_mapping = {
         "c2_rules.json",
         "c2t_rules.json",
     ],
+
+    # UPDATE_MARKER Insert F packet instruments here as they are needed
 }
 
 # UPDATE_MARKER more events -- HERE -- as they are needed
@@ -191,11 +196,11 @@ DYNAMIC_RULE_INSTRUMENTS = {
         }
     },
 
-    # --- UPDATE_MARKER FUTURE INSTRUMENTS AND DISCRIMINANT VARIABLES ARE ADDED HERE ---
+    # --- UPDATE_MARKER Future Discriminant Variables ---
     # Example for future C2/C2T instruments is as follows:
 
     # "follow_up_c2c2t_neuropsychological_battery_scores": {
-    #     "discriminant_variable": "loc_c2_or_c2t",
+    #     "discriminant_variable": "fvp_loc_c2_or_c2t",
     #     "rule_mappings": {
     #         "C2": "fvp_c2_rules.json",
     #         "C2T": "fvp_c2t_rules.json"

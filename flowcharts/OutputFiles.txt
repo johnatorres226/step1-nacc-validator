@@ -1,0 +1,98 @@
+graph TD
+    A[Data Validation Pipeline] --> B[ReportFactory.export_all_reports]
+    B --> C[Create Timestamped Directory]
+    C --> D[QC_Mode_DDMMMYYYY_HHMMSS/]
+    
+    B --> E[Primary Report Generation]
+    E --> E1[Error Report Generation]
+    E --> E2[Validation Logs Generation]
+    E --> E3[Passed Validations Log]
+    
+    B --> F[Secondary Report Generation]
+    F --> F1[Aggregate Error Report]
+    F --> F2[QC Status Report]
+    F --> F3[Completed Visits Report]
+    F --> F4[Rules Validation Log]
+    
+    B --> G[Export Format Generation]
+    G --> G1[JSON Status Export]
+    G --> G2[Generation Summary]
+    
+    %% Directory Structure Creation
+    D --> D1[Data_Fetched/]
+    D --> D2[Errors/]
+    D --> D3[Reports/]
+    D --> D4[Validation_Logs/]
+    D --> D5[Completed_Visits/]
+    D --> D6[Upload_Ready/]
+    
+    %% File Generation Flow
+    E1 --> D2
+    E2 --> D4
+    E3 --> D4
+    F1 --> D3
+    F2 --> D3
+    F3 --> D5
+    F4 --> D4
+    G1 --> D6
+    G2 --> D
+    
+    %% Report Generation Details
+    E1 --> H1[Final_Error_Dataset_*.csv]
+    E2 --> H2[Log_EventCompletenessScreening_*.csv]
+    E3 --> H3[Log_PassedValidations_*.csv]
+    F1 --> H4[QC_Report_ErrorCount_*.csv]
+    F2 --> H5[QC_Status_Report_*.csv]
+    F3 --> H6[PTID_CompletedVisits_*.csv]
+    F4 --> H7[Log_RulesValidation_*.csv]
+    G1 --> H8[QC_Status_Report_*.json]
+    G2 --> H9[Generation_Summary_*.csv]
+    
+    %% Configuration and Context
+    I[ExportConfiguration] --> B
+    J[ReportConfiguration] --> B
+    K[ProcessingContext] --> B
+    
+    %% Data Sources
+    L[df_errors] --> E1
+    M[df_logs] --> E2
+    N[df_passed] --> E3
+    O[all_records_df] --> F1
+    P[complete_visits_df] --> F3
+    Q[detailed_validation_logs_df] --> F4
+    
+    %% Output Characteristics
+    H1 --> R1[Validation Errors with Context]
+    H2 --> R2[Instrument Completeness Audit]
+    H3 --> R3[Successful Validation Documentation]
+    H4 --> R4[Error Summary by Participant]
+    H5 --> R5[QC Status by Visit]
+    H6 --> R6[Visit Completion Summary]
+    H7 --> R7[Applied Rules Documentation]
+    H8 --> R8[Machine-Readable Status]
+    H9 --> R9[Generation Process Metadata]
+    
+    %% Integration Points
+    S[REDCap Integration] --> H5
+    T[NACC System Integration] --> H8
+    U[Institutional Database] --> H1
+    U --> H4
+    U --> H5
+    
+    %% Quality Assurance
+    V[Error Handling] --> B
+    W[Performance Monitoring] --> B
+    X[Audit Trail Generation] --> B
+    
+    %% Styling
+    classDef primaryProcess fill:#e1f5fe
+    classDef reportType fill:#f3e5f5
+    classDef outputFile fill:#e8f5e8
+    classDef integration fill:#fff3e0
+    classDef configuration fill:#fce4ec
+    
+    class A,B,C primaryProcess
+    class E,F,G reportType
+    class H1,H2,H3,H4,H5,H6,H7,H8,H9 outputFile
+    class S,T,U integration
+    class I,J,K configuration
