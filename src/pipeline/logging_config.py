@@ -98,6 +98,63 @@ class ColoredFormatter(logging.Formatter):
         return super().format(record)
 
 
+class ProductionCLIFormatter(logging.Formatter):
+    """Streamlined formatter for production CLI operations."""
+    
+    OPERATION_ICONS = {
+        'fetch': '🔄',
+        'route': '🗂️ ',
+        'rules': '📋',
+        'validate': '🔍',
+        'generate': '📊',
+        'complete': '✅',
+        'error': '❌',
+        'warning': '⚠️ '
+    }
+    
+    def __init__(self, fmt=None, datefmt=None):
+        # Use a simple format for production CLI
+        if fmt is None:
+            fmt = '%(message)s'
+        super().__init__(fmt=fmt, datefmt=datefmt)
+    
+    def format(self, record):
+        """Format with operation context and minimal noise."""
+        # Look for operation context in the message or record
+        message = record.getMessage()
+        
+        # Check if this is an operation-related message
+        for operation, icon in self.OPERATION_ICONS.items():
+            if operation in message.lower() or (hasattr(record, 'operation') and getattr(record, 'operation', '') == operation):
+                # Apply appropriate icon and clean formatting
+                if record.levelno >= logging.ERROR:
+                    # Error messages
+                    if not message.startswith('❌'):
+                        message = f"❌ {message}"
+                elif record.levelno >= logging.WARNING:
+                    # Warning messages
+                    if not message.startswith('⚠️'):
+                        message = f"⚠️  {message}"
+                elif 'complete' in message.lower() and record.levelno <= logging.INFO:
+                    # Success messages
+                    if not message.startswith('✅'):
+                        message = f"✅ {message}"
+                elif any(op in message.lower() for op in ['fetching', 'applying', 'allocating', 'validating', 'generating']):
+                    # Progress messages
+                    for op, icon in self.OPERATION_ICONS.items():
+                        if op in message.lower() and not message.startswith(icon):
+                            message = f"{icon} {message}"
+                            break
+                break
+        
+        # Create a new record with the formatted message
+        record = logging.makeLogRecord(record.__dict__)
+        record.msg = message
+        record.args = ()
+        
+        return super().format(record)
+
+
 class PerformanceFilter(logging.Filter):
     """Filter to add performance metrics to log records."""
     

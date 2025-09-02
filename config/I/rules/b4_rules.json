@@ -617,6 +617,43 @@
                         ]
                     }
                 }
+            },
+            {
+                "index": 7,
+                "if": {
+                    "cdrglob": {
+                        "forbidden": [
+                            99
+                        ]
+                    }
+                },
+                "then": {
+                    "cdrglob": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "cdrglob": {
+                                        "forbidden": [
+                                            99
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "cdrglob": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "cdrglob",
+                                            "previous_record": true,
+                                            "op": "-",
+                                            "adjustment": 1
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ]
     },

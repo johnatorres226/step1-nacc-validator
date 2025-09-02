@@ -34,7 +34,6 @@ adrc_redcap_url = os.getenv('REDCAP_API_URL')
 project_id = os.getenv('PROJECT_ID')
 
 # Paths
-json_file_path = os.getenv('JSON_RULES_PATH')
 output_path = os.getenv('OUTPUT_PATH')
 status_path = os.getenv('STATUS_PATH')
 upload_ready_path = os.getenv('UPLOAD_READY_PATH')
@@ -252,16 +251,28 @@ class ConfigValidator(ABC):
 
 
 class RequiredFieldsValidator(ConfigValidator):
-    """Validates required configuration fields."""
+    """Validates that all required fields are present and valid."""
     
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate required fields and return list of errors."""
         errors = []
         
+        # Require REDCap API configuration
         if not config.api_token and not config.redcap_api_token:
             errors.append("REDCAP_API_TOKEN is required")
         if not config.api_url and not config.redcap_api_url:
             errors.append("REDCAP_API_URL is required")
+        
+        # Require ALL packet rule paths (no fallbacks)
+        required_packet_paths = {
+            'JSON_RULES_PATH_I': config.json_rules_path_i,
+            'JSON_RULES_PATH_I4': config.json_rules_path_i4,
+            'JSON_RULES_PATH_F': config.json_rules_path_f
+        }
+        
+        for env_var, path in required_packet_paths.items():
+            if not path:
+                errors.append(f"Missing required environment variable: {env_var}")
             
         return errors
 
@@ -273,9 +284,16 @@ class PathValidator(ConfigValidator):
         """Validate paths and return list of errors."""
         errors = []
         
-        # Validate JSON rules path
-        if not Path(config.json_rules_path).is_dir():
-            errors.append(f"JSON_RULES_PATH '{config.json_rules_path}' is not a valid directory.")
+        # Validate packet-specific rules paths (required for production)
+        packet_paths = {
+            'JSON_RULES_PATH_I': config.json_rules_path_i,
+            'JSON_RULES_PATH_I4': config.json_rules_path_i4,
+            'JSON_RULES_PATH_F': config.json_rules_path_f
+        }
+        
+        for env_var, path in packet_paths.items():
+            if path and not Path(path).is_dir():
+                errors.append(f"{env_var} '{path}' is not a valid directory.")
         
         # Validate and create output path if needed
         if config.output_path and not Path(config.output_path).is_dir():
@@ -353,11 +371,15 @@ class QCConfig:
     project_id: Optional[str] = field(default_factory=lambda: os.getenv('PROJECT_ID'))
 
     # --- Path Configuration ---
-    json_rules_path: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH', str(project_root / "config" / "json_rules")))
     output_path: str = field(default_factory=lambda: os.getenv('OUTPUT_PATH', str(project_root / "output")))
     log_path: Optional[str] = field(default_factory=lambda: os.getenv('LOG_PATH'))
     status_path: Optional[str] = field(default_factory=lambda: os.getenv('STATUS_PATH'))
     upload_ready_path: Optional[str] = field(default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
+    
+    # --- Packet-based Rule Paths (Required) ---
+    json_rules_path_i: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I', ''))
+    json_rules_path_i4: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I4', ''))
+    json_rules_path_f: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_F', ''))
     
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
@@ -403,7 +425,6 @@ class QCConfig:
             self.api_url = self.redcap_api_url
         
         # Resolve paths to be absolute
-        self.json_rules_path = str(Path(self.json_rules_path).resolve())
         if self.output_path:
             self.output_path = str(Path(self.output_path).resolve())
         if self.log_path:
@@ -412,6 +433,15 @@ class QCConfig:
             self.status_path = str(Path(self.status_path).resolve())
         if self.upload_ready_path:
             self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
+        
+        # Resolve packet-specific rule paths (required for production)
+        if self.json_rules_path_i:
+            self.json_rules_path_i = str(Path(self.json_rules_path_i).resolve())
+        if self.json_rules_path_i4:
+            self.json_rules_path_i4 = str(Path(self.json_rules_path_i4).resolve())
+        if self.json_rules_path_f:
+            self.json_rules_path_f = str(Path(self.json_rules_path_f).resolve())
+        
         self._validate_config()
 
     def _validate_config(self):
@@ -445,6 +475,18 @@ class QCConfig:
     def get_instrument_json_mapping(self) -> Dict[str, List[str]]:
         """Returns the mapping of instruments to JSON rule files."""
         return self.instrument_json_mapping
+    
+    def get_rules_path_for_packet(self, packet: str) -> str:
+        """Get the required rules path for a packet type."""
+        packet_paths = {
+            'I': self.json_rules_path_i,
+            'I4': self.json_rules_path_i4,
+            'F': self.json_rules_path_f
+        }
+        path = packet_paths.get(packet.upper())
+        if not path:
+            raise ValueError(f"No rules path configured for packet '{packet}'. Required environment variables: JSON_RULES_PATH_I, JSON_RULES_PATH_I4, JSON_RULES_PATH_F")
+        return path
 
     def validate(self) -> List[str]:
         """
@@ -510,11 +552,6 @@ def get_instrument_json_mapping() -> Dict[str, List[str]]:
     return get_config().get_instrument_json_mapping()
 
 
-def get_json_rules_path() -> Path:
-    """Returns the path to the JSON validation rules."""
-    return Path(get_config(skip_validation=True).json_rules_path)
-
-
 def get_output_path() -> Optional[Path]:
     """Returns the path to the output directory."""
     path = get_config().output_path
@@ -530,7 +567,7 @@ def get_status_path() -> Optional[Path]:
 def get_core_columns() -> List[str]:
     """Returns the core REDCap columns."""
     config = get_config()
-    return [config.primary_key_field, "redcap_event_name"]
+    return [config.primary_key_field, "redcap_event_name", "packet"]
 
 
 def get_completion_columns() -> List[str]:

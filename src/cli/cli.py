@@ -20,8 +20,8 @@ from pipeline.config_manager import (
     QCConfig,
     get_config,
 )
-from pipeline.logging_config import get_logger, setup_logging
-from pipeline.report_pipeline import run_report_pipeline
+from pipeline.logging_config import get_logger, setup_logging, ProductionCLIFormatter
+from pipeline.report_pipeline import run_report_pipeline, operation_context
 
 # Initialize console and logger
 console = Console()
@@ -57,7 +57,7 @@ def config(detailed: bool, json_output: bool):
             "errors": errors,
             "redcap_configured": bool(config_instance.api_token and config_instance.api_url),
             "output_path_exists": Path(config_instance.output_path).exists(),
-            "json_rules_path_exists": Path(config_instance.json_rules_path).exists(),
+            "packet_rules_configured": bool(config_instance.json_rules_path_i and config_instance.json_rules_path_i4 and config_instance.json_rules_path_f),
         }
     except SystemExit:
         # This happens if get_config fails validation internally
@@ -67,7 +67,7 @@ def config(detailed: bool, json_output: bool):
             "errors": ["Critical configuration error. Run with --detailed for more info."],
             "redcap_configured": False,
             "output_path_exists": False,
-            "json_rules_path_exists": False,
+            "packet_rules_configured": False,
         }
 
 
@@ -88,7 +88,7 @@ def config(detailed: bool, json_output: bool):
     
     console.print(f"REDCap API: {'Connected' if status['redcap_configured'] else 'Not Configured'}")
     console.print(f"Output Directory: {'Ready' if status['output_path_exists'] else 'Will be created'}")
-    console.print(f"Validation Rules: {'Loaded' if status['json_rules_path_exists'] else 'Missing'}")
+    console.print(f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}")
 
     if detailed and 'legacy_compatibility' in status:
         legacy_info = status['legacy_compatibility']
@@ -128,50 +128,67 @@ def run(
     user_initials: str,
 ):
     """Runs the QC validation pipeline based on the selected mode."""
-    logger.info(f"Running QC pipeline in '{mode}' mode.")
-
-    # Get base configuration
-    base_config = get_config(force_reload=True)
-
-    # Validate configuration before proceeding
-    config_errors = base_config.validate()
-    if config_errors:
-        console.print("Configuration errors detected:")
-        for error in config_errors:
-            console.print(f"- {error}")
-        return
-
-    # Use provided initials or prompt if not provided
-    if not user_initials:
-        user_initials = click.prompt("Enter your initials for reporting", type=str)
-
-    # Update config with runtime parameters
-    if output_dir:
-        base_config.output_path = output_dir
-    if events:
-        base_config.events = list(events)
-    if ptid_list:
-        base_config.ptid_list = list(ptid_list)
     
-    base_config.user_initials = user_initials.strip().upper()[:3]
-    base_config.mode = mode
-    base_config.include_qced = include_qced
-
-    # Determine database usage
-    # Display summary before running
-    _display_run_summary(base_config)
-
+    # Setup production logging for the run
+    import logging
+    
+    # Configure production CLI formatter
+    production_handler = logging.StreamHandler()
+    production_handler.setFormatter(ProductionCLIFormatter())
+    
+    # Get the root logger and replace handlers for production output
+    root_logger = logging.getLogger()
+    original_handlers = root_logger.handlers[:]
+    root_logger.handlers = [production_handler]
+    root_logger.setLevel(logging.INFO)
+    
     try:
-        console.print("Processing...")
-        run_report_pipeline(config=base_config)
+        with operation_context("initialization", "Setting up QC validation pipeline"):
+            logger.info(f"Running QC pipeline in '{mode}' mode.")
 
-        console.print(f"Results saved: {Path(base_config.output_path).resolve()}")
-        console.print("QC Run Complete")
+            # Get base configuration
+            base_config = get_config(force_reload=True)
+
+            # Validate configuration before proceeding
+            config_errors = base_config.validate()
+            if config_errors:
+                console.print("❌ Configuration errors detected:")
+                for error in config_errors:
+                    console.print(f"   → {error}")
+                return
+
+            # Use provided initials or prompt if not provided
+            if not user_initials:
+                user_initials = click.prompt("Enter your initials for reporting", type=str)
+
+            # Update config with runtime parameters
+            if output_dir:
+                base_config.output_path = output_dir
+            if events:
+                base_config.events = list(events)
+            if ptid_list:
+                base_config.ptid_list = list(ptid_list)
+            
+            base_config.user_initials = user_initials.strip().upper()[:3]
+            base_config.mode = mode
+            base_config.include_qced = include_qced
+
+        # Display summary before running
+        _display_run_summary(base_config)
+
+        with operation_context("qc_validation", f"Processing {mode} mode"):
+            run_report_pipeline(config=base_config)
+
+        logger.info(f"✅ Results saved to: {Path(base_config.output_path).resolve()}")
+        logger.info("✅ QC validation pipeline complete")
 
     except Exception as e:
-        logger.error(f"An unexpected error occurred during the QC run: {e}", exc_info=True)
-        console.print("An error occurred. See logs for details.")
+        logger.error(f"QC validation pipeline failed: {e}")
+        console.print("❌ An error occurred. Check the logs above for details.")
         sys.exit(1)
+    finally:
+        # Restore original logging configuration
+        root_logger.handlers = original_handlers
 
 
 def _display_run_summary(config: QCConfig):

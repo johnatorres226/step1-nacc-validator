@@ -50,6 +50,26 @@
         "allowed": [
             0,
             1
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "normexam": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "normnrexam": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "parksign": {
@@ -339,6 +359,25 @@
             0,
             1,
             8
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "parksign": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                }
+            }
         ]
     },
     "slowingfm": {
@@ -2342,6 +2381,25 @@
             5,
             6,
             7
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "parkgait": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "gaitfind": {
+                        "allowed": [
+                            5
+                        ]
+                    }
+                }
+            }
         ]
     },
     "gaitothrx": {

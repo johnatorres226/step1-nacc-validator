@@ -1,0 +1,40 @@
+site: https://mermaid.live/
+
+flowchart TD
+    A[REDCap Data Input] --> B{Record Type Detection}
+    
+    B --> C[Form A1]
+    B --> D[Form B1] 
+    B --> E[Form C2]
+    B --> F[Other Forms]
+    
+    C --> C1[Load a1.json rules]
+    D --> D1[Load b1.json rules]
+    E --> E1{C2 Tool Detection}
+    F --> F1[Load respective.json rules]
+    
+    E1 --> E2[Load c2.json rules]
+    E1 --> E3[C2 Version-Specific Rules]
+    E1 --> E4[C2 Condition-Based Rules]
+    
+    C1 --> G[Apply Schema Validation]
+    D1 --> G
+    E2 --> H{Rule Found?}
+    E3 --> H
+    E4 --> H
+    F1 --> G
+    
+    H -->|Yes| G
+    H -->|No| I[UNKNOWN RULE ERROR]
+    
+    G --> J{Validation Pass?}
+    J -->|Yes| K[Data Accepted]
+    J -->|No| L[Validation Errors]
+    
+    I --> M[Log Error to quality_check.log]
+    L --> N[Log Validation Issues]
+    
+    style I fill:#ff6b6b
+    style H fill:#ffd93d
+    style E1 fill:#6bcf7f
+    style G fill:#4ecdc4

@@ -200,7 +200,13 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemwors": {
                         "allowed": [
                             1,
@@ -218,7 +224,13 @@
             },
             {
                 "index": 1,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemtroub": {
                         "allowed": [
                             4,
@@ -236,7 +248,13 @@
             },
             {
                 "index": 2,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemten": {
                         "allowed": [
                             4,
@@ -865,6 +883,37 @@
                         "nullable": false
                     }
                 }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "cogage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "decage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "cogage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "decage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "min": 15,
@@ -1335,6 +1384,37 @@
                     "behage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "behage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "behage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "beage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "behage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "beage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -3047,6 +3127,37 @@
                     "motorage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "motorage": {
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "motorage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "moage": {
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "motorage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "moage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
