@@ -388,7 +388,7 @@ class ReportFactory:
                 try:
                     rules = load_json_rules_for_instrument(instrument)
                     # Get the full rules path based on packet type
-                    rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path
+                    rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path_i
                     
                     for variable, rule_data in rules.items():
                         records.append({

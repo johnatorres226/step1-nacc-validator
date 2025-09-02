@@ -129,9 +129,18 @@ class HierarchicalRuleResolver:
         
         if not discriminant_value:
             logger.warning(
-                f"No {discriminant_var} value found in record for {instrument_name} "
-                f"in packet {packet}, using base rules"
+                f"Missing {discriminant_var} value in record for {instrument_name} "
+                f"in packet {packet}. Using default variant rules. "
+                f"Recommendation: Ensure {discriminant_var} field is properly populated in data export."
             )
+            # For dynamic instruments, base_rules is a dict with variant keys
+            # When discriminant is missing, use the first available variant as default
+            if isinstance(base_rules, dict) and base_rules:
+                default_variant = list(base_rules.keys())[0]
+                logger.info(f"Using default variant '{default_variant}' for {instrument_name}")
+                logger.debug(f"base_rules keys: {list(base_rules.keys())}")
+                logger.debug(f"Returning rules for variant '{default_variant}': {type(base_rules[default_variant])}")
+                return base_rules[default_variant]
             return base_rules
         
         # Check if the discriminant value exists in the base rules
@@ -143,8 +152,9 @@ class HierarchicalRuleResolver:
             return base_rules[discriminant_value]
         else:
             logger.warning(
-                f"No rules found for {discriminant_var}={discriminant_value} "
-                f"in packet {packet} for {instrument_name}, using base rules"
+                f"No variant rules found for {discriminant_var}={discriminant_value} "
+                f"in packet {packet} for {instrument_name}. Using base rules. "
+                f"Action: Verify rules file contains {discriminant_value} variant or check data export."
             )
             return base_rules
     
@@ -201,6 +211,9 @@ class HierarchicalRuleResolver:
                         self.resolve_rules(dummy_record, instrument_name)
                         
             except Exception as e:
-                logger.error(f"Failed to preload rules for {instrument_name} in packet {packet}: {e}")
+                logger.error(
+                    f"Failed to preload rules for {instrument_name} in packet {packet}: {e}. "
+                    f"Action: Verify rules directory structure and file accessibility for packet {packet}."
+                )
         
         logger.info(f"Preloading completed for packet {packet}")

@@ -45,9 +45,10 @@ def load_dynamic_rules_for_instrument(instrument_name: str) -> Dict[str, Dict[st
         raise ValueError(f"Instrument '{instrument_name}' is not configured for dynamic rule selection.")
 
     config = get_config()
-    json_rules_dir = config.json_rules_path
+    # Use I packet path as default for dynamic instruments
+    json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError("JSON_RULES_PATH is not configured. Please check your environment settings.")
+        raise ValueError("JSON_RULES_PATH_I is not configured. Please check your environment settings.")
 
     json_rules_path = Path(json_rules_dir)
     rule_mappings = get_rule_mappings(instrument_name)
@@ -89,9 +90,10 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
         A dictionary containing the combined validation rules.
     """
     config = get_config()
-    json_rules_dir = config.json_rules_path
+    # Use I packet path as default for general rule loading
+    json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError("JSON_RULES_PATH is not configured. Please check your environment settings.")
+        raise ValueError("JSON_RULES_PATH_I is not configured. Please check your environment settings.")
 
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:

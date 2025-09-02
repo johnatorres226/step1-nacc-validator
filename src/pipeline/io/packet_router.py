@@ -40,12 +40,23 @@ class PacketRuleRouter:
             
         Returns:
             Dictionary containing the validation rules for the record
+            
+        Raises:
+            ValueError: If packet value is missing or invalid
         """
         packet = record.get('packet', '').upper()
         
         if not packet:
-            logger.warning(f"No packet value found in record for {instrument_name}, using default rules")
-            packet = 'I'  # Default fallback
+            raise ValueError(
+                f"Missing packet value in record for {instrument_name}. "
+                f"Packet-based routing requires valid packet field (I, I4, or F)."
+            )
+        
+        if packet not in ['I', 'I4', 'F']:
+            raise ValueError(
+                f"Invalid packet value '{packet}' for {instrument_name}. "
+                f"Valid packet values are: I, I4, F"
+            )
         
         cache_key = f"{packet}_{instrument_name}"
         
@@ -55,33 +66,23 @@ class PacketRuleRouter:
             logger.debug(f"Loaded rules for {cache_key} from {rules_path}")
         
         return self._rule_cache[cache_key]
+        
+        return self._rule_cache[cache_key]
     
     def _load_rules(self, rules_path: str, instrument_name: str, packet: str) -> Dict[str, Any]:
-        """
-        Load rules from specific packet directory.
-        
-        Args:
-            rules_path: Path to the packet-specific rules directory
-            instrument_name: Name of the instrument
-            packet: Packet type (I, I4, F)
-            
-        Returns:
-            Dictionary containing the loaded rules
-        """
+        """Load rules from specific packet directory - no fallbacks."""
         if not rules_path or not Path(rules_path).exists():
-            logger.error(f"Rules path not found for packet '{packet}': {rules_path}")
-            logger.info(f"Falling back to default rules for {instrument_name}")
-            # Fallback to default rules using the original JSON_RULES_PATH
-            return self._load_default_rules(instrument_name)
+            raise FileNotFoundError(
+                f"Required rules path not found for packet '{packet}': {rules_path}. "
+                f"Ensure environment variable JSON_RULES_PATH_{packet} is properly configured."
+            )
         
         try:
-            # Use existing instrument mapping logic with packet-specific path
-            # This leverages existing dynamic instrument handling
             return self._load_rules_from_path(rules_path, instrument_name)
         except Exception as e:
-            logger.error(f"Failed to load rules for {instrument_name} from {rules_path}: {e}")
-            logger.info(f"Falling back to default rules for {instrument_name}")
-            return self._load_default_rules(instrument_name)
+            raise RuntimeError(
+                f"Failed to load rules for {instrument_name} from {rules_path}: {e}"
+            ) from e
     
     def _load_rules_from_path(self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
         """
@@ -164,22 +165,6 @@ class PacketRuleRouter:
         
         logger.debug(f"Loaded dynamic rules for {instrument_name}: {list(rule_map.keys())}")
         return rule_map
-    
-    def _load_default_rules(self, instrument_name: str) -> Dict[str, Any]:
-        """
-        Load default rules as fallback.
-        
-        Args:
-            instrument_name: Name of the instrument
-            
-        Returns:
-            Dictionary containing the default rules
-        """
-        try:
-            return load_json_rules_for_instrument(instrument_name)
-        except Exception as e:
-            logger.error(f"Failed to load default rules for {instrument_name}: {e}")
-            return {}
     
     def is_packet_supported(self, packet: str) -> bool:
         """

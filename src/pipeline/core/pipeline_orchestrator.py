@@ -202,15 +202,47 @@ class PipelineOrchestrator:
             raise DataFetchError(f"Failed to fetch data: {e}", e)
     
     def _execute_rules_loading_stage(self) -> RulesLoadingResult:
-        """Execute the rules loading stage."""
+        """Execute the rules loading stage using packet-based routing."""
         try:
-            from ..io.rules import load_rules_for_instruments
+            from ..io.packet_router import PacketRuleRouter
+            from ..io.hierarchical_router import HierarchicalRuleResolver
             from ..core.data_processing import build_variable_maps
             
             stage_start = time.time()
             
-            self.logger.info(f"Loading validation rules for {len(self.config.instruments)} instruments...")
-            rules_cache = load_rules_for_instruments(self.config.instruments)
+            self.logger.info(f"Loading validation rules for {len(self.config.instruments)} instruments using packet routing...")
+            
+            # Initialize packet router for production rule loading
+            packet_router = PacketRuleRouter(self.config)
+            hierarchical_resolver = HierarchicalRuleResolver(self.config)
+            
+            # Load rules for all instruments using packet routing
+            rules_cache = {}
+            failed_instruments = []
+            error_messages = {}
+            
+            for instrument in self.config.instruments:
+                try:
+                    # For each instrument, we need to get rules for all packet types
+                    # Use hierarchical resolver to handle both packet and dynamic routing
+                    instrument_rules = {}
+                    
+                    # Create a sample record to determine packet routing (this is a placeholder approach)
+                    # In production, packet detection would be done per-record during validation
+                    sample_record = {"packet": "I"}  # Default to I packet for rule loading
+                    instrument_rules = hierarchical_resolver.resolve_rules(sample_record, instrument)
+                    
+                    if instrument_rules:
+                        rules_cache[instrument] = instrument_rules
+                        self.logger.debug(f"Loaded rules for instrument: {instrument}")
+                    else:
+                        failed_instruments.append(instrument)
+                        error_messages[instrument] = f"No rules found for instrument {instrument}"
+                        
+                except Exception as e:
+                    failed_instruments.append(instrument)
+                    error_messages[instrument] = str(e)
+                    self.logger.warning(f"Failed to load rules for {instrument}: {e}")
             
             self.logger.info("Building variable mappings...")
             variable_to_instrument_map, instrument_to_variables_map = build_variable_maps(
@@ -219,12 +251,6 @@ class PipelineOrchestrator:
             
             execution_time = time.time() - stage_start
             
-            # Check for failed instruments
-            failed_instruments = [
-                inst for inst in self.config.instruments 
-                if not rules_cache.get(inst)
-            ]
-            
             return RulesLoadingResult(
                 rules_cache=rules_cache,
                 instruments_processed=self.config.instruments,
@@ -232,7 +258,8 @@ class PipelineOrchestrator:
                 variable_to_instrument_map=variable_to_instrument_map,
                 instrument_to_variables_map=instrument_to_variables_map,
                 success=len(failed_instruments) < len(self.config.instruments),
-                failed_instruments=failed_instruments
+                failed_instruments=failed_instruments,
+                error_messages=error_messages
             )
             
         except Exception as e:
