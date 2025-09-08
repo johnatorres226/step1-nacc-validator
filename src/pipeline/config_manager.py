@@ -28,7 +28,7 @@ dotenv_path = project_root / ".env"
 # Load environment variables from .env file
 load_dotenv(dotenv_path)
 
-# Environment variable 
+# Environment variable
 adrc_api_key = os.getenv('REDCAP_API_TOKEN')
 adrc_redcap_url = os.getenv('REDCAP_API_URL')
 project_id = os.getenv('PROJECT_ID')
@@ -42,7 +42,7 @@ upload_ready_path = os.getenv('UPLOAD_READY_PATH')
 # =============================================================================
 # INSTRUMENTS AND MAPPING CONFIGURATION
 # This section defines the instruments and their JSON mapping for validation rules.
-# 
+#
 # Use "UPDATE_MARKER" to search what items need to be updated in this section
 # =============================================================================
 
@@ -50,7 +50,7 @@ upload_ready_path = os.getenv('UPLOAD_READY_PATH')
 instruments = [
     # I and I4 packets instruments
     "form_header",
-    "a1_participant_demographics", 
+    "a1_participant_demographics",
     "a3_participant_family_history",
     "a4a_adrd_specific_treatments",
     "a5d2_participant_health_history_clinician_assessed",
@@ -102,7 +102,7 @@ instrument_json_mapping = {
 
 # UPDATE_MARKER more events -- HERE -- as they are needed
 uds_events = [
-    "udsv4_ivp_1_arm_1", 
+    "udsv4_ivp_1_arm_1",
     "udsv4_fvp_2_arm_1"
 ]
 
@@ -124,7 +124,7 @@ complete_events_with_incomplete_qc_filter_logic = (
     "(" +
     " and ".join(f"[{inst}]=2" for inst in complete_instruments_vars) +
     ") and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
-) 
+)
 qc_status_form = ["quality_control_check"]
 instrument_filter = instruments + qc_status_form
 uds_event_filter = uds_events
@@ -211,7 +211,7 @@ DYNAMIC_RULE_INSTRUMENTS = {
 # List of all discriminant variables used across the system
 # This helps with data fetching and filtering
 DISCRIMINANT_VARIABLES = list(set([
-    config["discriminant_variable"] 
+    config["discriminant_variable"]
     for config in DYNAMIC_RULE_INSTRUMENTS.values()
 ]))
 
@@ -248,7 +248,7 @@ def is_dynamic_rule_instrument(instrument_name: str) -> bool:
 
 class ConfigValidator(ABC):
     """Abstract base class for configuration validators."""
-    
+
     @abstractmethod
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate configuration and return list of errors."""
@@ -257,73 +257,73 @@ class ConfigValidator(ABC):
 
 class RequiredFieldsValidator(ConfigValidator):
     """Validates that all required fields are present and valid."""
-    
+
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate required fields and return list of errors."""
         errors = []
-        
+
         # Require REDCap API configuration
         if not config.api_token and not config.redcap_api_token:
             errors.append("REDCAP_API_TOKEN is required")
         if not config.api_url and not config.redcap_api_url:
             errors.append("REDCAP_API_URL is required")
-        
+
         # Require ALL packet rule paths (no fallbacks)
         required_packet_paths = {
             'JSON_RULES_PATH_I': config.json_rules_path_i,
             'JSON_RULES_PATH_I4': config.json_rules_path_i4,
             'JSON_RULES_PATH_F': config.json_rules_path_f
         }
-        
+
         for env_var, path in required_packet_paths.items():
             if not path:
                 errors.append(f"Missing required environment variable: {env_var}")
-            
+
         return errors
 
 
 class PathValidator(ConfigValidator):
     """Validates and creates necessary paths."""
-    
+
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate paths and return list of errors."""
         errors = []
-        
+
         # Validate packet-specific rules paths (required for production)
         packet_paths = {
             'JSON_RULES_PATH_I': config.json_rules_path_i,
             'JSON_RULES_PATH_I4': config.json_rules_path_i4,
             'JSON_RULES_PATH_F': config.json_rules_path_f
         }
-        
+
         for env_var, path in packet_paths.items():
             if path and not Path(path).is_dir():
                 errors.append(f"{env_var} '{path}' is not a valid directory.")
-        
+
         # Validate and create output path if needed
         if config.output_path and not Path(config.output_path).is_dir():
             try:
                 Path(config.output_path).mkdir(parents=True, exist_ok=True)
             except OSError as e:
                 errors.append(f"OUTPUT_PATH '{config.output_path}' is not a valid directory and could not be created: {e}")
-        
+
         # Validate and create log path if needed
         if config.log_path and not Path(config.log_path).is_dir():
             try:
                 Path(config.log_path).mkdir(parents=True, exist_ok=True)
             except OSError as e:
                 errors.append(f"LOG_PATH '{config.log_path}' is not a valid directory and could not be created: {e}")
-        
+
         return errors
 
 
 class PerformanceValidator(ConfigValidator):
     """Validates performance-related settings."""
-    
+
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate performance settings and return list of errors."""
         errors = []
-        
+
         # Validate performance settings and report errors
         if config.max_workers < 1:
             errors.append("max_workers must be at least 1")
@@ -331,26 +331,26 @@ class PerformanceValidator(ConfigValidator):
             errors.append("timeout must be at least 30 seconds")
         if config.retry_attempts < 0:
             errors.append("retry_attempts cannot be negative")
-            
+
         return errors
 
 
 class CustomValidator(ConfigValidator):
     """Validates custom business logic and constraints."""
-    
+
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate custom constraints and return list of errors."""
         errors = []
-        
+
         # Validate instrument consistency
         if len(config.instruments) != len(set(config.instruments)):
             errors.append("Duplicate instruments found in configuration.")
-        
+
         # Validate instrument mapping consistency
         for instrument in config.instruments:
             if instrument not in config.instrument_json_mapping:
                 errors.append(f"Instrument '{instrument}' has no JSON mapping configured.")
-        
+
         return errors
 
 
@@ -380,15 +380,15 @@ class QCConfig:
     log_path: Optional[str] = field(default_factory=lambda: os.getenv('LOG_PATH'))
     status_path: Optional[str] = field(default_factory=lambda: os.getenv('STATUS_PATH'))
     upload_ready_path: Optional[str] = field(default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
-    
+
     # --- Packet-based Rule Paths (Required) ---
     json_rules_path_i: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I', ''))
     json_rules_path_i4: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_I4', ''))
     json_rules_path_f: str = field(default_factory=lambda: os.getenv('JSON_RULES_PATH_F', ''))
-    
+
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
-    
+
     # --- Special Column Configuration ---
     special_col_discriminat_var: List[str] = field(default_factory=lambda: list(set(
         config["discriminant_variable"]
@@ -404,12 +404,12 @@ class QCConfig:
     include_qced: bool = False
     detailed_run: bool = False  # Generate detailed outputs (Validation_Logs, Completed_Visits, Reports, Generation_Summary)
     passed_rules: bool = False  # Generate comprehensive Rules Validation log (large file, slow generation)
-    
+
     # --- Performance & Retries ---
     max_workers: int = field(default_factory=lambda: int(os.getenv('MAX_WORKERS', '4')))
     timeout: int = field(default_factory=lambda: int(os.getenv('TIMEOUT', '300')))
     retry_attempts: int = field(default_factory=lambda: int(os.getenv('RETRY_ATTEMPTS', '3')))
-    
+
     # --- Report Generation ---
     generate_html_report: bool = field(default_factory=lambda: os.getenv('GENERATE_HTML_REPORT', 'true').lower() == 'true')
 
@@ -425,12 +425,12 @@ class QCConfig:
             self.redcap_api_token = self.api_token
         elif self.redcap_api_token and not self.api_token:
             self.api_token = self.redcap_api_token
-        
+
         if self.api_url and not self.redcap_api_url:
             self.redcap_api_url = self.api_url
         elif self.redcap_api_url and not self.api_url:
             self.api_url = self.redcap_api_url
-        
+
         # Resolve paths to be absolute
         if self.output_path:
             self.output_path = str(Path(self.output_path).resolve())
@@ -440,7 +440,7 @@ class QCConfig:
             self.status_path = str(Path(self.status_path).resolve())
         if self.upload_ready_path:
             self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
-        
+
         # Resolve packet-specific rule paths (required for production)
         if self.json_rules_path_i:
             self.json_rules_path_i = str(Path(self.json_rules_path_i).resolve())
@@ -448,7 +448,7 @@ class QCConfig:
             self.json_rules_path_i4 = str(Path(self.json_rules_path_i4).resolve())
         if self.json_rules_path_f:
             self.json_rules_path_f = str(Path(self.json_rules_path_f).resolve())
-        
+
         self._validate_config()
 
     def _validate_config(self):
@@ -482,7 +482,7 @@ class QCConfig:
     def get_instrument_json_mapping(self) -> Dict[str, List[str]]:
         """Returns the mapping of instruments to JSON rule files."""
         return self.instrument_json_mapping
-    
+
     def get_rules_path_for_packet(self, packet: str) -> str:
         """Get the required rules path for a packet type."""
         packet_paths = {
@@ -506,12 +506,12 @@ class QCConfig:
             PerformanceValidator(),
             CustomValidator()
         ]
-        
+
         all_errors = []
         for validator in validators:
             errors = validator.validate(self)
             all_errors.extend(errors)
-        
+
         return all_errors
 
 # =============================================================================
@@ -603,7 +603,7 @@ class CerberusCompatibilityAdapter:
     that don't exist in the standard Cerberus library, particularly the 'compatibility'
     and 'temporalrules' custom validators.
     """
-    
+
     def __init__(self):
         self.supported_cerberus_rules = {
             "type", "nullable", "min", "max", "regex", "allowed", "forbidden", "filled",
@@ -612,7 +612,7 @@ class CerberusCompatibilityAdapter:
         self.custom_rules = {
             "compatibility", "temporalrules"
         }
-    
+
     def extract_cerberus_rules(self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract only the rules that are supported by standard Cerberus.
@@ -624,14 +624,14 @@ class CerberusCompatibilityAdapter:
             Dictionary with only Cerberus-compatible rules
         """
         cerberus_rules = {}
-        
+
         for key, value in json_rules.items():
             cerberus_key = KEY_MAP.get(key)
             if cerberus_key and cerberus_key in self.supported_cerberus_rules:
                 cerberus_rules[cerberus_key] = value
-        
+
         return cerberus_rules
-    
+
     def extract_custom_rules(self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract custom rules that need special handling.
@@ -643,14 +643,14 @@ class CerberusCompatibilityAdapter:
             Dictionary with custom rules that need special processing
         """
         custom_rules = {}
-        
+
         for key, value in json_rules.items():
             cerberus_key = KEY_MAP.get(key)
             if cerberus_key and cerberus_key in self.custom_rules:
                 custom_rules[cerberus_key] = value
-        
+
         return custom_rules
-    
+
     def is_custom_rule(self, rule_key: str) -> bool:
         """Check if a rule key is a custom rule that needs special handling."""
         return rule_key in self.custom_rules
@@ -663,10 +663,10 @@ class ModernSchemaBuilder:
     This replaces the temporary workaround approach with a structured solution
     that separates Cerberus-compatible rules from custom validation logic.
     """
-    
+
     def __init__(self):
         self.compatibility_adapter = CerberusCompatibilityAdapter()
-    
+
     def build_schema_for_instrument(self, instrument_name: str) -> Dict[str, Any]:
         """
         Build a proper schema structure for an instrument.
@@ -678,58 +678,58 @@ class ModernSchemaBuilder:
             return self._build_dynamic_schema(instrument_name)
         else:
             return self._build_standard_schema(instrument_name)
-    
+
     def _build_standard_schema(self, instrument_name: str) -> Dict[str, Any]:
         """Build schema for standard instruments."""
         # Import here to avoid circular dependencies
         from .utils.instrument_mapping import load_json_rules_for_instrument
-        
+
         raw_rules = load_json_rules_for_instrument(instrument_name)
-        
+
         cerberus_schema = {}
         custom_rules = {}
-        
+
         for var, json_rules in raw_rules.items():
             cerberus_rules = self.compatibility_adapter.extract_cerberus_rules(json_rules)
             custom_var_rules = self.compatibility_adapter.extract_custom_rules(json_rules)
-            
+
             if cerberus_rules:
                 cerberus_schema[var] = cerberus_rules
             if custom_var_rules:
                 custom_rules[var] = custom_var_rules
-        
+
         return {
             "cerberus_schema": cerberus_schema,
             "custom_rules": custom_rules
         }
-    
+
     def _build_dynamic_schema(self, instrument_name: str) -> Dict[str, Any]:
         """Build schema for dynamic rule instruments."""
         # Import here to avoid circular dependencies
         from .utils.instrument_mapping import load_dynamic_rules_for_instrument
-        
+
         raw_rule_map = load_dynamic_rules_for_instrument(instrument_name)
-        
+
         schema_variants = {}
-        
+
         for variant, raw_rules in raw_rule_map.items():
             cerberus_schema = {}
             custom_rules = {}
-            
+
             for var, json_rules in raw_rules.items():
                 cerberus_rules = self.compatibility_adapter.extract_cerberus_rules(json_rules)
                 custom_var_rules = self.compatibility_adapter.extract_custom_rules(json_rules)
-                
+
                 if cerberus_rules:
                     cerberus_schema[var] = cerberus_rules
                 if custom_var_rules:
                     custom_rules[var] = custom_var_rules
-            
+
             schema_variants[variant] = {
                 "cerberus_schema": cerberus_schema,
                 "custom_rules": custom_rules
             }
-        
+
         return schema_variants
 
 
@@ -744,8 +744,8 @@ class CompatibilityValidator:
     This replaces the temporary workaround in NACCValidator with a proper
     structured approach that doesn't rely on Cerberus internal mechanisms.
     """
-    
-    def validate_compatibility_rules(self, record: Dict[str, Any], 
+
+    def validate_compatibility_rules(self, record: Dict[str, Any],
                                    compatibility_rules: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Validate compatibility rules for a record.
@@ -758,7 +758,7 @@ class CompatibilityValidator:
             List of validation errors
         """
         errors = []
-        
+
         for rule_index, rule in enumerate(compatibility_rules):
             try:
                 error = self._validate_single_compatibility_rule(record, rule, rule_index)
@@ -770,25 +770,25 @@ class CompatibilityValidator:
                     "rule_index": rule_index,
                     "error": f"System error in compatibility validation: {str(e)}"
                 })
-        
+
         return errors
-    
-    def _validate_single_compatibility_rule(self, record: Dict[str, Any], 
+
+    def _validate_single_compatibility_rule(self, record: Dict[str, Any],
                                           rule: Dict[str, Any], rule_index: int) -> Optional[Dict[str, Any]]:
         """Validate a single compatibility rule."""
         # Import here to avoid circular dependencies
         from nacc_form_validator.json_logic import jsonLogic
-        
+
         if_condition = rule.get("if")
         then_condition = rule.get("then")
         else_condition = rule.get("else")
-        
+
         if not if_condition:
             return None
-        
+
         # Evaluate the IF condition
         if_result = jsonLogic(if_condition, record)
-        
+
         if if_result and then_condition:
             # IF is true, check THEN condition
             then_result = jsonLogic(then_condition, record)
@@ -809,7 +809,7 @@ class CompatibilityValidator:
                     "if_condition": if_condition,
                     "else_condition": else_condition
                 }
-        
+
         return None
 
 
@@ -820,7 +820,7 @@ class CompatibilityValidator:
 # Updated KEY_MAP that properly separates Cerberus rules from custom rules
 MODERN_KEY_MAP = {
     "type": "type",
-    "nullable": "nullable", 
+    "nullable": "nullable",
     "min": "min",
     "max": "max",
     "pattern": "regex",

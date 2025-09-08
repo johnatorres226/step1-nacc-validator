@@ -57,17 +57,17 @@ def ensure_completion_columns_exist(df: pd.DataFrame, completion_cols: List[str]
         DataFrame with all completion columns present.
     """
     df_copy = df.copy()
-    
+
     # Ensure packet column exists
     if 'packet' not in df_copy.columns:
         df_copy['packet'] = 'unknown'
         logger.debug("Added default 'packet' column with value 'unknown'")
-    
+
     for col in completion_cols:
         if col not in df_copy.columns:
             logger.warning(f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
             df_copy[col] = '0'  # Default to incomplete if the column is missing
-    
+
     return df_copy
 
 
@@ -83,12 +83,12 @@ def normalize_completion_column_types(df: pd.DataFrame, completion_cols: List[st
         DataFrame with completion columns normalized to string type.
     """
     df_copy = df.copy()
-    
+
     # Convert all completion columns to string to handle mixed types (e.g., 2.0, '2', 2)
     for col in completion_cols:
         if col in df_copy.columns:
             df_copy[col] = df_copy[col].astype(str)
-    
+
     return df_copy
 
 
@@ -122,24 +122,24 @@ def identify_complete_visits(df: pd.DataFrame, primary_key_field: str) -> List[T
     # For each visit, check if ALL records in that visit are complete
     # A visit is complete if all its records have all instruments complete
     visit_completion = df.groupby([primary_key_field, 'redcap_event_name'])['_temp_all_complete'].all()
-    
+
     # Get packet information for each visit (take the first packet value for each visit)
     visit_packets = df.groupby([primary_key_field, 'redcap_event_name'])['packet'].first()
-    
+
     # Get complete visits (where the aggregated result is True)
     complete_visits_series = visit_completion[visit_completion]
-    
+
     # Combine visit data with packet information
     complete_visits = []
     for (pk, event) in complete_visits_series.index:
         packet = visit_packets.get((pk, event), 'unknown')
         complete_visits.append((pk, event, packet))
-    
+
     return complete_visits
 
 
 def create_complete_visits_summary(
-    complete_visits: List[Tuple[str, str, str]], 
+    complete_visits: List[Tuple[str, str, str]],
     completion_cols: List[str],
     primary_key_field: str
 ) -> pd.DataFrame:
@@ -157,17 +157,17 @@ def create_complete_visits_summary(
     if not complete_visits:
         logger.debug("ETL identified 0 truly complete visits.")
         return pd.DataFrame()
-    
+
     # Create the summary DataFrame with packet information
     complete_visits_summary = pd.DataFrame(complete_visits, columns=[primary_key_field, 'redcap_event_name', 'packet'])
-    
+
     # Create the final report DataFrame
     report_df = complete_visits_summary.copy()
     report_df['complete_instruments_count'] = len(completion_cols)
     report_df['completion_status'] = 'All Complete'
-    
+
     logger.debug(f"ETL identified {len(report_df)} truly complete visits (optimized).")
-    
+
     return report_df
 
 
@@ -187,7 +187,7 @@ def extract_complete_visits_tuples(summary_df: pd.DataFrame, primary_key_field: 
     """
     if summary_df.empty:
         return []
-    
+
     # Return only pk and event for backward compatibility with existing code
     return list(summary_df[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
 
@@ -218,37 +218,37 @@ def build_complete_visits_df(
     try:
         # Step 1: Validate input
         validate_dataframe_not_empty(data_df)
-        
+
         # Step 2: Generate completion column names
         completion_cols = generate_completion_column_names(instrument_list)
-        
+
         # Step 3: Ensure completion columns exist
         df_with_cols = ensure_completion_columns_exist(data_df, completion_cols)
-        
+
         # Step 4: Normalize column types
         df_normalized = normalize_completion_column_types(df_with_cols, completion_cols)
-        
+
         # Step 5: Create completion mask
         primary_key_field = get_config().primary_key_field
         completion_mask = create_completion_mask(df_normalized, completion_cols)
-        
+
         # Add the completion mask as a temporary column for groupby operations
         df_normalized['_temp_all_complete'] = completion_mask
-        
+
         # Step 6: Identify complete visits
         complete_visits = identify_complete_visits(df_normalized, primary_key_field)
-        
+
         # Clean up temporary column
         df_normalized.drop('_temp_all_complete', axis=1, inplace=True)
-        
+
         # Step 7: Create summary dataframe
         summary_df = create_complete_visits_summary(complete_visits, completion_cols, primary_key_field)
-        
+
         # Step 8: Extract tuples for downstream processing
         complete_visits_tuples = extract_complete_visits_tuples(summary_df, primary_key_field)
-        
+
         return summary_df, complete_visits_tuples
-        
+
     except DataProcessingError:
         # Re-raise data processing errors
         raise

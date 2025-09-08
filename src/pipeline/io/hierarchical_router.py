@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 
 from ..config_manager import (
-    QCConfig, get_config, is_dynamic_rule_instrument, 
+    QCConfig, get_config, is_dynamic_rule_instrument,
     get_discriminant_variable, get_rule_mappings
 )
 from ..logging_config import get_logger
@@ -27,7 +27,7 @@ class HierarchicalRuleResolver:
     dynamic instrument routing to provide a comprehensive rule resolution system
     that handles both packet types (I, I4, F) and instrument variants (C2, C2T).
     """
-    
+
     def __init__(self, config: Optional[QCConfig] = None):
         """
         Initialize the hierarchical rule resolver.
@@ -40,7 +40,7 @@ class HierarchicalRuleResolver:
         self._resolution_cache = {}
         self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("HierarchicalRuleResolver initialized")
-    
+
     def resolve_rules(self, record: Dict[str, Any], instrument_name: str) -> Dict[str, Any]:
         """
         Resolve rules using both packet and dynamic instrument routing.
@@ -59,32 +59,32 @@ class HierarchicalRuleResolver:
         """
         # Step 1: Get packet-specific base rules
         packet = record.get('packet', 'I').upper()
-        
+
         # Create cache key for performance optimization
         discriminant_value = ''
         if is_dynamic_rule_instrument(instrument_name):
             discriminant_var = get_discriminant_variable(instrument_name)
             discriminant_value = record.get(discriminant_var, '').upper()
-        
+
         cache_key = f"{packet}_{instrument_name}_{discriminant_value}"
-        
+
         if cache_key in self._resolution_cache:
             logger.debug(f"Using cached rules for {cache_key}")
             return self._resolution_cache[cache_key]
-        
+
         # Get packet-specific base rules
         base_rules = self.get_packet_rules(packet, instrument_name)
-        
+
         # Step 2: Apply dynamic routing if applicable
         resolved_rules = base_rules
         if is_dynamic_rule_instrument(instrument_name):
             resolved_rules = self._apply_dynamic_routing(
                 base_rules, record, instrument_name, packet, is_rules_loading=False
             )
-        
+
         # Cache the resolved rules
         self._resolution_cache[cache_key] = resolved_rules
-        
+
         logger.debug(f"Resolved rules for {instrument_name} in packet {packet}: {type(resolved_rules)}")
         return resolved_rules
 
@@ -105,12 +105,12 @@ class HierarchicalRuleResolver:
             Dictionary containing all rule variants organized by packet and variant
         """
         all_rules = {}
-        
+
         # Load rules for all packet types
         for packet in ['I', 'I4', 'F']:
             try:
                 base_rules = self.get_packet_rules(packet, instrument_name)
-                
+
                 if is_dynamic_rule_instrument(instrument_name):
                     # For dynamic instruments during rules loading, return the base_rules
                     # which should contain all variants (C2, C2T, etc.)
@@ -125,21 +125,21 @@ class HierarchicalRuleResolver:
                 else:
                     # For non-dynamic instruments, store directly
                     all_rules[packet] = base_rules
-                    
+
             except Exception as e:
                 logger.debug(f"Could not load rules for {instrument_name} in packet {packet}: {e}")
                 continue
-        
+
         # Return the most comprehensive rule set found
         # Priority: I4 > I > F (or return the first available)
         for packet in ['I4', 'I', 'F']:
             if packet in all_rules and all_rules[packet]:
                 logger.debug(f"Rules loading complete for {instrument_name}, using packet {packet} as template")
                 return all_rules[packet]
-        
+
         logger.warning(f"No rules found for instrument {instrument_name} in any packet")
         return {}
-    
+
     def get_packet_rules(self, packet: str, instrument_name: str) -> Dict[str, Any]:
         """
         Get packet-specific base rules.
@@ -157,11 +157,11 @@ class HierarchicalRuleResolver:
         # Create a dummy record with the packet value for the PacketRuleRouter
         dummy_record = {'packet': packet}
         return self.packet_router.get_rules_for_record(dummy_record, instrument_name)
-    
+
     def _apply_dynamic_routing(
-        self, 
-        base_rules: Dict[str, Any], 
-        record: Dict[str, Any], 
+        self,
+        base_rules: Dict[str, Any],
+        record: Dict[str, Any],
         instrument_name: str,
         packet: str,
         is_rules_loading: bool = False
@@ -181,7 +181,7 @@ class HierarchicalRuleResolver:
         """
         discriminant_var = get_discriminant_variable(instrument_name)
         discriminant_value = record.get(discriminant_var, '').upper()
-        
+
         if not discriminant_value:
             # During rules loading, use debug level to avoid false warnings
             # During actual validation, use warning level for data quality issues
@@ -205,7 +205,7 @@ class HierarchicalRuleResolver:
                 logger.debug(f"Returning rules for variant '{default_variant}': {type(base_rules[default_variant])}")
                 return base_rules[default_variant]
             return base_rules
-        
+
         # Check if the discriminant value exists in the base rules
         if discriminant_value in base_rules:
             logger.debug(
@@ -220,7 +220,7 @@ class HierarchicalRuleResolver:
                 f"Action: Verify rules file contains {discriminant_value} variant or check data export."
             )
             return base_rules
-    
+
     def get_cache_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics for monitoring and optimization.
@@ -234,7 +234,7 @@ class HierarchicalRuleResolver:
             'hierarchical_cache_keys': list(self._resolution_cache.keys()),
             'packet_router_stats': packet_cache_stats
         }
-    
+
     def clear_cache(self) -> None:
         """
         Clear all cached rules for memory management.
@@ -245,7 +245,7 @@ class HierarchicalRuleResolver:
         self._resolution_cache.clear()
         self.packet_router.clear_cache()
         logger.info("Cleared all hierarchical rule resolver caches")
-    
+
     def preload_rules_for_packet(self, packet: str, instrument_names: list) -> None:
         """
         Preload rules for a specific packet and list of instruments.
@@ -258,25 +258,25 @@ class HierarchicalRuleResolver:
             instrument_names: List of instrument names to preload
         """
         logger.info(f"Preloading rules for packet {packet} and {len(instrument_names)} instruments")
-        
+
         for instrument_name in instrument_names:
             try:
                 # Preload base packet rules
                 self.get_packet_rules(packet, instrument_name)
-                
+
                 # If dynamic instrument, preload variant rules
                 if is_dynamic_rule_instrument(instrument_name):
                     rule_mappings = get_rule_mappings(instrument_name)
                     discriminant_var = get_discriminant_variable(instrument_name)
-                    
+
                     for variant in rule_mappings.keys():
                         dummy_record = {'packet': packet, discriminant_var: variant}
                         self.resolve_rules(dummy_record, instrument_name)
-                        
+
             except Exception as e:
                 logger.error(
                     f"Failed to preload rules for {instrument_name} in packet {packet}: {e}. "
                     f"Action: Verify rules directory structure and file accessibility for packet {packet}."
                 )
-        
+
         logger.info(f"Preloading completed for packet {packet}")

@@ -513,7 +513,7 @@ class NACCValidator(Validator):
         for field, conds in all_conditions.items():
             # Check if the field exists and is not null in the record
             field_value = record.get(field)
-            
+
             # If field is null or missing, check if we're validating against allowed values
             if field_value is None and isinstance(conds, dict) and 'allowed' in conds:
                 # If the field is null/missing and we're checking for allowed values,
@@ -526,7 +526,7 @@ class NACCValidator(Validator):
                     valid = False
                     # Don't add errors for null/missing fields in conditions
                     break
-            
+
             subschema = {field: conds}
 
             temp_validator = NACCValidator(

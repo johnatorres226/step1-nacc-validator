@@ -231,7 +231,7 @@ def mock_environment_variables():
         'JSON_RULES_PATH_I4': '/mock/rules/I4',
         'JSON_RULES_PATH_F': '/mock/rules/F'
     }
-    
+
     with patch.dict(os.environ, env_vars):
         yield env_vars
 
@@ -314,7 +314,7 @@ def sample_log_data():
 # Test utilities
 class TestUtils:
     """Utility functions for tests."""
-    
+
     @staticmethod
     def create_mock_datastore(pk_field: str = 'ptid'):
         """Create a mock datastore for testing."""
@@ -322,7 +322,7 @@ class TestUtils:
         mock_datastore.pk_field = pk_field
         mock_datastore.get_previous_record.return_value = None
         return mock_datastore
-    
+
     @staticmethod
     def create_temp_json_file(data: Dict[str, Any], temp_dir: Path) -> Path:
         """Create a temporary JSON file with test data."""
@@ -331,20 +331,20 @@ class TestUtils:
         with open(temp_file, 'w') as f:
             json.dump(data, f, indent=2)
         return temp_file
-    
+
     @staticmethod
     def create_temp_csv_file(data: pd.DataFrame, temp_dir: Path, filename: str = "test_data.csv") -> Path:
         """Create a temporary CSV file with test data."""
         temp_file = temp_dir / filename
         data.to_csv(temp_file, index=False)
         return temp_file
-    
+
     @staticmethod
     def assert_file_exists_and_not_empty(file_path: Path):
         """Assert that a file exists and is not empty."""
         assert file_path.exists(), f"File does not exist: {file_path}"
         assert file_path.stat().st_size > 0, f"File is empty: {file_path}"
-    
+
     @staticmethod
     def assert_csv_has_expected_columns(csv_path: Path, expected_columns: list):
         """Assert that a CSV file has the expected columns."""

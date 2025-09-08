@@ -81,11 +81,11 @@ def config(detailed: bool, json_output: bool):
         console.print("UDSv4 QC Validator Status: Configuration issues detected")
 
     console.print("\nSystem Configuration:")
-    
+
     console.print(f"Overall System: {'Ready' if status['valid'] else 'Issues Found'}")
     if status['errors']:
         console.print(f"  Issues: {len(status['errors'])}")
-    
+
     console.print(f"REDCap API: {'Connected' if status['redcap_configured'] else 'Not Configured'}")
     console.print(f"Output Directory: {'Ready' if status['output_path_exists'] else 'Will be created'}")
     console.print(f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}")
@@ -134,14 +134,14 @@ def run(
     passed_rules: bool,
 ):
     """Runs the QC validation pipeline based on the selected mode."""
-    
+
     # Validate that --passed-rules can only be used with --detailed-run
     if passed_rules and not detailed_run:
         raise click.ClickException(
             "The --passed-rules/-ps option requires --detailed-run/-dr to be enabled. "
             "Use: udsv4-qc run -i INITIALS -dr -ps"
         )
-    
+
     # Configure logging properly using the logging_config module
     if log:
         # Enable console logging with proper configuration
@@ -159,7 +159,7 @@ def run(
             structured_logging=False,
             performance_tracking=False
         )
-    
+
     try:
         if log:
             # Only show initialization message if logging is enabled
@@ -193,7 +193,7 @@ def run(
             base_config.events = list(events)
         if ptid_list:
             base_config.ptid_list = list(ptid_list)
-        
+
         base_config.user_initials = user_initials.strip().upper()[:3]
         base_config.mode = mode
         base_config.include_qced = include_qced
@@ -208,7 +208,7 @@ def run(
         if log:
             with operation_context("qc_validation", f"Processing {mode} mode"):
                 run_report_pipeline(config=base_config)
-            
+
             logger.info(f"Results saved to: {Path(base_config.output_path).resolve()}")
             logger.info("QC validation pipeline complete")
         else:
@@ -228,7 +228,7 @@ def _display_run_summary(config: QCConfig):
     """Displays a summary of the QC run configuration."""
     mode_title = config.mode.replace('_', ' ').title() if config.mode else "N/A"
     console.print(f"\nQC Run Configuration (Mode: {mode_title})")
-    
+
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
     console.print(f"Output Directory: {Path(config.output_path).resolve()}")
     console.print(f"Log Level: {config.log_level}")
@@ -237,7 +237,7 @@ def _display_run_summary(config: QCConfig):
 
     if config.mode == 'custom':
         console.print(f"Include Previously QCed: {'Yes' if config.include_qced else 'No'}")
-    
+
     console.print("")
 
 

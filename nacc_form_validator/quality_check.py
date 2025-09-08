@@ -91,7 +91,7 @@ class QualityCheck:
 
         # Set primary key
         validator.primary_key = self.pk_field
-        
+
         # Set datastore if provided and validate primary key compatibility
         if self.datastore:
             if self.datastore.pk_field != self.pk_field:
@@ -100,7 +100,7 @@ class QualityCheck:
                     f"datastore='{self.datastore.pk_field}'"
                 )
             validator.datastore = self.datastore
-        
+
         return validator
 
     def validate_record(self, record: Dict[str, Any]) -> ValidationResult:

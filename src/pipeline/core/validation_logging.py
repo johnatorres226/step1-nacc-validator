@@ -46,16 +46,16 @@ def determine_completion_status(record: pd.Series, instrument: str) -> Tuple[str
         Tuple containing (target_variable, completeness_status, pass_status).
     """
     instrument_complete_col = f"{instrument}_complete"
-    
+
     if instrument_complete_col in record:
         # Check if the instrument is marked as complete ('2')
         completion_value = record.get(instrument_complete_col)
         is_complete = str(completion_value) == "2"
-        
+
         target_variable = instrument_complete_col
         completeness_status = "Complete" if is_complete else "Incomplete"
         pass_status = "Pass" if is_complete else "Fail"
-        
+
         return target_variable, completeness_status, pass_status
     else:
         # If no completeness variable exists for this instrument
@@ -63,9 +63,9 @@ def determine_completion_status(record: pd.Series, instrument: str) -> Tuple[str
 
 
 def generate_error_message(
-    record: pd.Series, 
-    instrument: str, 
-    completeness_status: str, 
+    record: pd.Series,
+    instrument: str,
+    completeness_status: str,
     pass_status: str
 ) -> Any:
     """
@@ -82,9 +82,9 @@ def generate_error_message(
     """
     if pass_status == "Pass":
         return np.nan
-    
+
     instrument_complete_col = f"{instrument}_complete"
-    
+
     if completeness_status == "No completeness field":
         return "Instrument completeness variable not found in data."
     else:
@@ -131,8 +131,8 @@ def create_validation_log_entry(
 
 
 def process_single_record_log(
-    record: pd.Series, 
-    instrument: str, 
+    record: pd.Series,
+    instrument: str,
     primary_key_field: str
 ) -> Dict[str, Any]:
     """
@@ -148,23 +148,23 @@ def process_single_record_log(
     """
     # Extract record identifiers
     primary_key, event = extract_record_identifiers(record, primary_key_field)
-    
+
     # Determine completion status
     target_variable, completeness_status, pass_status = determine_completion_status(record, instrument)
-    
+
     # Generate error message if needed
     error_msg = generate_error_message(record, instrument, completeness_status, pass_status)
-    
+
     # Create log entry
     return create_validation_log_entry(
-        primary_key, event, instrument, target_variable, 
+        primary_key, event, instrument, target_variable,
         completeness_status, pass_status, error_msg, primary_key_field
     )
 
 
 def build_detailed_validation_logs(
-    df: pd.DataFrame, 
-    instrument: str, 
+    df: pd.DataFrame,
+    instrument: str,
     primary_key_field: str
 ) -> List[Dict[str, Any]]:
     """
@@ -186,15 +186,15 @@ def build_detailed_validation_logs(
         if df.empty:
             logger.warning(f"No records to process for instrument: {instrument}")
             return []
-        
+
         logs = []
         for _, record_row in df.iterrows():
             log_entry = process_single_record_log(record_row, instrument, primary_key_field)
             logs.append(log_entry)
-        
+
         logger.debug(f"Generated {len(logs)} validation log entries for instrument '{instrument}'.")
         return logs
-        
+
     except Exception as e:
         logger.error(f"Failed to build validation logs for instrument {instrument}: {e}")
         raise DataProcessingError(f"Validation logging failed for {instrument}: {e}") from e
@@ -213,7 +213,7 @@ def build_validation_logs_summary(logs: List[Dict[str, Any]]) -> ValidationLogsD
     total_records = len(logs)
     pass_count = sum(1 for log in logs if log.get("pass_fail") == "Pass")
     fail_count = total_records - pass_count
-    
+
     return ValidationLogsData(
         log_entries=logs,
         total_records_processed=total_records,
@@ -227,8 +227,8 @@ def build_validation_logs_summary(logs: List[Dict[str, Any]]) -> ValidationLogsD
 # =============================================================================
 
 def build_detailed_validation_logs_vectorized(
-    df: pd.DataFrame, 
-    instrument: str, 
+    df: pd.DataFrame,
+    instrument: str,
     primary_key_field: str
 ) -> List[Dict[str, Any]]:
     """
@@ -249,28 +249,28 @@ def build_detailed_validation_logs_vectorized(
         if df.empty:
             logger.warning(f"No records to process for instrument: {instrument}")
             return []
-        
+
         instrument_complete_col = f"{instrument}_complete"
-        
+
         # Create result dataframe with basic columns
         result_df = pd.DataFrame()
         result_df[primary_key_field] = df[primary_key_field].fillna("N/A")
         result_df["redcap_event_name"] = df["redcap_event_name"].fillna("N/A")
         result_df["instrument_name"] = instrument
         result_df["processing_status"] = "Processed"
-        
+
         # Vectorized completion status determination
         if instrument_complete_col in df.columns:
             result_df["target_variable"] = instrument_complete_col
             is_complete = df[instrument_complete_col].astype(str) == "2"
             result_df["completeness_status"] = np.where(is_complete, "Complete", "Incomplete")
             result_df["pass_fail"] = np.where(is_complete, "Pass", "Fail")
-            
+
             # Vectorized error message generation
             result_df["error"] = np.where(
-                is_complete, 
-                np.nan, 
-                "Instrument not marked as complete. Value is '" + 
+                is_complete,
+                np.nan,
+                "Instrument not marked as complete. Value is '" +
                 df[instrument_complete_col].astype(str) + "'."
             )
         else:
@@ -278,13 +278,13 @@ def build_detailed_validation_logs_vectorized(
             result_df["completeness_status"] = "No completeness field"
             result_df["pass_fail"] = "Fail"
             result_df["error"] = "Instrument completeness variable not found in data."
-        
+
         # Convert to list of dictionaries
         logs = result_df.to_dict('records')
-        
+
         logger.debug(f"Generated {len(logs)} validation log entries for instrument '{instrument}' (vectorized).")
         return logs
-        
+
     except Exception as e:
         logger.error(f"Failed to build validation logs for instrument {instrument} (vectorized): {e}")
         raise DataProcessingError(f"Vectorized validation logging failed for {instrument}: {e}") from e
@@ -295,8 +295,8 @@ def build_detailed_validation_logs_vectorized(
 # =============================================================================
 
 def build_detailed_validation_logs_legacy(
-    df: pd.DataFrame, 
-    instrument: str, 
+    df: pd.DataFrame,
+    instrument: str,
     primary_key_field: str
 ) -> List[Dict[str, Any]]:
     """

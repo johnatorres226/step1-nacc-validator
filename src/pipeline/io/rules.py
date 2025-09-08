@@ -42,12 +42,12 @@ def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
     """
     config = get_config()
     json_rules_path = Path(config.json_rules_path)
-    
+
     # Get the list of JSON files for the instrument
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
         raise RulesLoadingError(f"No JSON rule files configured for instrument: {instrument_name}")
-    
+
     return [json_rules_path / file_name for file_name in rule_files]
 
 
@@ -67,10 +67,10 @@ def load_json_file(file_path: Path) -> Dict[str, Any]:
     try:
         if not file_path.exists():
             raise RulesLoadingError(f"Rule file not found: {file_path}")
-            
+
         with open(file_path, 'r') as f:
             return json.load(f)
-            
+
     except json.JSONDecodeError as e:
         raise RulesLoadingError(f"Invalid JSON in {file_path}: {e}") from e
     except IOError as e:
@@ -111,7 +111,7 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
     """
     try:
         file_paths = resolve_rule_file_paths(instrument_name)
-        
+
         # Load all rule files
         rule_dicts = []
         for file_path in file_paths:
@@ -121,13 +121,13 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
             except RulesLoadingError as e:
                 logger.warning(f"Skipping rule file {file_path}: {e}")
                 continue
-        
+
         if not rule_dicts:
             logger.warning(f"No valid rule files loaded for instrument: {instrument_name}")
             return {}
-            
+
         return merge_rule_dictionaries(rule_dicts)
-        
+
     except RulesLoadingError as e:
         logger.error(f"Failed to load rules for instrument {instrument_name}: {e}")
         return {}
@@ -139,10 +139,10 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
 
 class RulesCache:
     """Manages caching of instrument rules."""
-    
+
     def __init__(self):
         self._cache: Dict[str, Dict[str, Any]] = {}
-    
+
     def get_rules(self, instrument: str) -> Dict[str, Any]:
         """
         Get rules for instrument, loading if not cached.
@@ -156,7 +156,7 @@ class RulesCache:
         if instrument not in self._cache:
             self._cache[instrument] = load_json_rules_for_instrument(instrument)
         return self._cache[instrument]
-    
+
     def load_multiple(self, instruments: List[str]) -> None:
         """
         Load rules for multiple instruments into cache.
@@ -166,11 +166,11 @@ class RulesCache:
         """
         for instrument in instruments:
             self.get_rules(instrument)  # This will cache if not already cached
-    
+
     def clear(self) -> None:
         """Clear the rules cache."""
         self._cache.clear()
-    
+
     def get_cache_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Get the underlying cache dictionary.

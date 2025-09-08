@@ -96,7 +96,7 @@ def extract_variables_from_dynamic_instrument(instrument_name: str) -> List[str]
     """
     # Import here to avoid circular dependencies
     from ..processors.instrument_processors import DynamicInstrumentProcessor
-    
+
     processor = DynamicInstrumentProcessor(instrument_name)
     return processor.get_all_variables()
 
@@ -206,20 +206,20 @@ def preprocess_cast_types(df: pd.DataFrame, rules: Dict[str, Dict[str, Any]]) ->
         A new DataFrame with columns cast to their specified types.
     """
     out = df.copy()
-    
+
     for field, cfg in rules.items():
         if field not in out.columns:
             continue
-            
+
         dtype = detect_column_type(field, {field: cfg})
-        
+
         if dtype == "integer":
             out[field] = cast_to_integer_type(out[field])
         elif dtype == "float":
             out[field] = cast_to_float_type(out[field])
         elif dtype in ("date", "datetime"):
             out[field] = cast_to_datetime_type(out[field])
-    
+
     return out
 
 
@@ -228,7 +228,7 @@ def preprocess_cast_types(df: pd.DataFrame, rules: Dict[str, Dict[str, Any]]) ->
 # =============================================================================
 
 def create_variable_to_instrument_map(
-    instrument_list: List[str], 
+    instrument_list: List[str],
     rules_cache: Dict[str, Any]
 ) -> Dict[str, str]:
     """
@@ -242,17 +242,17 @@ def create_variable_to_instrument_map(
         Dictionary mapping variable names to instrument names.
     """
     variable_to_instrument_map = {}
-    
+
     for instrument in instrument_list:
         variables = get_variables_for_instrument(instrument, rules_cache)
         for var in variables:
             variable_to_instrument_map[var] = instrument
-            
+
     return variable_to_instrument_map
 
 
 def create_instrument_to_variables_map(
-    instrument_list: List[str], 
+    instrument_list: List[str],
     rules_cache: Dict[str, Any]
 ) -> Dict[str, List[str]]:
     """
@@ -266,16 +266,16 @@ def create_instrument_to_variables_map(
         Dictionary mapping instrument names to their variable lists.
     """
     instrument_variable_map = {}
-    
+
     for instrument in instrument_list:
         variables = get_variables_for_instrument(instrument, rules_cache)
         instrument_variable_map[instrument] = variables
-        
+
         if variables:
             logger.debug(f"Mapped {len(variables)} variables to instrument '{instrument}'.")
         else:
             logger.warning(f"No variables found for instrument '{instrument}'.")
-            
+
     return instrument_variable_map
 
 
@@ -298,9 +298,9 @@ def build_variable_maps(
     try:
         variable_to_instrument_map = create_variable_to_instrument_map(instrument_list, rules_cache)
         instrument_variable_map = create_instrument_to_variables_map(instrument_list, rules_cache)
-        
+
         return variable_to_instrument_map, instrument_variable_map
-        
+
     except Exception as e:
         logger.error(f"Failed to build variable maps: {e}")
         raise DataProcessingError(f"Variable mapping failed: {e}") from e
@@ -330,7 +330,7 @@ def create_processing_context(
     """
     # Import here to avoid circular dependencies
     from ..io.context import ProcessingContext
-    
+
     return ProcessingContext(
         data_df=data_df,
         instrument_list=instrument_list,
@@ -352,7 +352,7 @@ def prepare_instrument_cache_strategy(context):
     """
     # Import here to avoid circular dependencies
     from ..processors.instrument_processors import InstrumentDataCache
-    
+
     return InstrumentDataCache(context)
 
 
@@ -383,7 +383,7 @@ def prepare_instrument_data_cache(
         context = create_processing_context(data_df, instrument_list, rules_cache, primary_key_field)
         cache_strategy = prepare_instrument_cache_strategy(context)
         return cache_strategy.prepare_all()
-        
+
     except Exception as e:
         logger.error(f"Failed to prepare instrument data cache: {e}")
         raise DataProcessingError(f"Instrument cache preparation failed: {e}") from e

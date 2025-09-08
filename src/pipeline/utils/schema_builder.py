@@ -46,7 +46,7 @@ def build_cerberus_schema_for_instrument(
         # Build a schema for each variant
         return {
             variant: _build_schema_from_raw(
-                raw_rules, 
+                raw_rules,
                 include_temporal_rules=include_temporal_rules,
                 include_compatibility_rules=include_compatibility_rules
             )
@@ -56,7 +56,7 @@ def build_cerberus_schema_for_instrument(
     # For standard instruments, load rules and build a single schema
     raw_rules = load_json_rules_for_instrument(instrument_name)
     return _build_schema_from_raw(
-        raw_rules, 
+        raw_rules,
         include_temporal_rules=include_temporal_rules,
         include_compatibility_rules=include_compatibility_rules
     )
@@ -95,11 +95,11 @@ def _build_schema_from_raw(
             # Skip temporal rules if datastore is not available
             if json_key == "temporalrules" and not include_temporal_rules:
                 continue
-            
+
             # Skip compatibility rules if not needed
             if json_key == "compatibility" and not include_compatibility_rules:
                 continue
-            
+
             # Map the JSON key to a Cerberus key
             cerberus_key = KEY_MAP.get(json_key)
 
