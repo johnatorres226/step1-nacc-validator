@@ -5,13 +5,14 @@ Performance Analysis Tool for UDSv4 REDCap QC Validator
 Measures execution time for each pipeline stage and identifies bottlenecks.
 """
 
-import time
-import subprocess
-import sys
-from pathlib import Path
-import pandas as pd
 import re
-from typing import Dict, List, Tuple
+import subprocess
+import time
+from pathlib import Path
+from typing import Dict
+
+import pandas as pd
+
 
 def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, float]:
     """Run the pipeline and extract timing information from logs."""

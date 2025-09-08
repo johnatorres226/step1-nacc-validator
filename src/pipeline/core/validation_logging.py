@@ -4,12 +4,13 @@ Validation logging functions for the QC pipeline.
 This module contains functions for building detailed validation logs, broken down from the
 monolithic build_detailed_validation_logs function into smaller, testable components.
 """
-from typing import List, Dict, Any, Tuple
-import pandas as pd
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
+import pandas as pd
 
 from ..logging_config import get_logger
-from .data_processing import ValidationLogsData, DataProcessingError
+from .data_processing import DataProcessingError, ValidationLogsData
 
 logger = get_logger(__name__)
 

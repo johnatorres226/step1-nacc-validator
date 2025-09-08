@@ -6,12 +6,14 @@ with dynamic instrument routing (e.g., C2/C2T forms) to provide intelligent rule
 with multiple layers of routing logic.
 """
 
-from typing import Dict, Any, Optional
-from pathlib import Path
+from typing import Any, Dict, Optional
 
 from ..config_manager import (
-    QCConfig, get_config, is_dynamic_rule_instrument,
-    get_discriminant_variable, get_rule_mappings
+    QCConfig,
+    get_config,
+    get_discriminant_variable,
+    get_rule_mappings,
+    is_dynamic_rule_instrument,
 )
 from ..logging_config import get_logger
 from .packet_router import PacketRuleRouter

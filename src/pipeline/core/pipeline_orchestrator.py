@@ -5,7 +5,6 @@ This module provides a structured approach to running the QC pipeline with expli
 stage separation, comprehensive error handling, and proper data flow tracking.
 """
 import time
-import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
@@ -15,10 +14,18 @@ import pandas as pd
 from ..config_manager import QCConfig
 from ..logging_config import get_logger
 from .pipeline_results import (
-    DataFetchResult, RulesLoadingResult, DataPreparationResult,
-    ValidationResult, ReportGenerationResult, PipelineExecutionResult,
-    DataFetchError, RulesLoadingError, DataPreparationError,
-    ValidationError, ReportGenerationError, CompleteVisitsResult
+    CompleteVisitsResult,
+    DataFetchError,
+    DataFetchResult,
+    DataPreparationError,
+    DataPreparationResult,
+    PipelineExecutionResult,
+    ReportGenerationError,
+    ReportGenerationResult,
+    RulesLoadingError,
+    RulesLoadingResult,
+    ValidationError,
+    ValidationResult,
 )
 
 logger = get_logger(__name__)
@@ -198,16 +205,16 @@ class PipelineOrchestrator:
     def _execute_rules_loading_stage(self) -> RulesLoadingResult:
         """Execute the rules loading stage using packet-based routing."""
         try:
-            from ..io.packet_router import PacketRuleRouter
-            from ..io.hierarchical_router import HierarchicalRuleResolver
             from ..core.data_processing import build_variable_maps
+            from ..io.hierarchical_router import HierarchicalRuleResolver
+            from ..io.packet_router import PacketRuleRouter
 
             stage_start = time.time()
 
             self.logger.info(f"Loading validation rules for {len(self.config.instruments)} instruments using packet routing...")
 
             # Initialize packet router for production rule loading
-            packet_router = PacketRuleRouter(self.config)
+            PacketRuleRouter(self.config)
             hierarchical_resolver = HierarchicalRuleResolver(self.config)
 
             # Load rules for all instruments using packet routing
@@ -341,9 +348,9 @@ class PipelineOrchestrator:
     ) -> ValidationResult:
         """Execute the validation stage."""
         try:
-            from ..core.validation_logging import build_detailed_validation_logs
             from ..core.data_processing import preprocess_cast_types
-            from ..report_pipeline import validate_data, _collect_processed_records_info
+            from ..core.validation_logging import build_detailed_validation_logs
+            from ..report_pipeline import validate_data
 
             stage_start = time.time()
 
@@ -444,8 +451,12 @@ class PipelineOrchestrator:
     ) -> ReportGenerationResult:
         """Execute the report generation stage."""
         try:
+            from ..io.context import (
+                ExportConfiguration,
+                ProcessingContext,
+                ReportConfiguration,
+            )
             from ..io.reports import ReportFactory
-            from ..io.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 
             stage_start = time.time()
 

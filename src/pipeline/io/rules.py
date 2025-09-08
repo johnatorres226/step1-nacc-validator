@@ -4,11 +4,14 @@ Rule loading and management for the QC pipeline.
 This module provides functions for loading JSON validation rules, managing rule caches,
 and handling both standard and dynamic instruments.
 """
-from typing import Dict, List, Any, Optional
 import json
 from pathlib import Path
+from typing import Any, Dict, List
 
-from ..config_manager import get_config, instrument_json_mapping, is_dynamic_rule_instrument
+from ..config_manager import (
+    get_config,
+    instrument_json_mapping,
+)
 from ..logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -20,7 +23,6 @@ logger = get_logger(__name__)
 
 class RulesLoadingError(Exception):
     """Error loading validation rules."""
-    pass
 
 
 # =============================================================================

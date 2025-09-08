@@ -8,7 +8,7 @@ Original source: https://github.com/naccdata/nacc-form-validator
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from cerberus.errors import DocumentErrorTree
 

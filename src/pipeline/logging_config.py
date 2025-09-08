@@ -17,17 +17,17 @@ Features:
 - Thread-safe logging operations
 """
 
+import json
 import logging
 import logging.config
-import sys
 import os
-from pathlib import Path
-from typing import Optional, Dict, Any, Union
-from datetime import datetime
-import json
+import sys
 import threading
 import time
 from contextlib import contextmanager
+from datetime import datetime
+from pathlib import Path
+from typing import Optional, Union
 
 
 class ColoredFormatter(logging.Formatter):

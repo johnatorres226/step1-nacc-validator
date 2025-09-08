@@ -2,16 +2,18 @@
 Enhanced Configuration Management for UDSv4 QC Validator.
 """
 
-import os
-from pathlib import Path
-from typing import Optional, Dict, Any, List, Union
-from dataclasses import dataclass, field, fields
 import json
-from dotenv import load_dotenv
+import os
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field, fields
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+from dotenv import load_dotenv
 
 # Late imports to avoid circular dependencies
 from .logging_config import get_logger
+
 logger = get_logger(__name__)
 
 # =============================================================================
@@ -252,7 +254,6 @@ class ConfigValidator(ABC):
     @abstractmethod
     def validate(self, config: 'QCConfig') -> List[str]:
         """Validate configuration and return list of errors."""
-        pass
 
 
 class RequiredFieldsValidator(ConfigValidator):
@@ -455,7 +456,6 @@ class QCConfig:
         """Performs validation checks on the configuration using modular validators."""
         # Only validate during normal operation, not during testing
         # Tests can call validate() method explicitly
-        pass
 
     def to_dict(self) -> Dict[str, Any]:
         """Converts the configuration to a dictionary."""

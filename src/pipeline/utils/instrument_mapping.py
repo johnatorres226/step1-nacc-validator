@@ -8,13 +8,13 @@ for the same instrument based on a discriminant variable in the data.
 
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 from ..config_manager import (
     get_config,
-    is_dynamic_rule_instrument,
     get_rule_mappings,
     instrument_json_mapping,
+    is_dynamic_rule_instrument,
 )
 from ..logging_config import get_logger
 

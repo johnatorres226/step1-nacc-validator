@@ -5,16 +5,20 @@ This module provides a unified interface for processing different types of instr
 (standard and dynamic) through a strategy pattern, eliminating complex branching logic.
 """
 from abc import ABC, abstractmethod
-from typing import Tuple, List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
 
-from ..io.context import ProcessingContext
 from ..config_manager import (
-    is_dynamic_rule_instrument, get_core_columns, get_completion_columns,
-    get_discriminant_variable, get_rule_mappings
+    get_completion_columns,
+    get_core_columns,
+    get_discriminant_variable,
+    get_rule_mappings,
+    is_dynamic_rule_instrument,
 )
-from ..utils.instrument_mapping import load_dynamic_rules_for_instrument
+from ..io.context import ProcessingContext
 from ..logging_config import get_logger
+from ..utils.instrument_mapping import load_dynamic_rules_for_instrument
 
 logger = get_logger(__name__)
 
@@ -202,7 +206,6 @@ class InstrumentDataProcessor(ABC):
         Returns:
             Tuple of (filtered DataFrame, list of instrument variables)
         """
-        pass
 
     @abstractmethod
     def get_variables(self, context: ProcessingContext) -> List[str]:
@@ -215,7 +218,6 @@ class InstrumentDataProcessor(ABC):
         Returns:
             List of variable names for this instrument
         """
-        pass
 
     def _get_relevant_columns(
         self,

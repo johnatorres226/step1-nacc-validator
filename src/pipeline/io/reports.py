@@ -6,14 +6,15 @@ all report generation functionality, replacing multiple scattered functions
 with a clean, maintainable approach.
 """
 
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
-import pandas as pd
 import logging
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from .context import ProcessingContext, ExportConfiguration, ReportConfiguration
+import pandas as pd
+
+from .context import ExportConfiguration, ProcessingContext, ReportConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -372,7 +373,10 @@ class ReportFactory:
         """
         # This would need to be populated during validation - for now create a basic structure
         # Import validation rules and create entries for all variables
-        from ..config_manager import get_instruments, get_instrument_json_mapping, get_config
+        from ..config_manager import (
+            get_config,
+            get_instruments,
+        )
         from ..utils.instrument_mapping import load_json_rules_for_instrument
 
         instruments = get_instruments()
@@ -433,6 +437,7 @@ class ReportFactory:
         Generate JSON report from the QC Status Report CSV and save to UPLOAD_READY_PATH.
         """
         import json
+
         from ..config_manager import get_config
 
         # Read the CSV status report
@@ -552,6 +557,7 @@ class ReportFactory:
             Path to generated JSON report file
         """
         import json
+
         from ..config_manager import get_config
 
         # Create basic JSON structure

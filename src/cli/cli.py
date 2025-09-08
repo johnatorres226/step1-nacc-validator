@@ -6,12 +6,10 @@ A professional command-line tool for running quality control validation
 on UDSv4 REDCap data with comprehensive reporting and configuration management.
 """
 
-import json
 import sys
+import warnings
 from pathlib import Path
 from typing import List
-import warnings
-from datetime import datetime
 
 import click
 from rich.console import Console
@@ -20,8 +18,8 @@ from pipeline.config_manager import (
     QCConfig,
     get_config,
 )
-from pipeline.logging_config import get_logger, setup_logging, ProductionCLIFormatter
-from pipeline.report_pipeline import run_report_pipeline, operation_context
+from pipeline.logging_config import get_logger, setup_logging
+from pipeline.report_pipeline import operation_context, run_report_pipeline
 
 # Initialize console and logger
 console = Console()

@@ -5,17 +5,19 @@ This module provides common fixtures, test utilities, and configuration
 that can be used across all test modules in the project.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+from typing import Any, Dict
 from unittest.mock import Mock, patch
+
 import pandas as pd
-from typing import Dict, Any
+import pytest
+
+from nacc_form_validator.models import ValidationResult
 
 # Import project modules
 from src.pipeline.config_manager import QCConfig
-from nacc_form_validator.models import ValidationResult
 
 
 @pytest.fixture

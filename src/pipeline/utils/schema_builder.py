@@ -7,9 +7,10 @@ instruments and those requiring dynamic rule selection based on a discriminant
 variable in the data.
 """
 
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 from pipeline.config_manager import KEY_MAP, is_dynamic_rule_instrument
+
 from .instrument_mapping import (
     load_dynamic_rules_for_instrument,
     load_json_rules_for_instrument,

@@ -7,9 +7,10 @@ and QCConfig functionality that are fundamental to the application.
 
 import os
 import tempfile
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 
 # Import the modules we're testing
 from src.pipeline.config_manager import QCConfig, get_config
@@ -95,10 +96,16 @@ class TestEnvironmentVariableLoading:
         """Test that environment variables are properly loaded."""
         # Test with fresh imports that will pick up the patched environment
         import importlib
+
         import src.pipeline.config_manager
         importlib.reload(src.pipeline.config_manager)
 
-        from src.pipeline.config_manager import adrc_api_key, adrc_redcap_url, project_id, output_path
+        from src.pipeline.config_manager import (
+            adrc_api_key,
+            adrc_redcap_url,
+            output_path,
+            project_id,
+        )
 
         assert adrc_api_key == 'env_token_123'
         assert adrc_redcap_url == 'https://env.redcap.url'

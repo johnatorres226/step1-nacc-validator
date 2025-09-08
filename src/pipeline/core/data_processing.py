@@ -5,10 +5,9 @@ This module contains all data preparation, transformation, and processing functi
 that were previously in helpers.py, but now broken down into smaller, single-purpose
 functions following SOLID principles.
 """
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
-import numpy as np
-from pathlib import Path
 
 from ..config_manager import get_config, is_dynamic_rule_instrument
 from ..logging_config import get_logger
@@ -22,12 +21,10 @@ logger = get_logger(__name__)
 
 class DataProcessingError(Exception):
     """Error during data processing step."""
-    pass
 
 
 class ValidationError(Exception):
     """Error during validation step."""
-    pass
 
 
 # =============================================================================
@@ -35,6 +32,7 @@ class ValidationError(Exception):
 # =============================================================================
 
 from dataclasses import dataclass
+
 
 @dataclass
 class CompleteVisitsData:

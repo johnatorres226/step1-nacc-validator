@@ -5,13 +5,12 @@ This module provides functionality to route records to appropriate rule sets bas
 packet value (I, I4, F) while maintaining compatibility with existing dynamic instrument routing.
 """
 
-from typing import Dict, Any, Optional
-from pathlib import Path
 import json
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 from ..config_manager import QCConfig, get_config
 from ..logging_config import get_logger
-from ..utils.instrument_mapping import load_json_rules_for_instrument
 
 logger = get_logger(__name__)
 
@@ -99,7 +98,7 @@ class PacketRuleRouter:
         Returns:
             Dictionary containing the loaded rules
         """
-        from ..config_manager import is_dynamic_rule_instrument, get_rule_mappings
+        from ..config_manager import is_dynamic_rule_instrument
 
         # Handle dynamic instruments differently - they need nested structure
         if is_dynamic_rule_instrument(instrument_name):

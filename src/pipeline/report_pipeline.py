@@ -23,62 +23,36 @@ PIPELINE UTILITIES:
 - `validate_pipeline_config()` - Configuration validation
 - `get_pipeline_status_summary()` - Status summary extraction
 """
-import datetime
 import json
-import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
-from dataclasses import asdict
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
-import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from .io.context import ExportConfiguration, ReportConfiguration
+    pass
 
+# Set up logging
+import logging
+
+from nacc_form_validator.quality_check import QualityCheck
 from pipeline.config_manager import (
     QCConfig,
     get_config,
-    get_dynamic_rule_instruments,
     get_discriminant_variable,
     is_dynamic_rule_instrument,
-    get_rule_mappings,
-    get_instrument_json_mapping,
-    upload_ready_path
 )
 
 # Import pipeline components directly
 from pipeline.core.pipeline_orchestrator import PipelineOrchestrator
 from pipeline.core.pipeline_results import PipelineExecutionResult
+from pipeline.io.hierarchical_router import HierarchicalRuleResolver
 
 # Import packet router for enhanced validation
 from pipeline.io.packet_router import PacketRuleRouter
-from pipeline.io.hierarchical_router import HierarchicalRuleResolver
-
-# Core pipeline imports
-from pipeline.core.fetcher import RedcapETLPipeline
-from nacc_form_validator.quality_check import QualityCheck
-from pipeline.core.visit_processing import build_complete_visits_df
-from pipeline.core.validation_logging import build_detailed_validation_logs
-from pipeline.core.data_processing import (
-    build_variable_maps,
-    prepare_instrument_data_cache,
-    preprocess_cast_types as _preprocess_cast_types
-)
-from pipeline.utils.analytics import create_simplified_debug_info
-from pipeline.io.reports import ReportFactory
-from pipeline.io.context import ProcessingContext, ExportConfiguration, ReportConfiguration
 from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
-
-from nacc_form_validator.utils import (
-    convert_to_date,
-    convert_to_datetime,
-)
-
-# Set up logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -305,11 +279,15 @@ class _SchemaAndRulesCache:
                 # Default fallback
                 try:
                     if is_dynamic_rule_instrument(instrument_name):
-                        from pipeline.utils.instrument_mapping import load_dynamic_rules_for_instrument
+                        from pipeline.utils.instrument_mapping import (
+                            load_dynamic_rules_for_instrument,
+                        )
                         dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
                         rules = dynamic_rules.get(variant, {})
                     else:
-                        from pipeline.utils.instrument_mapping import load_json_rules_for_instrument
+                        from pipeline.utils.instrument_mapping import (
+                            load_json_rules_for_instrument,
+                        )
                         rules = load_json_rules_for_instrument(instrument_name)
 
                     # Build schema without temporal rules since no datastore is available
@@ -740,7 +718,9 @@ def validate_data_with_packet_routing(
                     logger.debug(f"Dynamic discriminant value '{discriminant_value}' not found, using base rules")
 
             # Build schema from rules
-            from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
+            from pipeline.utils.schema_builder import (
+                build_cerberus_schema_for_instrument,
+            )
             try:
                 # Try to build schema from rules directly
                 schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)

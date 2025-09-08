@@ -5,17 +5,16 @@ This module tests the core validation logic, quality checks, and validation resu
 handling components that are fundamental to the application's data validation process.
 """
 
-import pytest
+from unittest.mock import Mock, patch
+
 import pandas as pd
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
-from pathlib import Path
+import pytest
+
+from nacc_form_validator.models import ValidationResult
+from nacc_form_validator.nacc_validator import NACCValidator
 
 # Import the modules we're testing
 from nacc_form_validator.quality_check import QualityCheck, QualityCheckException
-from nacc_form_validator.models import ValidationResult
-from nacc_form_validator.nacc_validator import NACCValidator, ValidationException
-from src.pipeline.config_manager import QCConfig
 
 
 class TestQualityCheckInitialization:

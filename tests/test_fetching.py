@@ -5,19 +5,23 @@ This module tests the REDCap data fetching, API client, ETL pipeline,
 and data validation components that are fundamental to the application.
 """
 
-import pytest
-import pandas as pd
 import os
-import requests_mock
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 import tempfile
-import json
-from datetime import datetime
+from pathlib import Path
+from unittest.mock import patch
+
+import pandas as pd
+import pytest
+
+from src.pipeline.config_manager import QCConfig
 
 # Import the modules we're testing
-from src.pipeline.core.fetcher import RedcapETLPipeline, ETLContext, ETLResult, DataContract
-from src.pipeline.config_manager import QCConfig
+from src.pipeline.core.fetcher import (
+    DataContract,
+    ETLContext,
+    ETLResult,
+    RedcapETLPipeline,
+)
 
 
 class TestETLContext:

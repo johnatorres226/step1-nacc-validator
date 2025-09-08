@@ -6,11 +6,11 @@ variables with proper result objects that encapsulate state and provide clear
 interfaces between pipeline steps.
 """
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Union
-from pathlib import Path
-import pandas as pd
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
+import pandas as pd
 
 # =============================================================================
 # PIPELINE STAGE RESULT OBJECTS

@@ -5,15 +5,14 @@ This module tests the packet routing, hierarchical routing, and instrument-speci
 rule resolution components that are fundamental to the application's data processing.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import json
-from pathlib import Path
-import tempfile
+
+from src.pipeline.config_manager import QCConfig
 
 # Import the modules we're testing
 from src.pipeline.io.packet_router import PacketRuleRouter
-from src.pipeline.config_manager import QCConfig
 
 
 class TestPacketRuleRouter:
@@ -268,7 +267,9 @@ class TestRuleFileLoading:
 
         # Test rule loading
         try:
-            from src.pipeline.utils.instrument_mapping import load_json_rules_for_instrument
+            from src.pipeline.utils.instrument_mapping import (
+                load_json_rules_for_instrument,
+            )
 
             rules = load_json_rules_for_instrument('test_instrument')
 
@@ -282,7 +283,9 @@ class TestRuleFileLoading:
     def test_rule_loading_with_nonexistent_file(self):
         """Test rule loading with nonexistent file returns empty dict."""
         try:
-            from src.pipeline.utils.instrument_mapping import load_json_rules_for_instrument
+            from src.pipeline.utils.instrument_mapping import (
+                load_json_rules_for_instrument,
+            )
 
             # Should return empty dict instead of raising exception
             rules = load_json_rules_for_instrument('nonexistent_instrument')

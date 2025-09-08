@@ -5,16 +5,17 @@ Provides simplified and configurable data quality analysis tools to replace
 complex debug functionality with structured, maintainable analytics.
 """
 
-from dataclasses import dataclass
-from typing import Dict, List, Any, Set, Optional, Tuple
-import pandas as pd
 import logging
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
+import pandas as pd
 
 from ..config_manager import (
-    is_dynamic_rule_instrument,
-    get_core_columns,
     get_completion_columns,
-    get_special_columns
+    get_core_columns,
+    get_special_columns,
+    is_dynamic_rule_instrument,
 )
 from ..processors.instrument_processors import DynamicInstrumentProcessor
 
@@ -295,7 +296,7 @@ def create_simplified_debug_info(
     analyzer = DataQualityAnalyzer(verbosity_level=verbosity)
 
     # Perform analysis
-    coverage_reports = analyzer.analyze_coverage(data_df, instrument_list, rules_cache)
-    orphaned_columns = analyzer.find_orphaned_columns(data_df, rules_cache)
+    analyzer.analyze_coverage(data_df, instrument_list, rules_cache)
+    analyzer.find_orphaned_columns(data_df, rules_cache)
 
     return analyzer.get_detailed_report(data_df)

@@ -5,14 +5,13 @@ This module tests the report generation, file output, and result saving
 functionality that are fundamental to the application's output pipeline.
 """
 
-import pytest
-import pandas as pd
-from unittest.mock import Mock, patch, MagicMock
-import tempfile
-from pathlib import Path
 import json
-import csv
+import tempfile
 from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+import pytest
 
 # Import the modules we're testing
 from src.pipeline.config_manager import QCConfig

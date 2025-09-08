@@ -8,23 +8,24 @@ Main Entry Point:
     RedcapETLPipeline.run() - Use this for all ETL operations
 """
 
-import requests
-import pandas as pd
-import time
 import json
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Union
-from pathlib import Path
+import time
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import pandas as pd
+import requests
 
 from ..config_manager import (
     QCConfig,
     complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
 )
+from ..io.rules import load_rules_for_instruments
 from ..logging_config import get_logger
 from .data_processing import get_variables_for_instrument
-from ..io.rules import load_rules_for_instruments
 
 logger = get_logger(__name__)
 
