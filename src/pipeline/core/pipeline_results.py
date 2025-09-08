@@ -16,6 +16,7 @@ import pandas as pd
 # PIPELINE STAGE RESULT OBJECTS
 # =============================================================================
 
+
 @dataclass
 class DataFetchResult:
     """Result object for data fetching stage."""
@@ -86,7 +87,8 @@ class DataPreparationResult:
     @property
     def instruments_with_data(self) -> List[str]:
         """List of instruments that have data after preparation."""
-        return [inst for inst, count in self.records_per_instrument.items() if count > 0]
+        return [inst for inst, count in self.records_per_instrument.items()
+                if count > 0]
 
     def get_instrument_data(self, instrument: str) -> pd.DataFrame:
         """Get prepared data for a specific instrument."""
@@ -247,7 +249,12 @@ class PipelineExecutionResult:
 
 class PipelineStageError(Exception):
     """Base exception for pipeline stage errors."""
-    def __init__(self, stage: str, message: str, original_error: Optional[Exception] = None):
+
+    def __init__(
+            self,
+            stage: str,
+            message: str,
+            original_error: Optional[Exception] = None):
         self.stage = stage
         self.original_error = original_error
         super().__init__(f"Pipeline stage '{stage}' failed: {message}")
@@ -255,29 +262,34 @@ class PipelineStageError(Exception):
 
 class DataFetchError(PipelineStageError):
     """Error during data fetching stage."""
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__("data_fetch", message, original_error)
 
 
 class RulesLoadingError(PipelineStageError):
     """Error during rules loading stage."""
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__("rules_loading", message, original_error)
 
 
 class DataPreparationError(PipelineStageError):
     """Error during data preparation stage."""
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__("data_preparation", message, original_error)
 
 
 class ValidationError(PipelineStageError):
     """Error during validation stage."""
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__("validation", message, original_error)
 
 
 class ReportGenerationError(PipelineStageError):
     """Error during report generation stage."""
+
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         super().__init__("report_generation", message, original_error)

@@ -32,8 +32,8 @@ class QualityCheck:
     """Coordinates the validation of a single data record against a schema.
 
     This class wraps the `NACCValidator`, configuring it with a specific schema,
-    primary key for the data validation, and optional datastore for temporal 
-    validations. It provides a simple interface to validate a record and 
+    primary key for the data validation, and optional datastore for temporal
+    validations. It provides a simple interface to validate a record and
     retrieve structured results.
 
     Attributes:
@@ -116,7 +116,7 @@ class QualityCheck:
 
         Returns:
             A `ValidationResult` object containing the outcome of the validation.
-        
+
         Raises:
             QualityCheckException: If the validator was not initialized correctly.
         """

@@ -1,7 +1,7 @@
 """
 Essential tests for output and report generation functionality.
 
-This module tests the report generation, file output, and result saving 
+This module tests the report generation, file output, and result saving
 functionality that are fundamental to the application's output pipeline.
 """
 
@@ -372,9 +372,11 @@ class TestDataSaving:
 
             loaded_df = pd.read_csv(temp_path, encoding='utf-8')
             assert len(loaded_df) == 5
-            # Check that the special character text exists (allow for potential encoding variations)
+            # Check that the special character text exists (allow for potential
+            # encoding variations)
             text_values = loaded_df['text'].tolist()
-            emoji_found = any('émojis' in str(val) and '🎉' in str(val) for val in text_values)
+            emoji_found = any('émojis' in str(val) and '🎉' in str(val)
+                              for val in text_values)
             assert emoji_found, f"Expected emoji text not found in {text_values}"
 
         finally:
@@ -447,7 +449,9 @@ class TestReportSummaryGeneration:
             }
 
         # Verify packet summary (using approximate comparison for floating point)
-        assert abs(packet_summary['I']['success_rate'] - 85.7) < 0.1  # Approximately 85.7%
+        assert abs(
+            packet_summary['I']['success_rate'] -
+            85.7) < 0.1  # Approximately 85.7%
         assert packet_summary['I4']['success_rate'] >= 89.0
         assert packet_summary['F']['success_rate'] >= 80.0
 

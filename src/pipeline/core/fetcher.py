@@ -1,7 +1,7 @@
 """
 Modern REDCap ETL Pipeline Module
 
-This module provides a clean, object-oriented ETL pipeline for fetching and processing 
+This module provides a clean, object-oriented ETL pipeline for fetching and processing
 REDCap data. It follows a linear pipeline: fetch → validate → transform → save.
 
 Main Entry Point:
@@ -33,6 +33,7 @@ logger = get_logger(__name__)
 # CONTEXT AND DATA STRUCTURES
 # =============================================================================
 
+
 @dataclass
 class ETLContext:
     """Encapsulates ETL execution context with timestamps and configuration."""
@@ -42,8 +43,12 @@ class ETLContext:
     output_path: Optional[Path] = None
 
     @classmethod
-    def create(cls, config: QCConfig, output_path: Optional[Union[str, Path]] = None,
-               date_tag: Optional[str] = None, time_tag: Optional[str] = None) -> 'ETLContext':
+    def create(cls,
+               config: QCConfig,
+               output_path: Optional[Union[str,
+                                           Path]] = None,
+               date_tag: Optional[str] = None,
+               time_tag: Optional[str] = None) -> 'ETLContext':
         """Create an ETL context with proper timestamp handling."""
         if date_tag and time_tag:
             run_date, time_stamp = date_tag, time_tag
@@ -52,7 +57,8 @@ class ETLContext:
             run_date = current_datetime.strftime("%d%b%Y").upper()
             time_stamp = current_datetime.strftime("%H%M%S")
 
-        output = Path(output_path) if output_path else (Path(config.output_path) if config.output_path else Path.cwd())
+        output = Path(output_path) if output_path else (
+            Path(config.output_path) if config.output_path else Path.cwd())
         return cls(config, run_date, time_stamp, output)
 
 
@@ -175,7 +181,8 @@ class DataValidator:
 
         # Handle missing redcap_event_name
         if 'redcap_event_name' not in df.columns and not df.empty:
-            raise ValueError("Critical error: 'redcap_event_name' column missing from REDCap data")
+            raise ValueError(
+                "Critical error: 'redcap_event_name' column missing from REDCap data")
 
         return df
 
@@ -186,8 +193,10 @@ class DataTransformer:
     def __init__(self, context: ETLContext):
         self.context = context
 
-    def apply_instrument_subset_transformation(self, data: pd.DataFrame,
-                                             instrument_list: List[str]) -> pd.DataFrame:
+    def apply_instrument_subset_transformation(
+            self,
+            data: pd.DataFrame,
+            instrument_list: List[str]) -> pd.DataFrame:
         """Transform data by nullifying fields of incomplete instruments."""
         if data.empty:
             logger.warning("Empty DataFrame provided for transformation")
@@ -213,7 +222,7 @@ class DataTransformer:
 
                 if (completion_var in row and
                     pd.notna(row[completion_var]) and
-                    str(row[completion_var]) != '2'):
+                        str(row[completion_var]) != '2'):
 
                     # Nullify all variables for incomplete instruments
                     instrument_vars = instrument_to_vars_map.get(instrument, [])
@@ -221,8 +230,10 @@ class DataTransformer:
                         if var in transformed_df.columns:
                             transformed_df.at[index, var] = pd.NA
 
-                    logger.debug(f"Nullified data for incomplete instrument '{instrument}' "
-                               f"in record PTID {row.get('ptid', 'N/A')}")
+                    logger.debug(
+                        f"Nullified data for incomplete instrument '{instrument}' " f"in record PTID {
+                            row.get(
+                                'ptid', 'N/A')}")
 
         logger.info("Instrument subset transformation complete")
         return transformed_df
@@ -246,8 +257,10 @@ class DataTransformer:
         ptid_list_str = [str(p) for p in self.context.config.ptid_list]
         filtered_data = data[data['ptid'].isin(ptid_list_str)].reset_index(drop=True)
 
-        logger.info(f"Applied PTID filtering: {initial_count} → {len(filtered_data)} records "
-                   f"(filtered for {len(ptid_list_str)} PTIDs)")
+        logger.info(
+            f"Applied PTID filtering: {initial_count} → {
+                len(filtered_data)} records " f"(filtered for {
+                len(ptid_list_str)} PTIDs)")
         return filtered_data
 
 
@@ -270,10 +283,12 @@ class DataSaver:
 
         # Create Data_Fetched subdirectory
         etl_dir = (self.context.output_path /
-                  f"Data_Fetched")
+                   "Data_Fetched")
         etl_dir.mkdir(parents=True, exist_ok=True)
 
-        filename = f"{filename_prefix}_{self.context.run_date}_{self.context.time_stamp}.csv"
+        filename = f"{filename_prefix}_{
+            self.context.run_date}_{
+            self.context.time_stamp}.csv"
         file_path = etl_dir / filename
 
         df.to_csv(file_path, index=False)
@@ -328,7 +343,7 @@ class FilterLogicManager:
 class RedcapETLPipeline:
     """
     Main ETL Pipeline for REDCap data processing.
-    
+
     This is the primary entry point for all ETL operations.
     Follows a clean linear pipeline: fetch → validate → transform → save.
     """
@@ -341,16 +356,19 @@ class RedcapETLPipeline:
         self.transformer = None
         self.saver = None
 
-    def run(self, output_path: Optional[Union[str, Path]] = None,
-            date_tag: Optional[str] = None, time_tag: Optional[str] = None) -> ETLResult:
+    def run(self,
+            output_path: Optional[Union[str,
+                                        Path]] = None,
+            date_tag: Optional[str] = None,
+            time_tag: Optional[str] = None) -> ETLResult:
         """
         Execute the complete ETL pipeline.
-        
+
         Args:
             output_path: Optional output directory path
             date_tag: Optional date tag for consistent naming
             time_tag: Optional time tag for consistent naming
-            
+
         Returns:
             ETLResult containing processed data and execution metadata
         """
@@ -384,7 +402,7 @@ class RedcapETLPipeline:
             )
 
             logger.info(f"ETL pipeline completed: {result.records_processed} records "
-                       f"processed in {execution_time:.2f} seconds")
+                        f"processed in {execution_time:.2f} seconds")
 
             return result
 
@@ -392,8 +410,11 @@ class RedcapETLPipeline:
             logger.error(f"ETL pipeline failed: {str(e)}")
             raise
 
-    def _initialize_components(self, output_path: Optional[Union[str, Path]],
-                             date_tag: Optional[str], time_tag: Optional[str]) -> None:
+    def _initialize_components(self,
+                               output_path: Optional[Union[str,
+                                                           Path]],
+                               date_tag: Optional[str],
+                               time_tag: Optional[str]) -> None:
         """Initialize ETL components with proper context."""
         self.context = ETLContext.create(self.config, output_path, date_tag, time_tag)
         self.api_client = RedcapApiClient(self.config)
@@ -439,7 +460,10 @@ class RedcapETLPipeline:
             logger.error(f"Data fetch failed: {str(e)}")
             raise
 
-    def _build_api_payload(self, instruments: List[str], filter_logic: Optional[str]) -> Dict[str, Any]:
+    def _build_api_payload(self,
+                           instruments: List[str],
+                           filter_logic: Optional[str]) -> Dict[str,
+                                                                Any]:
         """Build REDCap API payload."""
         payload = {
             'token': self.config.api_token,
@@ -460,7 +484,8 @@ class RedcapETLPipeline:
             payload['events'] = ','.join(self.config.events)
         if filter_logic:
             payload['filterLogic'] = filter_logic
-            logger.info("Applying filter logic (see complete_events_with_incomplete_qc_filter_logic in config_manager.py)")
+            logger.info(
+                "Applying filter logic (see complete_events_with_incomplete_qc_filter_logic in config_manager.py)")
 
         return payload
 

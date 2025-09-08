@@ -20,7 +20,9 @@ from ..logging_config import get_logger
 
 logger = get_logger(__name__)
 
-def load_dynamic_rules_for_instrument(instrument_name: str) -> Dict[str, Dict[str, Any]]:
+
+def load_dynamic_rules_for_instrument(
+        instrument_name: str) -> Dict[str, Dict[str, Any]]:
     """
     Loads rules for instruments that use dynamic rule selection.
 
@@ -42,13 +44,15 @@ def load_dynamic_rules_for_instrument(instrument_name: str) -> Dict[str, Dict[st
         json.JSONDecodeError: If a rule file contains invalid JSON.
     """
     if not is_dynamic_rule_instrument(instrument_name):
-        raise ValueError(f"Instrument '{instrument_name}' is not configured for dynamic rule selection.")
+        raise ValueError(
+            f"Instrument '{instrument_name}' is not configured for dynamic rule selection.")
 
     config = get_config()
     # Use I packet path as default for dynamic instruments
     json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError("JSON_RULES_PATH_I is not configured. Please check your environment settings.")
+        raise ValueError(
+            "JSON_RULES_PATH_I is not configured. Please check your environment settings.")
 
     json_rules_path = Path(json_rules_dir)
     rule_mappings = get_rule_mappings(instrument_name)
@@ -72,7 +76,9 @@ def load_dynamic_rules_for_instrument(instrument_name: str) -> Dict[str, Dict[st
             logger.error(f"An unexpected error occurred while loading {file_path}: {e}")
             raise
 
-    logger.debug(f"Loaded dynamic rules for {instrument_name}: {', '.join(routes_loaded)}")
+    logger.debug(
+        f"Loaded dynamic rules for {instrument_name}: {
+            ', '.join(routes_loaded)}")
     return rule_map
 
 
@@ -93,7 +99,8 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
     # Use I packet path as default for general rule loading
     json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError("JSON_RULES_PATH_I is not configured. Please check your environment settings.")
+        raise ValueError(
+            "JSON_RULES_PATH_I is not configured. Please check your environment settings.")
 
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
@@ -109,7 +116,9 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
                     rules = json.load(f)
                     combined_rules.update(rules)
             except json.JSONDecodeError as e:
-                logger.error(f"Could not decode JSON from {file_path}: {e}", exc_info=True)
+                logger.error(
+                    f"Could not decode JSON from {file_path}: {e}",
+                    exc_info=True)
             except Exception as e:
                 logger.error(f"Error reading rule file {file_path}: {e}", exc_info=True)
         else:

@@ -22,38 +22,42 @@ logger = get_logger(__name__)
 def validate_dataframe_not_empty(df: pd.DataFrame) -> None:
     """
     Validate that dataframe is not empty for processing.
-    
+
     Args:
         df: DataFrame to validate.
-        
+
     Raises:
         DataProcessingError: If dataframe is empty.
     """
     if df.empty:
-        raise DataProcessingError("Cannot build complete visits dataset from empty DataFrame.")
+        raise DataProcessingError(
+            "Cannot build complete visits dataset from empty DataFrame.")
 
 
 def generate_completion_column_names(instrument_list: List[str]) -> List[str]:
     """
     Generate completion column names from instrument list.
-    
+
     Args:
         instrument_list: List of instrument names.
-        
+
     Returns:
         List of completion column names, excluding form_header.
     """
-    return [f"{inst}_complete" for inst in instrument_list if inst.lower() != "form_header"]
+    return [f"{inst}_complete" for inst in instrument_list if inst.lower() !=
+            "form_header"]
 
 
-def ensure_completion_columns_exist(df: pd.DataFrame, completion_cols: List[str]) -> pd.DataFrame:
+def ensure_completion_columns_exist(
+        df: pd.DataFrame,
+        completion_cols: List[str]) -> pd.DataFrame:
     """
     Ensure all completion columns exist with default values.
-    
+
     Args:
         df: DataFrame to process.
         completion_cols: List of required completion column names.
-        
+
     Returns:
         DataFrame with all completion columns present.
     """
@@ -66,20 +70,23 @@ def ensure_completion_columns_exist(df: pd.DataFrame, completion_cols: List[str]
 
     for col in completion_cols:
         if col not in df_copy.columns:
-            logger.warning(f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
+            logger.warning(
+                f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
             df_copy[col] = '0'  # Default to incomplete if the column is missing
 
     return df_copy
 
 
-def normalize_completion_column_types(df: pd.DataFrame, completion_cols: List[str]) -> pd.DataFrame:
+def normalize_completion_column_types(
+        df: pd.DataFrame,
+        completion_cols: List[str]) -> pd.DataFrame:
     """
     Convert completion columns to string type for consistent comparison.
-    
+
     Args:
         df: DataFrame to process.
         completion_cols: List of completion column names.
-        
+
     Returns:
         DataFrame with completion columns normalized to string type.
     """
@@ -96,11 +103,11 @@ def normalize_completion_column_types(df: pd.DataFrame, completion_cols: List[st
 def create_completion_mask(df: pd.DataFrame, completion_cols: List[str]) -> pd.Series:
     """
     Create boolean mask for records with all instruments complete.
-    
+
     Args:
         df: DataFrame to process.
         completion_cols: List of completion column names.
-        
+
     Returns:
         Boolean series indicating records with all instruments complete.
     """
@@ -109,23 +116,26 @@ def create_completion_mask(df: pd.DataFrame, completion_cols: List[str]) -> pd.S
     return completion_mask
 
 
-def identify_complete_visits(df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str, str]]:
+def identify_complete_visits(
+        df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str, str]]:
     """
     Identify visits where all records are complete.
-    
+
     Args:
         df: DataFrame with completion mask already applied.
         primary_key_field: Name of the primary key field.
-        
+
     Returns:
         List of tuples representing complete visits (primary_key, event_name, packet).
     """
     # For each visit, check if ALL records in that visit are complete
     # A visit is complete if all its records have all instruments complete
-    visit_completion = df.groupby([primary_key_field, 'redcap_event_name'])['_temp_all_complete'].all()
+    visit_completion = df.groupby([primary_key_field, 'redcap_event_name'])[
+        '_temp_all_complete'].all()
 
     # Get packet information for each visit (take the first packet value for each visit)
-    visit_packets = df.groupby([primary_key_field, 'redcap_event_name'])['packet'].first()
+    visit_packets = df.groupby([primary_key_field, 'redcap_event_name'])[
+        'packet'].first()
 
     # Get complete visits (where the aggregated result is True)
     complete_visits_series = visit_completion[visit_completion]
@@ -146,12 +156,12 @@ def create_complete_visits_summary(
 ) -> pd.DataFrame:
     """
     Create summary dataframe of complete visits.
-    
+
     Args:
         complete_visits: List of complete visit tuples (pk, event, packet).
         completion_cols: List of completion column names.
         primary_key_field: Name of the primary key field.
-        
+
     Returns:
         DataFrame summarizing complete visits with packet information.
     """
@@ -160,7 +170,12 @@ def create_complete_visits_summary(
         return pd.DataFrame()
 
     # Create the summary DataFrame with packet information
-    complete_visits_summary = pd.DataFrame(complete_visits, columns=[primary_key_field, 'redcap_event_name', 'packet'])
+    complete_visits_summary = pd.DataFrame(
+        complete_visits,
+        columns=[
+            primary_key_field,
+            'redcap_event_name',
+            'packet'])
 
     # Create the final report DataFrame
     report_df = complete_visits_summary.copy()
@@ -172,17 +187,18 @@ def create_complete_visits_summary(
     return report_df
 
 
-def extract_complete_visits_tuples(summary_df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str]]:
+def extract_complete_visits_tuples(
+        summary_df: pd.DataFrame, primary_key_field: str) -> List[Tuple[str, str]]:
     """
     Extract list of complete visit tuples from summary dataframe.
-    
+
     Note: This function maintains backward compatibility by returning only (pk, event) tuples,
     but the summary dataframe now includes packet information.
-    
+
     Args:
         summary_df: Summary dataframe of complete visits.
         primary_key_field: Name of the primary key field.
-        
+
     Returns:
         List of tuples for downstream filtering.
     """
@@ -190,7 +206,8 @@ def extract_complete_visits_tuples(summary_df: pd.DataFrame, primary_key_field: 
         return []
 
     # Return only pk and event for backward compatibility with existing code
-    return list(summary_df[[primary_key_field, 'redcap_event_name']].itertuples(index=False, name=None))
+    return list(summary_df[[primary_key_field, 'redcap_event_name']
+                           ].itertuples(index=False, name=None))
 
 
 def build_complete_visits_df(
@@ -199,11 +216,11 @@ def build_complete_visits_df(
 ) -> Tuple[pd.DataFrame, List[Tuple[str, str]]]:
     """
     Orchestrate building complete visits dataframe and tuple list.
-    
+
     Identifies and creates a DataFrame of truly complete visits.
     A visit (a unique primary_key-event combination) is considered complete if all
     expected instruments for that visit are present and marked as complete ('2').
-    
+
     **PERFORMANCE OPTIMIZED**: Uses vectorized operations instead of nested loops
     for significantly better performance on large datasets.
 
@@ -243,10 +260,12 @@ def build_complete_visits_df(
         df_normalized.drop('_temp_all_complete', axis=1, inplace=True)
 
         # Step 7: Create summary dataframe
-        summary_df = create_complete_visits_summary(complete_visits, completion_cols, primary_key_field)
+        summary_df = create_complete_visits_summary(
+            complete_visits, completion_cols, primary_key_field)
 
         # Step 8: Extract tuples for downstream processing
-        complete_visits_tuples = extract_complete_visits_tuples(summary_df, primary_key_field)
+        complete_visits_tuples = extract_complete_visits_tuples(
+            summary_df, primary_key_field)
 
         return summary_df, complete_visits_tuples
 
@@ -268,13 +287,12 @@ def build_complete_visits_df_legacy(
 ) -> Tuple[pd.DataFrame, List[Tuple[str, str]]]:
     """
     DEPRECATED: Use build_complete_visits_df() instead.
-    
+
     Legacy function maintained for backward compatibility during refactoring.
     """
     import warnings
     warnings.warn(
         "build_complete_visits_df_legacy is deprecated. Use build_complete_visits_df() instead.",
         DeprecationWarning,
-        stacklevel=2
-    )
+        stacklevel=2)
     return build_complete_visits_df(data_df, instrument_list)

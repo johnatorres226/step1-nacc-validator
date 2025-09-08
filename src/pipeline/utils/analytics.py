@@ -52,7 +52,7 @@ class QualitySummary:
 class DataQualityAnalyzer:
     """
     Simplified data quality analyzer with configurable verbosity levels.
-    
+
     Replaces the complex debug_variable_mapping function with a cleaner,
     more maintainable approach to data quality analysis.
     """
@@ -60,7 +60,7 @@ class DataQualityAnalyzer:
     def __init__(self, verbosity_level: str = "summary"):
         """
         Initialize analyzer.
-        
+
         Args:
             verbosity_level: One of "summary", "detailed", "full"
         """
@@ -76,12 +76,12 @@ class DataQualityAnalyzer:
     ) -> List[CoverageReport]:
         """
         Analyze data coverage for given instruments.
-        
+
         Args:
             data_df: DataFrame to analyze
             instrument_list: List of instruments to check
             rules_cache: Cache of loaded JSON rules
-            
+
         Returns:
             List of coverage reports for each instrument
         """
@@ -120,11 +120,11 @@ class DataQualityAnalyzer:
     ) -> List[str]:
         """
         Find columns present in data but not defined in any rules.
-        
+
         Args:
             data_df: DataFrame to analyze
             rules_cache: Cache of loaded JSON rules for calculating all rule variables
-            
+
         Returns:
             List of orphaned column names
         """
@@ -156,13 +156,14 @@ class DataQualityAnalyzer:
         self._orphaned_columns = orphaned
         return orphaned
 
-    def generate_summary(self, data_df: Optional[pd.DataFrame] = None) -> QualitySummary:
+    def generate_summary(self,
+                         data_df: Optional[pd.DataFrame] = None) -> QualitySummary:
         """
         Generate high-level summary of data quality.
-        
+
         Args:
             data_df: Optional DataFrame to get column count
-        
+
         Returns:
             Quality summary object
         """
@@ -171,13 +172,14 @@ class DataQualityAnalyzer:
             return QualitySummary(0, 0, 0, 0, 0, 0.0, 0)
 
         total_instruments = len(self._coverage_reports)
-        total_rule_variables = sum(r.total_rule_variables for r in self._coverage_reports)
+        total_rule_variables = sum(
+            r.total_rule_variables for r in self._coverage_reports)
         matched_variables = sum(r.matched_variables for r in self._coverage_reports)
         complete_instruments = sum(1 for r in self._coverage_reports if r.is_complete)
         total_data_columns = len(data_df.columns) if data_df is not None else 0
 
         overall_coverage = (matched_variables / total_rule_variables * 100
-                          if total_rule_variables > 0 else 100.0)
+                            if total_rule_variables > 0 else 100.0)
 
         return QualitySummary(
             total_instruments=total_instruments,
@@ -189,13 +191,14 @@ class DataQualityAnalyzer:
             complete_instruments=complete_instruments
         )
 
-    def get_detailed_report(self, data_df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+    def get_detailed_report(
+            self, data_df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
         """
         Get detailed report based on verbosity level.
-        
+
         Args:
             data_df: Optional DataFrame for additional statistics
-        
+
         Returns:
             Detailed analysis report
         """
@@ -234,13 +237,12 @@ class DataQualityAnalyzer:
         else:  # "full"
             return {
                 'summary': summary.__dict__,
-                'coverage_reports': [r.__dict__ for r in self._coverage_reports],
+                'coverage_reports': [
+                    r.__dict__ for r in self._coverage_reports],
                 'orphaned_columns': self._orphaned_columns,
                 'detailed_analysis': {
                     'instruments_by_coverage': self._group_instruments_by_coverage(),
-                    'most_common_missing_variables': self._get_common_missing_variables()
-                }
-            }
+                    'most_common_missing_variables': self._get_common_missing_variables()}}
 
     def _group_instruments_by_coverage(self) -> Dict[str, List[str]]:
         """Group instruments by coverage ranges."""
@@ -283,13 +285,13 @@ def create_simplified_debug_info(
 ) -> Dict[str, Any]:
     """
     Simplified replacement for debug_variable_mapping.
-    
+
     Args:
         data_df: DataFrame to analyze
         instrument_list: List of instruments to check
         rules_cache: Cache of loaded JSON rules
         verbosity: Verbosity level ("summary", "detailed", "full")
-        
+
     Returns:
         Simplified debug information
     """

@@ -36,10 +36,13 @@ logger = get_logger('cli')
 )
 def cli(log_level: str):
     """UDSv4 REDCap QC Validator - A comprehensive CLI for data quality control."""
-    # Only setup minimal logging - detailed logging will be configured in individual commands
+    # Only setup minimal logging - detailed logging will be configured in
+    # individual commands
     setup_logging(log_level='ERROR')  # Suppress startup messages
     # Suppress the UserWarning from cerberus about the custom 'compatibility' rule
-    warnings.filterwarnings("ignore", message="No validation schema is defined for the arguments of rule 'compatibility'")
+    warnings.filterwarnings(
+        "ignore",
+        message="No validation schema is defined for the arguments of rule 'compatibility'")
 
 
 @cli.command()
@@ -51,12 +54,10 @@ def config(detailed: bool, json_output: bool):
         config_instance = get_config(force_reload=True)
         errors = config_instance.validate()
         status = {
-            "valid": not errors,
-            "errors": errors,
-            "redcap_configured": bool(config_instance.api_token and config_instance.api_url),
-            "output_path_exists": Path(config_instance.output_path).exists(),
-            "packet_rules_configured": bool(config_instance.json_rules_path_i and config_instance.json_rules_path_i4 and config_instance.json_rules_path_f),
-        }
+            "valid": not errors, "errors": errors, "redcap_configured": bool(
+                config_instance.api_token and config_instance.api_url), "output_path_exists": Path(
+                config_instance.output_path).exists(), "packet_rules_configured": bool(
+                config_instance.json_rules_path_i and config_instance.json_rules_path_i4 and config_instance.json_rules_path_f), }
     except SystemExit:
         # This happens if get_config fails validation internally
         # In this case, we can assume the config is invalid
@@ -67,7 +68,6 @@ def config(detailed: bool, json_output: bool):
             "output_path_exists": False,
             "packet_rules_configured": False,
         }
-
 
     if json_output:
         console.print_json(data=status)
@@ -84,9 +84,15 @@ def config(detailed: bool, json_output: bool):
     if status['errors']:
         console.print(f"  Issues: {len(status['errors'])}")
 
-    console.print(f"REDCap API: {'Connected' if status['redcap_configured'] else 'Not Configured'}")
-    console.print(f"Output Directory: {'Ready' if status['output_path_exists'] else 'Will be created'}")
-    console.print(f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}")
+    console.print(
+        f"REDCap API: {
+            'Connected' if status['redcap_configured'] else 'Not Configured'}")
+    console.print(
+        f"Output Directory: {
+            'Ready' if status['output_path_exists'] else 'Will be created'}")
+    console.print(
+        f"Validation Rules: {
+            'Configured' if status['packet_rules_configured'] else 'Missing'}")
 
     if detailed and 'legacy_compatibility' in status:
         legacy_info = status['legacy_compatibility']
@@ -102,24 +108,34 @@ def config(detailed: bool, json_output: bool):
 
 
 @cli.command()
-@click.option(
-    '--mode', '-m',
-    type=click.Choice(['complete_visits', 'all_incomplete_visits', 'custom'], case_sensitive=False),
-    default='complete_visits',
-    help='Select the QC validation mode. [default: complete_visits]',
-)
+@click.option('--mode',
+              '-m',
+              type=click.Choice(['complete_visits',
+                                 'all_incomplete_visits',
+                                 'custom'],
+                                case_sensitive=False),
+              default='complete_visits',
+              help='Select the QC validation mode. [default: complete_visits]',
+              )
 @click.option(
     '--output-dir',
     type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
     help='Override the default output directory.',
 )
-@click.option('--event', 'events', multiple=True, help='Specify one or more events to run.')
-@click.option('--ptid', 'ptid_list', multiple=True, help='Specify one or more PTIDs to check.')
-@click.option('--include-qced', is_flag=True, help='Include records that have already been QCed.')
-@click.option('--initials', '-i', 'user_initials', required=True, help='User initials for reporting (3 characters max).')
-@click.option('--log', '-l', is_flag=True, help='Show terminal logging during execution.')
-@click.option('--detailed-run', '-dr', is_flag=True, help='Generate detailed outputs including Validation_Logs, Completed_Visits, Reports, and Generation_Summary files.')
-@click.option('--passed-rules', '-ps', is_flag=True, help='Generate comprehensive Rules Validation log for diagnostic purposes (requires --detailed-run/-dr, large file, slow generation).')
+@click.option('--event', 'events', multiple=True,
+              help='Specify one or more events to run.')
+@click.option('--ptid', 'ptid_list', multiple=True,
+              help='Specify one or more PTIDs to check.')
+@click.option('--include-qced', is_flag=True,
+              help='Include records that have already been QCed.')
+@click.option('--initials', '-i', 'user_initials', required=True,
+              help='User initials for reporting (3 characters max).')
+@click.option('--log', '-l', is_flag=True,
+              help='Show terminal logging during execution.')
+@click.option('--detailed-run', '-dr', is_flag=True,
+              help='Generate detailed outputs including Validation_Logs, Completed_Visits, Reports, and Generation_Summary files.')
+@click.option('--passed-rules', '-ps', is_flag=True,
+              help='Generate comprehensive Rules Validation log for diagnostic purposes (requires --detailed-run/-dr, large file, slow generation).')
 def run(
     mode: str,
     output_dir: str,
@@ -231,13 +247,17 @@ def _display_run_summary(config: QCConfig):
     console.print(f"Output Directory: {Path(config.output_path).resolve()}")
     console.print(f"Log Level: {config.log_level}")
     console.print(f"Events: {'All' if not config.events else ', '.join(config.events)}")
-    console.print(f"Participants: {'All' if not config.ptid_list else ', '.join(config.ptid_list)}")
+    console.print(
+        f"Participants: {
+            'All' if not config.ptid_list else ', '.join(
+                config.ptid_list)}")
 
     if config.mode == 'custom':
-        console.print(f"Include Previously QCed: {'Yes' if config.include_qced else 'No'}")
+        console.print(
+            f"Include Previously QCed: {
+                'Yes' if config.include_qced else 'No'}")
 
     console.print("")
-
 
 
 if __name__ == "__main__":

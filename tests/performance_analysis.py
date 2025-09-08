@@ -81,6 +81,7 @@ def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, flo
 
     return timings
 
+
 def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
     """Analyze the generated reports for file sizes and row counts."""
 
@@ -118,7 +119,7 @@ def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
                 try:
                     df = pd.read_csv(file_path)
                     row_count = len(df)
-                except:
+                except BaseException:
                     row_count = -1
 
             report_analysis[report_name] = {
@@ -129,13 +130,14 @@ def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
 
     return report_analysis
 
+
 def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
-                            standard_reports: Dict, detailed_reports: Dict):
+                              standard_reports: Dict, detailed_reports: Dict):
     """Print a comprehensive performance analysis."""
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("PERFORMANCE ANALYSIS RESULTS")
-    print("="*80)
+    print("=" * 80)
 
     # Stage-by-stage timing comparison
     print("\n📊 STAGE TIMING COMPARISON:")
@@ -163,9 +165,12 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print(f"\n📁 REPORT GENERATION ANALYSIS:")
     print("-" * 60)
 
-    report_gen_overhead = detailed_timings.get('stage_5_report_generation', 0) - standard_timings.get('stage_5_report_generation', 0)
+    report_gen_overhead = detailed_timings.get(
+        'stage_5_report_generation', 0) - standard_timings.get('stage_5_report_generation', 0)
     print(f"Report generation overhead: {report_gen_overhead:.2f}s")
-    print(f"This accounts for {(report_gen_overhead / detailed_timings.get('pipeline_total', 1)) * 100:.1f}% of detailed run time")
+    print(f"This accounts for {(report_gen_overhead /
+                                detailed_timings.get('pipeline_total', 1)) *
+                               100:.1f}% of detailed run time")
 
     # File size analysis
     print(f"\n📈 FILE SIZE ANALYSIS:")
@@ -177,17 +182,30 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     for file_name in core_files:
         if file_name in detailed_reports:
             info = detailed_reports[file_name]
-            print(f"  {file_name:<20}: {info['row_count']:>8,} rows, {info['file_size_mb']:>8.2f} MB")
+            print(
+                f"  {
+                    file_name:<20}: {
+                    info['row_count']:>8,} rows, {
+                    info['file_size_mb']:>8.2f} MB")
 
     # Detailed-only files
     print("\nDetailed-Only Files:")
-    detailed_only = ['Validation_Logs', 'Passed_Validations', 'Rules_Validation', 'Status_Report', 'PTID_Visits']
+    detailed_only = [
+        'Validation_Logs',
+        'Passed_Validations',
+        'Rules_Validation',
+        'Status_Report',
+        'PTID_Visits']
     total_detailed_size = 0
     for file_name in detailed_only:
         if file_name in detailed_reports:
             info = detailed_reports[file_name]
             total_detailed_size += info['file_size_mb']
-            print(f"  {file_name:<20}: {info['row_count']:>8,} rows, {info['file_size_mb']:>8.2f} MB")
+            print(
+                f"  {
+                    file_name:<20}: {
+                    info['row_count']:>8,} rows, {
+                    info['file_size_mb']:>8.2f} MB")
 
     print(f"\nTotal additional file size: {total_detailed_size:.2f} MB")
 
@@ -197,7 +215,10 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
 
     if 'Rules_Validation' in detailed_reports:
         rules_info = detailed_reports['Rules_Validation']
-        print(f"⚠️  Rules Validation Log: {rules_info['row_count']:,} rows ({rules_info['file_size_mb']:.1f} MB)")
+        print(
+            f"⚠️  Rules Validation Log: {
+                rules_info['row_count']:,} rows ({
+                rules_info['file_size_mb']:.1f} MB)")
         print(f"   This is likely the main performance bottleneck in detailed mode")
 
     # Recommendations
@@ -207,6 +228,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print("2. Implement lazy loading for large detailed reports")
     print("3. Add compression for large CSV exports")
     print("4. Consider parallel processing for independent report generation")
+
 
 def main():
     """Main performance analysis function."""
@@ -241,7 +263,12 @@ def main():
     print("Detailed mode completed\n")
 
     # Print comprehensive analysis
-    print_performance_summary(standard_timings, detailed_timings, standard_reports, detailed_reports)
+    print_performance_summary(
+        standard_timings,
+        detailed_timings,
+        standard_reports,
+        detailed_reports)
+
 
 if __name__ == "__main__":
     main()

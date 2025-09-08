@@ -17,7 +17,7 @@ from ..config_manager import QCConfig
 class ProcessingContext:
     """
     Context object containing all data and configuration needed for processing.
-    
+
     This replaces passing multiple parameters to processing functions,
     improving maintainability and reducing parameter complexity.
     """
@@ -40,18 +40,20 @@ class ProcessingContext:
         """Create a new context filtered to specific instruments."""
         return ProcessingContext(
             data_df=self.data_df,
-            instrument_list=[inst for inst in instruments if inst in self.instrument_list],
-            rules_cache={inst: rules for inst, rules in self.rules_cache.items() if inst in instruments},
+            instrument_list=[
+                inst for inst in instruments if inst in self.instrument_list],
+            rules_cache={
+                inst: rules for inst,
+                rules in self.rules_cache.items() if inst in instruments},
             primary_key_field=self.primary_key_field,
-            config=self.config
-        )
+            config=self.config)
 
 
 @dataclass
 class ExportConfiguration:
     """
     Configuration for exporting results and reports.
-    
+
     This standardizes export parameters across different report generation functions.
     """
     output_dir: Path
@@ -82,7 +84,7 @@ class ExportConfiguration:
 class ValidationContext:
     """
     Context object for validation operations.
-    
+
     This provides validation-specific configuration and utilities.
     """
     instrument_name: str
@@ -110,7 +112,7 @@ class ValidationContext:
 class AnalyticsConfiguration:
     """
     Configuration for data quality analytics and debugging.
-    
+
     This provides structured configuration for analysis operations.
     """
     verbosity_level: str = "normal"  # "minimal", "normal", "detailed", "debug"
@@ -134,7 +136,7 @@ class AnalyticsConfiguration:
 class ReportConfiguration:
     """
     Configuration for unified report generation.
-    
+
     This standardizes report generation settings across different report types.
     """
     qc_run_by: str

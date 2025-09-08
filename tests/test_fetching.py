@@ -189,7 +189,9 @@ class TestDataFetching:
 
         # Mock both possible URLs (test URL and any environment URL)
         requests_mock.post('https://test.redcap.url', json=mock_response_data)
-        requests_mock.post('https://hsc-ctsc-rc-api.health.unm.edu/api/', json=mock_response_data)
+        requests_mock.post(
+            'https://hsc-ctsc-rc-api.health.unm.edu/api/',
+            json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
 
@@ -311,7 +313,7 @@ class TestDataValidation:
 
         # Check that required fields are missing
         missing_fields = [field for field in DataContract.REQUIRED_FIELDS
-                         if field not in invalid_record]
+                          if field not in invalid_record]
 
         assert len(missing_fields) > 0
 
@@ -384,7 +386,9 @@ class TestETLPipelineIntegration:
 
         # Mock both URLs
         requests_mock.post('https://test.redcap.url', json=mock_response_data)
-        requests_mock.post('https://hsc-ctsc-rc-api.health.unm.edu/api/', json=mock_response_data)
+        requests_mock.post(
+            'https://hsc-ctsc-rc-api.health.unm.edu/api/',
+            json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
 

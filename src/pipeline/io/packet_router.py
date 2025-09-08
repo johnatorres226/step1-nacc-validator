@@ -21,7 +21,7 @@ class PacketRuleRouter:
     def __init__(self, config: Optional[QCConfig] = None):
         """
         Initialize the packet rule router.
-        
+
         Args:
             config: Optional QCConfig instance. If not provided, will use get_config()
         """
@@ -30,17 +30,18 @@ class PacketRuleRouter:
         self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("PacketRuleRouter initialized")
 
-    def get_rules_for_record(self, record: Dict[str, Any], instrument_name: str) -> Dict[str, Any]:
+    def get_rules_for_record(
+            self, record: Dict[str, Any], instrument_name: str) -> Dict[str, Any]:
         """
         Get appropriate rules for a record based on its packet value.
-        
+
         Args:
             record: The data record containing the packet value
             instrument_name: Name of the instrument to get rules for
-            
+
         Returns:
             Dictionary containing the validation rules for the record
-            
+
         Raises:
             ValueError: If packet value is missing or invalid
         """
@@ -62,14 +63,16 @@ class PacketRuleRouter:
 
         if cache_key not in self._rule_cache:
             rules_path = self.config.get_rules_path_for_packet(packet)
-            self._rule_cache[cache_key] = self._load_rules(rules_path, instrument_name, packet)
+            self._rule_cache[cache_key] = self._load_rules(
+                rules_path, instrument_name, packet)
             logger.debug(f"Loaded rules for {cache_key} from {rules_path}")
 
         return self._rule_cache[cache_key]
 
         return self._rule_cache[cache_key]
 
-    def _load_rules(self, rules_path: str, instrument_name: str, packet: str) -> Dict[str, Any]:
+    def _load_rules(self, rules_path: str, instrument_name: str,
+                    packet: str) -> Dict[str, Any]:
         """Load rules from specific packet directory - no fallbacks."""
         if not rules_path or not Path(rules_path).exists():
             raise FileNotFoundError(
@@ -84,17 +87,18 @@ class PacketRuleRouter:
                 f"Failed to load rules for {instrument_name} from {rules_path}: {e}"
             ) from e
 
-    def _load_rules_from_path(self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
+    def _load_rules_from_path(self, rules_path: str,
+                              instrument_name: str) -> Dict[str, Any]:
         """
         Load rules from a specific path using the existing instrument mapping.
-        
-        For dynamic instruments, this builds the nested structure that 
+
+        For dynamic instruments, this builds the nested structure that
         HierarchicalRuleResolver expects.
-        
+
         Args:
             rules_path: Path to the rules directory
             instrument_name: Name of the instrument
-            
+
         Returns:
             Dictionary containing the loaded rules
         """
@@ -108,7 +112,8 @@ class PacketRuleRouter:
         rule_files = self.config.get_instrument_json_mapping().get(instrument_name, [])
 
         if not rule_files:
-            logger.warning(f"No JSON rule files found for instrument: {instrument_name}")
+            logger.warning(
+                f"No JSON rule files found for instrument: {instrument_name}")
             return {}
 
         combined_rules = {}
@@ -130,25 +135,31 @@ class PacketRuleRouter:
             else:
                 missing_files.append(str(file_path))
 
-        # Check if all files are missing for F packet rules - use Path operations for cross-platform compatibility
-        is_f_rules_path = Path(rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
+        # Check if all files are missing for F packet rules - use Path operations
+        # for cross-platform compatibility
+        is_f_rules_path = Path(
+            rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
         if rule_files and len(missing_files) == len(rule_files) and is_f_rules_path:
             if not self._f_rules_warning_logged:
-                logger.warning(f"F packet rules are not yet implemented. All F rule files are missing across all instruments. Suppressing subsequent warnings.")
+                logger.warning(
+                    "F packet rules are not yet implemented. All F rule files "
+                    "are missing across all instruments. Suppressing "
+                    "subsequent warnings.")
                 self._f_rules_warning_logged = True
         else:
             for file_path in missing_files:
                 logger.warning(f"Rule file not found: {file_path}")
         return combined_rules
 
-    def _load_dynamic_rules_from_path(self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
+    def _load_dynamic_rules_from_path(
+            self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
         """
         Load dynamic instrument rules with nested structure for HierarchicalRuleResolver.
-        
+
         Args:
             rules_path: Path to the rules directory
             instrument_name: Name of the dynamic instrument
-            
+
         Returns:
             Dictionary with variant keys (C2, C2T) containing their respective rules
         """
@@ -166,7 +177,9 @@ class PacketRuleRouter:
                     with file_path.open('r') as f:
                         rules = json.load(f)
                         rule_map[variant] = rules
-                        logger.debug(f"Loaded {len(rules)} rules for {variant} from {file_path}")
+                        logger.debug(
+                            f"Loaded {
+                                len(rules)} rules for {variant} from {file_path}")
                 except json.JSONDecodeError as e:
                     logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
                 except Exception as e:
@@ -174,26 +187,35 @@ class PacketRuleRouter:
             else:
                 missing_variants.append((variant, str(file_path)))
 
-        # Check if all files are missing for F packet rules - use Path operations for cross-platform compatibility
-        is_f_rules_path = Path(rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
-        if rule_mappings and len(missing_variants) == len(rule_mappings) and is_f_rules_path:
+        # Check if all files are missing for F packet rules - use Path operations
+        # for cross-platform compatibility
+        is_f_rules_path = Path(
+            rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
+        if rule_mappings and len(missing_variants) == len(
+                rule_mappings) and is_f_rules_path:
             if not self._f_rules_warning_logged:
-                logger.warning(f"F packet rules are not yet implemented. All F rule files are missing across all instruments. Suppressing subsequent warnings.")
+                logger.warning(
+                    "F packet rules are not yet implemented. All F rule files "
+                    "are missing across all instruments. Suppressing "
+                    "subsequent warnings.")
                 self._f_rules_warning_logged = True
         else:
             for variant, file_path in missing_variants:
                 logger.warning(f"Rule file not found for {variant}: {file_path}")
 
-        logger.debug(f"Loaded dynamic rules for {instrument_name}: {list(rule_map.keys())}")
+        logger.debug(
+            f"Loaded dynamic rules for {instrument_name}: {
+                list(
+                    rule_map.keys())}")
         return rule_map
 
     def is_packet_supported(self, packet: str) -> bool:
         """
         Check if a packet type is supported.
-        
+
         Args:
             packet: Packet type to check
-            
+
         Returns:
             True if the packet type is supported
         """
@@ -204,23 +226,26 @@ class PacketRuleRouter:
     def get_available_packets(self) -> list[str]:
         """
         Get list of available packet types based on configured paths.
-        
+
         Returns:
             List of available packet types
         """
         available = []
-        if self.config.json_rules_path_i and Path(self.config.json_rules_path_i).exists():
+        if self.config.json_rules_path_i and Path(
+                self.config.json_rules_path_i).exists():
             available.append('I')
-        if self.config.json_rules_path_i4 and Path(self.config.json_rules_path_i4).exists():
+        if self.config.json_rules_path_i4 and Path(
+                self.config.json_rules_path_i4).exists():
             available.append('I4')
-        if self.config.json_rules_path_f and Path(self.config.json_rules_path_f).exists():
+        if self.config.json_rules_path_f and Path(
+                self.config.json_rules_path_f).exists():
             available.append('F')
         return available
 
     def get_cache_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics for monitoring and optimization.
-        
+
         Returns:
             Dictionary containing cache performance metrics
         """
@@ -240,10 +265,10 @@ class PacketRuleRouter:
 def create_packet_router(config: Optional[QCConfig] = None) -> PacketRuleRouter:
     """
     Factory function to create a PacketRuleRouter instance.
-    
+
     Args:
         config: Optional QCConfig instance
-        
+
     Returns:
         PacketRuleRouter instance
     """

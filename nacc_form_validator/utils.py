@@ -6,9 +6,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Original source: https://github.com/naccdata/nacc-form-validator
 """
-# utils.py
-
-"""Utility functions."""
 
 import logging
 import math
@@ -16,6 +13,11 @@ import re
 from typing import Any
 
 from dateutil import parser
+
+# utils.py
+
+"""Utility functions."""
+
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +84,7 @@ def compare_values(comparator: str, value: Any, base_value: Any) -> bool:
     # try close enough equality if both are floats first
     both_floats = False
     if isinstance(value, (str, int, float)) \
-        and isinstance(base_value, (str, int, float)):
+            and isinstance(base_value, (str, int, float)):
         try:
             float(value)  # don't actually set it to a in case we die at b
             float(base_value)
@@ -136,5 +138,3 @@ def compare_values(comparator: str, value: Any, base_value: Any) -> bool:
             return str_value < str_base_value
 
     return False  # Should not be reached
-
-

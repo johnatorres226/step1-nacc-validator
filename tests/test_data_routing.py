@@ -126,7 +126,7 @@ class TestRuleCaching:
         # Populate cache
         router._rule_cache[cache_key] = mock_rules
 
-        with patch.object(router, '_load_rules') as mock_load:
+        with patch.object(router, '_load_rules'):
             record = {'packet': 'I', 'ptid': 'TEST001'}
             instrument = 'test_instrument'
 
@@ -149,7 +149,8 @@ class TestRuleCaching:
 
         # Check if we can infer the cache key format
         with patch.object(router, '_load_rules', return_value={}) as mock_load:
-            router.get_rules_for_record({'packet': packet, 'ptid': 'TEST001'}, instrument)
+            router.get_rules_for_record(
+                {'packet': packet, 'ptid': 'TEST001'}, instrument)
 
             mock_load.assert_called_once()
 
@@ -417,7 +418,6 @@ class TestRoutingPerformance:
 
         instrument = 'test_instrument'
         mock_rules_i = {'field1': {'type': 'string'}}
-        mock_rules_f = {'field2': {'type': 'integer'}}
 
         def mock_load_side_effect(*args, **kwargs):
             # Simplified side effect based on the record packet
@@ -425,10 +425,12 @@ class TestRoutingPerformance:
 
         with patch.object(router, '_load_rules', side_effect=mock_load_side_effect) as mock_load:
             # Load rules for packet I
-            rules_i = router.get_rules_for_record({'packet': 'I', 'ptid': 'TEST001'}, instrument)
+            rules_i = router.get_rules_for_record(
+                {'packet': 'I', 'ptid': 'TEST001'}, instrument)
 
             # Load rules for packet F
-            rules_f = router.get_rules_for_record({'packet': 'F', 'ptid': 'TEST002'}, instrument)
+            rules_f = router.get_rules_for_record(
+                {'packet': 'F', 'ptid': 'TEST002'}, instrument)
 
             # Should have called load twice (once for each packet type)
             assert mock_load.call_count == 2

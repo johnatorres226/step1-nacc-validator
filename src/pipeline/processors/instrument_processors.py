@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 class DynamicInstrumentProcessor:
     """
     Consolidated processor for dynamic rule instruments.
-    
+
     This class centralizes all dynamic instrument processing logic that was
     previously scattered across multiple functions, providing a unified
     interface for handling instruments with variable-based rule selection.
@@ -39,17 +39,16 @@ class DynamicInstrumentProcessor:
     def __init__(self, instrument_name: str):
         """
         Initialize processor for a dynamic instrument.
-        
+
         Args:
             instrument_name: Name of the dynamic instrument to process
-            
+
         Raises:
             ValueError: If instrument is not configured for dynamic rule selection
         """
         if not is_dynamic_rule_instrument(instrument_name):
             raise ValueError(
-                f"Instrument '{instrument_name}' is not configured for dynamic rule selection"
-            )
+                f"Instrument '{instrument_name}' is not configured for dynamic rule selection")
 
         self.instrument_name = instrument_name
         self.discriminant_var = get_discriminant_variable(instrument_name)
@@ -60,7 +59,7 @@ class DynamicInstrumentProcessor:
     def get_all_variables(self) -> List[str]:
         """
         Get all possible variables across all rule variants for this instrument.
-        
+
         Returns:
             List of all variable names from all rule variants
         """
@@ -76,27 +75,28 @@ class DynamicInstrumentProcessor:
     def get_rules_for_variant(self, variant: str) -> Dict[str, Any]:
         """
         Get validation rules for a specific variant.
-        
+
         Args:
             variant: The variant name (e.g., 'C2', 'C2T')
-            
+
         Returns:
             Dictionary of validation rules for the variant
         """
         rule_map = self._get_rule_map()
         return rule_map.get(variant.upper(), {})
 
-    def prepare_data(self, df: pd.DataFrame, primary_key_field: str) -> Tuple[pd.DataFrame, List[str]]:
+    def prepare_data(self, df: pd.DataFrame,
+                     primary_key_field: str) -> Tuple[pd.DataFrame, List[str]]:
         """
         Prepare data for dynamic instrument processing.
-        
+
         This method extracts relevant columns and rows for the dynamic instrument,
         considering all possible variables from different rule variants.
-        
+
         Args:
             df: Source DataFrame containing the data
             primary_key_field: Name of the primary key field
-            
+
         Returns:
             Tuple of (filtered DataFrame, list of all instrument variables)
         """
@@ -128,7 +128,7 @@ class DynamicInstrumentProcessor:
         if relevant_cols:
             instrument_df = df[relevant_cols].copy()
             non_core_cols = [col for col in relevant_cols
-                           if col not in core_cols and not col.endswith('_complete')]
+                             if col not in core_cols and not col.endswith('_complete')]
             if non_core_cols:
                 has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
                 instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
@@ -138,15 +138,17 @@ class DynamicInstrumentProcessor:
     def get_variants_in_data(self, df: pd.DataFrame) -> List[str]:
         """
         Get list of variants actually present in the data.
-        
+
         Args:
             df: DataFrame to analyze
-            
+
         Returns:
             List of variant values found in the discriminant variable
         """
         if self.discriminant_var not in df.columns:
-            logger.warning(f"Discriminant variable '{self.discriminant_var}' not found in data")
+            logger.warning(
+                f"Discriminant variable '{
+                    self.discriminant_var}' not found in data")
             return []
 
         variants = df[self.discriminant_var].dropna().str.upper().unique().tolist()
@@ -162,7 +164,7 @@ class DynamicInstrumentProcessor:
 class InstrumentDataProcessor(ABC):
     """
     Abstract base class for instrument data processors.
-    
+
     This implements the strategy pattern to handle different types of instruments
     with a unified interface, eliminating complex branching logic.
     """
@@ -170,7 +172,7 @@ class InstrumentDataProcessor(ABC):
     def __init__(self, instrument_name: str):
         """
         Initialize the processor for a specific instrument.
-        
+
         Args:
             instrument_name: Name of the instrument to process
         """
@@ -180,10 +182,10 @@ class InstrumentDataProcessor(ABC):
     def create_processor(instrument_name: str) -> 'InstrumentDataProcessor':
         """
         Factory method to create appropriate processor for an instrument.
-        
+
         Args:
             instrument_name: Name of the instrument
-            
+
         Returns:
             Appropriate processor instance (Dynamic or Standard)
         """
@@ -199,10 +201,10 @@ class InstrumentDataProcessor(ABC):
     ) -> Tuple[pd.DataFrame, List[str]]:
         """
         Prepare data for the instrument.
-        
+
         Args:
             context: Processing context containing data and configuration
-            
+
         Returns:
             Tuple of (filtered DataFrame, list of instrument variables)
         """
@@ -211,10 +213,10 @@ class InstrumentDataProcessor(ABC):
     def get_variables(self, context: ProcessingContext) -> List[str]:
         """
         Get all variables for this instrument.
-        
+
         Args:
             context: Processing context containing rules cache
-            
+
         Returns:
             List of variable names for this instrument
         """
@@ -226,11 +228,11 @@ class InstrumentDataProcessor(ABC):
     ) -> List[str]:
         """
         Get columns relevant to this instrument.
-        
+
         Args:
             df: Source DataFrame
             instrument_variables: Variables specific to this instrument
-            
+
         Returns:
             List of relevant column names
         """
@@ -259,11 +261,11 @@ class InstrumentDataProcessor(ABC):
     ) -> pd.DataFrame:
         """
         Filter DataFrame to only include records with actual data.
-        
+
         Args:
             df: DataFrame to filter
             relevant_cols: All relevant columns for the instrument
-            
+
         Returns:
             Filtered DataFrame with only records containing data
         """
@@ -288,7 +290,7 @@ class InstrumentDataProcessor(ABC):
 class StandardInstrumentDataProcessor(InstrumentDataProcessor):
     """
     Processor for standard (non-dynamic) instruments.
-    
+
     This handles instruments with fixed validation rules.
     """
 
@@ -302,10 +304,10 @@ class StandardInstrumentDataProcessor(InstrumentDataProcessor):
     ) -> Tuple[pd.DataFrame, List[str]]:
         """
         Prepare data for standard instrument.
-        
+
         Args:
             context: Processing context with data and configuration
-            
+
         Returns:
             Tuple of (filtered DataFrame, list of instrument variables)
         """
@@ -334,7 +336,7 @@ class StandardInstrumentDataProcessor(InstrumentDataProcessor):
 class DynamicInstrumentDataProcessor(InstrumentDataProcessor):
     """
     Processor for dynamic rule instruments.
-    
+
     This handles instruments with variable-based rule selection using
     the consolidated DynamicInstrumentProcessor.
     """
@@ -354,10 +356,10 @@ class DynamicInstrumentDataProcessor(InstrumentDataProcessor):
     ) -> Tuple[pd.DataFrame, List[str]]:
         """
         Prepare data for dynamic instrument using consolidated processor.
-        
+
         Args:
             context: Processing context with data and configuration
-            
+
         Returns:
             Tuple of (filtered DataFrame, list of instrument variables)
         """
@@ -377,7 +379,7 @@ class DynamicInstrumentDataProcessor(InstrumentDataProcessor):
 class InstrumentDataCache:
     """
     Manages cached DataFrames for multiple instruments using the strategy pattern.
-    
+
     This replaces the complex prepare_instrument_data_cache function with
     a more maintainable object-oriented approach.
     """
@@ -385,7 +387,7 @@ class InstrumentDataCache:
     def __init__(self, context: ProcessingContext):
         """
         Initialize cache with processing context.
-        
+
         Args:
             context: Processing context containing data and configuration
         """
@@ -397,7 +399,7 @@ class InstrumentDataCache:
     def prepare_all(self) -> Dict[str, pd.DataFrame]:
         """
         Prepare data for all instruments in the context.
-        
+
         Returns:
             Dictionary mapping instrument names to their prepared DataFrames
         """
@@ -409,10 +411,10 @@ class InstrumentDataCache:
     def prepare_instrument(self, instrument: str) -> pd.DataFrame:
         """
         Prepare data for a specific instrument.
-        
+
         Args:
             instrument: Name of the instrument to prepare
-            
+
         Returns:
             Prepared DataFrame for the instrument
         """

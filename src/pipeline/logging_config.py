@@ -52,7 +52,12 @@ class ColoredFormatter(logging.Formatter):
         'CRITICAL': '✗✗'
     }
 
-    def __init__(self, fmt=None, datefmt=None, use_colors: Optional[bool] = None, use_icons: bool = True):
+    def __init__(
+            self,
+            fmt=None,
+            datefmt=None,
+            use_colors: Optional[bool] = None,
+            use_icons: bool = True):
         super().__init__(fmt=fmt, datefmt=datefmt)
         # Auto-detect color support if not specified
         if use_colors is None:
@@ -74,7 +79,8 @@ class ColoredFormatter(logging.Formatter):
 
         # Check for Windows terminal color support
         if os.name == 'nt':
-            return os.getenv('ANSICON') is not None or 'ON' in os.getenv('ConEmuANSI', 'OFF')
+            return os.getenv('ANSICON') is not None or 'ON' in os.getenv(
+                'ConEmuANSI', 'OFF')
 
         return False
 
@@ -164,7 +170,7 @@ def setup_logging(
 ) -> None:
     """
     Configure comprehensive logging for the QC pipeline.
-    
+
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_file: Optional file to write logs to
@@ -190,7 +196,8 @@ def setup_logging(
             'stream': 'ext://sys.stdout'
         }
     else:
-        # Add NullHandler when console output is disabled to prevent logs from going to stderr
+        # Add NullHandler when console output is disabled to prevent logs from
+        # going to stderr
         handlers['null'] = {
             'class': 'logging.NullHandler',
         }
@@ -282,7 +289,8 @@ def setup_logging(
     # Add filters to handlers if configured
     if filters:
         for handler_name in handlers:
-            if handler_name not in ['console']:  # Don't add performance filter to console
+            if handler_name not in [
+                    'console']:  # Don't add performance filter to console
                 handlers[handler_name]['filters'] = list(filters.keys())
         logging_config['filters'] = filters
 
@@ -316,9 +324,9 @@ class JSONFormatter(logging.Formatter):
         # Add any extra fields
         for key, value in record.__dict__.items():
             if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-                          'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
-                          'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
-                          'thread', 'threadName', 'processName', 'process', 'message']:
+                           'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
+                           'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
+                           'thread', 'threadName', 'processName', 'process', 'message']:
                 log_entry[key] = value
 
         return json.dumps(log_entry)
@@ -345,7 +353,10 @@ class QCLogger:
     def __enter__(self):
         """Start the operation logging."""
         self.start_time = time.time()
-        if self.operation_name in ['Configuration Check', 'Environment Setup', 'QC Pipeline']:
+        if self.operation_name in [
+            'Configuration Check',
+            'Environment Setup',
+                'QC Pipeline']:
             self.logger.info(f"Starting operation: {self.operation_name}")
         return self
 
@@ -355,19 +366,25 @@ class QCLogger:
             duration = time.time() - self.start_time
 
             if exc_type is None:
-                if self.operation_name in ['Configuration Check', 'Environment Setup', 'QC Pipeline']:
+                if self.operation_name in [
+                    'Configuration Check',
+                    'Environment Setup',
+                        'QC Pipeline']:
                     self.logger.info(f"Completed operation: {self.operation_name} "
-                                   f"(Duration: {duration:.2f}s)")
+                                     f"(Duration: {duration:.2f}s)")
             else:
                 self.logger.error(f"Failed operation: {self.operation_name} "
-                                f"(Duration: {duration:.2f}s) - {exc_val}")
+                                  f"(Duration: {duration:.2f}s) - {exc_val}")
 
         return False  # Don't suppress exceptions
 
     def log_progress(self, message: str, step: Optional[int] = None):
         """Log progress update with optional step tracking."""
         # Only log progress for high-level operations
-        if self.operation_name in ['Configuration Check', 'Environment Setup', 'QC Pipeline']:
+        if self.operation_name in [
+            'Configuration Check',
+            'Environment Setup',
+                'QC Pipeline']:
             with self._lock:
                 if step is not None:
                     self.steps_completed = step
@@ -377,7 +394,7 @@ class QCLogger:
                 if self.total_steps:
                     progress = (self.steps_completed / self.total_steps) * 100
                     self.logger.info(f"{self.operation_name}: {message} "
-                                   f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)")
+                                     f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)")
                 else:
                     self.logger.info(f"{self.operation_name}: {message}")
 
@@ -390,7 +407,10 @@ class QCLogger:
         """Log an error during the operation."""
         if exception:
             self.logger.error(f"{self.operation_name} Error: {message} - {exception}")
-            self.logger.debug(f"Full traceback for {self.operation_name}", exc_info=True)
+            self.logger.debug(
+                f"Full traceback for {
+                    self.operation_name}",
+                exc_info=True)
         else:
             self.logger.error(f"{self.operation_name} Error: {message}")
 
@@ -443,7 +463,12 @@ def log_dataframe_info(df, name: str, logger: Optional[logging.Logger] = None):
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug(f"DataFrame '{name}' columns: {list(df.columns)}")
-        logger.debug(f"DataFrame '{name}' memory usage: {df.memory_usage(deep=True).sum() / 1024 / 1024:.2f} MB")
+        logger.debug(
+            f"DataFrame '{name}' memory usage: {
+                df.memory_usage(
+                    deep=True).sum() /
+                1024 /
+                1024:.2f} MB")
 
 
 def configure_third_party_logging():

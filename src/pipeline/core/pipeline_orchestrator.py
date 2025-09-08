@@ -34,7 +34,7 @@ logger = get_logger(__name__)
 class PipelineOrchestrator:
     """
     Orchestrates the QC pipeline execution with clear stage separation and error handling.
-    
+
     This class implements the improved pipeline structure with:
     - Clear pipeline steps with explicit data passing
     - Proper result objects instead of loose variables
@@ -45,7 +45,7 @@ class PipelineOrchestrator:
     def __init__(self, config: QCConfig):
         """
         Initialize the pipeline orchestrator.
-        
+
         Args:
             config: QC configuration object
         """
@@ -61,12 +61,12 @@ class PipelineOrchestrator:
     ) -> PipelineExecutionResult:
         """
         Execute the complete QC pipeline with structured stages.
-        
+
         Args:
             output_path: Optional output path override
             date_tag: Optional date tag for output directory
             time_tag: Optional time tag for output directory
-            
+
         Returns:
             Complete pipeline execution result with all stage results
         """
@@ -76,40 +76,59 @@ class PipelineOrchestrator:
         output_dir = self._create_output_directory(output_path, date_tag, time_tag)
 
         self.logger.info("Starting QC pipeline")
-        self.logger.info(f"Configuration: {len(self.config.instruments)} instruments, mode: {self.config.mode}")
+        self.logger.info(
+            f"Configuration: {len(self.config.instruments)} instruments, mode: {self.config.mode}")
         self.logger.info(f"Output directory: {output_dir}")
 
         try:
             # Stage 1: Data Fetching
             self.logger.info("Stage 1: Data Fetching")
-            data_fetch_result = self._execute_data_fetch_stage(output_dir, date_tag, time_tag)
-            self.logger.info(f"Data fetch completed: {data_fetch_result.records_processed} records in {data_fetch_result.execution_time:.2f}s")
+            data_fetch_result = self._execute_data_fetch_stage(
+                output_dir, date_tag, time_tag)
+            self.logger.info(
+                f"Data fetch completed: {
+                    data_fetch_result.records_processed} records in {
+                    data_fetch_result.execution_time:.2f}s")
 
             # Stage 2: Rules Loading
             self.logger.info("Stage 2: Rules Loading")
             rules_loading_result = self._execute_rules_loading_stage()
-            self.logger.info(f"Rules loading completed: {rules_loading_result.loaded_instruments_count}/{len(self.config.instruments)} instruments in {rules_loading_result.loading_time:.2f}s")
+            self.logger.info(
+                f"Rules loading completed: {
+                    rules_loading_result.loaded_instruments_count}/{
+                    len(
+                        self.config.instruments)} instruments in {
+                    rules_loading_result.loading_time:.2f}s")
 
             # Stage 3: Data Preparation
             self.logger.info("Stage 3: Data Preparation")
             data_prep_result = self._execute_data_preparation_stage(
                 data_fetch_result, rules_loading_result
             )
-            self.logger.info(f"Data preparation completed: {data_prep_result.total_records_prepared} records prepared in {data_prep_result.preparation_time:.2f}s")
+            self.logger.info(
+                f"Data preparation completed: {
+                    data_prep_result.total_records_prepared} records prepared in {
+                    data_prep_result.preparation_time:.2f}s")
 
             # Stage 4: Validation
             self.logger.info("Stage 4: Validation Processing")
             validation_result = self._execute_validation_stage(
                 data_prep_result, rules_loading_result
             )
-            self.logger.info(f"Validation completed: {validation_result.total_errors} errors found in {validation_result.validation_time:.2f}s")
+            self.logger.info(
+                f"Validation completed: {
+                    validation_result.total_errors} errors found in {
+                    validation_result.validation_time:.2f}s")
 
             # Stage 5: Report Generation
             self.logger.info("Stage 5: Report Generation")
             report_result = self._execute_report_generation_stage(
                 validation_result, data_prep_result, output_dir, date_tag, time_tag
             )
-            self.logger.info(f"Report generation completed: {report_result.total_files_created} files created in {report_result.export_time:.2f}s")
+            self.logger.info(
+                f"Report generation completed: {
+                    report_result.total_files_created} files created in {
+                    report_result.export_time:.2f}s")
 
             # Create final result
             total_time = time.time() - self.start_time
@@ -211,7 +230,8 @@ class PipelineOrchestrator:
 
             stage_start = time.time()
 
-            self.logger.info(f"Loading validation rules for {len(self.config.instruments)} instruments using packet routing...")
+            self.logger.info(
+                f"Loading validation rules for {len(self.config.instruments)} instruments using packet routing...")
 
             # Initialize packet router for production rule loading
             PacketRuleRouter(self.config)
@@ -224,8 +244,10 @@ class PipelineOrchestrator:
 
             for instrument in self.config.instruments:
                 try:
-                    # Use the new rules loading method that handles dynamic instruments properly
-                    instrument_rules = hierarchical_resolver.load_all_rules_for_instrument(instrument)
+                    # Use the new rules loading method that handles dynamic instruments
+                    # properly
+                    instrument_rules = hierarchical_resolver.load_all_rules_for_instrument(
+                        instrument)
 
                     if instrument_rules:
                         rules_cache[instrument] = instrument_rules
@@ -241,8 +263,7 @@ class PipelineOrchestrator:
 
             self.logger.info("Building variable mappings...")
             variable_to_instrument_map, instrument_to_variables_map = build_variable_maps(
-                self.config.instruments, rules_cache
-            )
+                self.config.instruments, rules_cache)
 
             execution_time = time.time() - stage_start
 
@@ -297,13 +318,15 @@ class PipelineOrchestrator:
 
                 # Filter data to complete visits only
                 if not complete_visits_df.empty:
-                    self.logger.info(f"Filtering to {len(complete_visits_df)} complete visits...")
+                    self.logger.info(
+                        f"Filtering to {
+                            len(complete_visits_df)} complete visits...")
                     complete_visits_mask = data_df.set_index([self.config.primary_key_field, 'redcap_event_name']).index.isin(
-                        complete_visits_df.set_index([self.config.primary_key_field, 'redcap_event_name']).index
-                    )
+                        complete_visits_df.set_index([self.config.primary_key_field, 'redcap_event_name']).index)
                     data_df = data_df[complete_visits_mask].copy()
                 else:
-                    self.logger.warning("No complete visits found - no data will be processed")
+                    self.logger.warning(
+                        "No complete visits found - no data will be processed")
                     data_df = pd.DataFrame()
 
             # Prepare instrument data cache
@@ -322,8 +345,8 @@ class PipelineOrchestrator:
 
                 # Calculate records per instrument
                 records_per_instrument = {
-                    instrument: len(df) for instrument, df in instrument_data_cache.items()
-                }
+                    instrument: len(df) for instrument,
+                    df in instrument_data_cache.items()}
             else:
                 records_per_instrument = {inst: 0 for inst in self.config.instruments}
 
@@ -364,11 +387,13 @@ class PipelineOrchestrator:
 
             # Process each instrument
             for i, instrument in enumerate(self.config.instruments, 1):
-                self.logger.info(f"Validating {instrument} ({i}/{len(self.config.instruments)})")
+                self.logger.info(
+                    f"Validating {instrument} ({i}/{len(self.config.instruments)})")
 
                 df = data_prep_result.get_instrument_data(instrument)
                 if df.empty:
-                    self.logger.warning(f"No data available for instrument '{instrument}' after preparation.")
+                    self.logger.warning(
+                        f"No data available for instrument '{instrument}' after preparation.")
                     continue
 
                 instruments_processed.append(instrument)
@@ -393,21 +418,28 @@ class PipelineOrchestrator:
                 all_logs.extend(logs)
                 all_passed.extend(passed_records)
 
-                # Collect records for status - create simple record info with instrument name
+                # Collect records for status - create simple record info with instrument
+                # name
                 if not df.empty:
-                    record_df = df[[self.config.primary_key_field, 'redcap_event_name']].copy()
+                    record_df = df[[self.config.primary_key_field,
+                                    'redcap_event_name']].copy()
                     record_df['instrument_name'] = instrument
                     records_for_status.append(record_df)
                 else:
                     # Create empty DataFrame with proper columns
-                    empty_df = pd.DataFrame(columns=[self.config.primary_key_field, 'redcap_event_name', 'instrument_name'])
+                    empty_df = pd.DataFrame(
+                        columns=[
+                            self.config.primary_key_field,
+                            'redcap_event_name',
+                            'instrument_name'])
                     records_for_status.append(empty_df)
 
             # Create result DataFrames
             errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
             logs_df = pd.DataFrame(all_logs) if all_logs else pd.DataFrame()
             passed_df = pd.DataFrame(all_passed) if all_passed else pd.DataFrame()
-            validation_logs_df = pd.DataFrame(detailed_validation_logs) if detailed_validation_logs else pd.DataFrame()
+            validation_logs_df = pd.DataFrame(
+                detailed_validation_logs) if detailed_validation_logs else pd.DataFrame()
 
             all_records_df = pd.DataFrame()
             if records_for_status:
@@ -422,8 +454,10 @@ class PipelineOrchestrator:
                 "total_errors": len(errors_df),
                 "total_records": len(all_records_df),
                 "instruments_processed": len(instruments_processed),
-                "error_rate": (len(errors_df) / len(all_records_df) * 100) if len(all_records_df) > 0 else 0.0
-            }
+                "error_rate": (
+                    len(errors_df) /
+                    len(all_records_df) *
+                    100) if len(all_records_df) > 0 else 0.0}
 
             return ValidationResult(
                 errors_df=errors_df,

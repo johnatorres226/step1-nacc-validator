@@ -262,7 +262,7 @@ class NACCValidator(Validator):
         else:
             prev_ins = (self.datastore.get_previous_nonempty_record(
                 self.document, ignore_empty_fields) if ignore_empty else
-                        self.datastore.get_previous_record(self.document))
+                self.datastore.get_previous_record(self.document))
 
             if prev_ins:
                 prev_ins = self.cast_record(prev_ins)
@@ -514,12 +514,14 @@ class NACCValidator(Validator):
             # Check if the field exists and is not null in the record
             field_value = record.get(field)
 
-            # If field is null or missing, check if we're validating against allowed values
+            # If field is null or missing, check if we're validating against allowed
+            # values
             if field_value is None and isinstance(conds, dict) and 'allowed' in conds:
                 # If the field is null/missing and we're checking for allowed values,
                 # this condition should be considered false (not met)
                 if operator == "OR":
-                    # For OR operations, this condition fails but we continue to check others
+                    # For OR operations, this condition fails but we continue to check
+                    # others
                     continue
                 else:
                     # For AND operations, this condition fails so the whole check fails

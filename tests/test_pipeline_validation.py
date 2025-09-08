@@ -1,7 +1,7 @@
 """
 Essential tests for pipeline validation functionality.
 
-This module tests the core validation logic, quality checks, and validation result 
+This module tests the core validation logic, quality checks, and validation result
 handling components that are fundamental to the application's data validation process.
 """
 

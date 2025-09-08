@@ -35,8 +35,9 @@ def sample_config(temp_directory):
         redcap_api_url='https://test.redcap.example.com',
         project_id='test_project_123',
         output_path=str(temp_directory),
-        instruments=['a1_participant_demographics', 'b1_vital_signs_and_anthropometrics']
-    )
+        instruments=[
+            'a1_participant_demographics',
+            'b1_vital_signs_and_anthropometrics'])
     return config
 
 
@@ -335,7 +336,10 @@ class TestUtils:
         return temp_file
 
     @staticmethod
-    def create_temp_csv_file(data: pd.DataFrame, temp_dir: Path, filename: str = "test_data.csv") -> Path:
+    def create_temp_csv_file(
+            data: pd.DataFrame,
+            temp_dir: Path,
+            filename: str = "test_data.csv") -> Path:
         """Create a temporary CSV file with test data."""
         temp_file = temp_dir / filename
         data.to_csv(temp_file, index=False)
@@ -389,8 +393,7 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_report_header(config):
     """Add custom header to pytest report."""
-    return [
-        "UDSv4 REDCap QC Validator - Essential Test Suite",
-        f"Testing configuration, fetching, routing, validation, and outputs",
-        f"Python version: {config.getoption('--version') if hasattr(config, 'getoption') else 'Unknown'}"
-    ]
+    return ["UDSv4 REDCap QC Validator - Essential Test Suite",
+            f"Testing configuration, fetching, routing, validation, and outputs",
+            f"Python version: {config.getoption('--version') if hasattr(config,
+                                                                        'getoption') else 'Unknown'}"]

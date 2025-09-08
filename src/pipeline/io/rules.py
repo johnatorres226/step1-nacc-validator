@@ -32,13 +32,13 @@ class RulesLoadingError(Exception):
 def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
     """
     Resolve file paths for an instrument's rule files.
-    
+
     Args:
         instrument_name: The name of the instrument.
-        
+
     Returns:
         List of Path objects for the instrument's rule files.
-        
+
     Raises:
         RulesLoadingError: If no rule files are configured for the instrument.
     """
@@ -48,7 +48,8 @@ def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
     # Get the list of JSON files for the instrument
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
-        raise RulesLoadingError(f"No JSON rule files configured for instrument: {instrument_name}")
+        raise RulesLoadingError(
+            f"No JSON rule files configured for instrument: {instrument_name}")
 
     return [json_rules_path / file_name for file_name in rule_files]
 
@@ -56,13 +57,13 @@ def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
 def load_json_file(file_path: Path) -> Dict[str, Any]:
     """
     Load and parse a single JSON file with proper error handling.
-    
+
     Args:
         file_path: Path to the JSON file to load.
-        
+
     Returns:
         Dictionary containing the parsed JSON data.
-        
+
     Raises:
         RulesLoadingError: If the file cannot be loaded or parsed.
     """
@@ -82,10 +83,10 @@ def load_json_file(file_path: Path) -> Dict[str, Any]:
 def merge_rule_dictionaries(rule_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Merge multiple rule dictionaries into one.
-    
+
     Args:
         rule_dicts: List of rule dictionaries to merge.
-        
+
     Returns:
         Single dictionary containing all merged rules.
     """
@@ -107,7 +108,7 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
 
     Returns:
         A dictionary containing the combined validation rules.
-        
+
     Raises:
         RulesLoadingError: If rules cannot be loaded for the instrument.
     """
@@ -125,7 +126,8 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
                 continue
 
         if not rule_dicts:
-            logger.warning(f"No valid rule files loaded for instrument: {instrument_name}")
+            logger.warning(
+                f"No valid rule files loaded for instrument: {instrument_name}")
             return {}
 
         return merge_rule_dictionaries(rule_dicts)
@@ -148,10 +150,10 @@ class RulesCache:
     def get_rules(self, instrument: str) -> Dict[str, Any]:
         """
         Get rules for instrument, loading if not cached.
-        
+
         Args:
             instrument: Name of the instrument.
-            
+
         Returns:
             Dictionary of rules for the instrument.
         """
@@ -162,7 +164,7 @@ class RulesCache:
     def load_multiple(self, instruments: List[str]) -> None:
         """
         Load rules for multiple instruments into cache.
-        
+
         Args:
             instruments: List of instrument names to load.
         """
@@ -176,7 +178,7 @@ class RulesCache:
     def get_cache_dict(self) -> Dict[str, Dict[str, Any]]:
         """
         Get the underlying cache dictionary.
-        
+
         Returns:
             The complete cache dictionary.
         """
@@ -186,7 +188,7 @@ class RulesCache:
 def load_rules_for_instruments(instrument_list: List[str]) -> Dict[str, Dict[str, Any]]:
     """
     Load rules for multiple instruments using cache.
-    
+
     Args:
         instrument_list: A list of instrument names.
 
@@ -206,7 +208,7 @@ def load_rules_for_instruments(instrument_list: List[str]) -> Dict[str, Dict[str
 def load_json_rules_for_instrument_legacy(instrument_name: str) -> Dict[str, Any]:
     """
     DEPRECATED: Use load_json_rules_for_instrument() instead.
-    
+
     Legacy function maintained for backward compatibility during refactoring.
     """
     import warnings

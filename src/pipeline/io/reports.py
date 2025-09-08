@@ -32,19 +32,19 @@ class ReportMetadata:
 class ReportFactory:
     """
     Unified factory class for generating all types of pipeline reports.
-    
+
     Consolidates the functionality from:
     - export_results_to_csv()
     - generate_aggregate_error_count_report()
     - generate_tool_status_reports()
-    
+
     Provides consistent naming, formatting, and configuration management.
     """
 
     def __init__(self, processing_context: ProcessingContext):
         """
         Initialize report factory.
-        
+
         Args:
             processing_context: Context object with data and configuration
         """
@@ -58,11 +58,11 @@ class ReportFactory:
     ) -> Optional[Path]:
         """
         Generate primary error dataset report.
-        
+
         Args:
             df_errors: DataFrame containing all validation errors
             export_config: Export configuration
-            
+
         Returns:
             Path to generated error report file or None if no errors
         """
@@ -71,7 +71,9 @@ class ReportFactory:
             return None
 
         # Create standardized filename
-        filename = f"Final_Error_Dataset_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Final_Error_Dataset_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Errors" / filename
 
         # Ensure directory exists
@@ -100,14 +102,16 @@ class ReportFactory:
     ) -> Optional[Path]:
         """
         Generate Event Completeness Screening log report.
-        
+
         Format: ptid, redcap_event_name, instrument_name, target_variable, completeness_status, processing_status, pass_fail, error
         """
         if df_logs.empty:
             logger.info("No validation logs found - skipping logs report")
             return None
 
-        filename = f"Log_EventCompletenessScreening_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Log_EventCompletenessScreening_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Validation_Logs" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,7 +136,7 @@ class ReportFactory:
     ) -> Optional[Path]:
         """
         Generate passed validations report with detailed rule information.
-        
+
         Format: ptid, variable, current_value, json_rule, rule_file, redcap_event_name, instrument_name
         """
         if not export_config.include_passed:
@@ -143,7 +147,9 @@ class ReportFactory:
             logger.info("No passed validations found - skipping passed report")
             return None
 
-        filename = f"Log_PassedValidations_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Log_PassedValidations_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Validation_Logs" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -158,7 +164,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated passed validations: {filename} ({len(df_passed)} entries)")
+        logger.info(
+            f"Generated passed validations: {filename} ({
+                len(df_passed)} entries)")
         return output_path
 
     def generate_aggregate_error_report(
@@ -170,7 +178,7 @@ class ReportFactory:
     ) -> Path:
         """
         Generate aggregate error count report per subject/event with error counts per instrument.
-        
+
         Format: ptid, redcap_event_name, [instrument columns with error counts], total_error_count
         """
         # Get all instruments from config
@@ -178,7 +186,8 @@ class ReportFactory:
         instruments = get_instruments()
 
         # Get unique participants and events (remove duplicates from all_records_df)
-        unique_records = all_records_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
+        unique_records = all_records_df[[
+            report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
 
         # Initialize result with unique participants and events
         result_df = unique_records.copy()
@@ -209,10 +218,13 @@ class ReportFactory:
         result_df['total_error_count'] = result_df[instrument_cols].sum(axis=1)
 
         # Sort by ptid and event
-        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        result_df = result_df.sort_values(
+            [report_config.primary_key_field, 'redcap_event_name'])
 
         # Export
-        filename = f"QC_Report_ErrorCount_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"QC_Report_ErrorCount_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Reports" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -227,7 +239,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated aggregate error report: {filename} ({len(result_df)} records)")
+        logger.info(
+            f"Generated aggregate error report: {filename} ({
+                len(result_df)} records)")
         return output_path
 
     def generate_status_report(
@@ -241,14 +255,15 @@ class ReportFactory:
     ) -> Path:
         """
         Generate QC Status Report with Pass/Fail status per instrument per participant.
-        
+
         Format: ptid, redcap_event_name, [instrument Pass/Fail columns], qc_status_complete, qc_run_by, qc_last_run, qc_status, quality_control_check_complete
         """
         from ..config_manager import get_instruments
         instruments = get_instruments()
 
         # Get unique participants and events (remove duplicates from all_records_df)
-        unique_records = all_records_df[[report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
+        unique_records = all_records_df[[
+            report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
 
         # Initialize result with unique participants and events
         result_df = unique_records.copy()
@@ -294,11 +309,14 @@ class ReportFactory:
         result_df['quality_control_check_complete'] = 0
 
         # Sort by ptid and event
-        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        result_df = result_df.sort_values(
+            [report_config.primary_key_field, 'redcap_event_name'])
 
         # Export
 
-        filename = f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"QC_Status_Report_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Reports" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -324,25 +342,31 @@ class ReportFactory:
     ) -> Path:
         """
         Generate PTID Completed Visits report.
-        
+
         Format: ptid, redcap_event_name, packet, complete_instruments_count, completion_status
         """
         from ..config_manager import get_instruments
         instruments = get_instruments()
 
-        # Get unique participants, events, and packets (remove duplicates while preserving packet info)
-        unique_records = complete_visits_df[[report_config.primary_key_field, 'redcap_event_name', 'packet']].drop_duplicates()
+        # Get unique participants, events, and packets (remove duplicates while
+        # preserving packet info)
+        unique_records = complete_visits_df[[
+            report_config.primary_key_field, 'redcap_event_name', 'packet']].drop_duplicates()
 
         # Calculate completed instruments count
         result_df = unique_records.copy()
-        result_df['complete_instruments_count'] = len(instruments) - 1  # Exclude quality_control_check
+        result_df['complete_instruments_count'] = len(
+            instruments) - 1  # Exclude quality_control_check
         result_df['completion_status'] = 'All Complete'
 
         # Sort by ptid and event
-        result_df = result_df.sort_values([report_config.primary_key_field, 'redcap_event_name'])
+        result_df = result_df.sort_values(
+            [report_config.primary_key_field, 'redcap_event_name'])
 
         # Export
-        filename = f"PTID_CompletedVisits_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"PTID_CompletedVisits_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Completed_Visits" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -357,7 +381,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated PTID completed visits report: {filename} ({len(result_df)} records)")
+        logger.info(
+            f"Generated PTID completed visits report: {filename} ({
+                len(result_df)} records)")
         return output_path
 
     def generate_rules_validation_log(
@@ -368,7 +394,7 @@ class ReportFactory:
     ) -> Path:
         """
         Generate Rules Validation log with all validation rules that were checked.
-        
+
         Format: ptid, variable, json_rule, json_rule_path, redcap_event_name, instrument_name
         """
         # This would need to be populated during validation - for now create a basic structure
@@ -392,7 +418,8 @@ class ReportFactory:
                 try:
                     rules = load_json_rules_for_instrument(instrument)
                     # Get the full rules path based on packet type
-                    rules_path = config.get_rules_path_for_packet(packet_value) if packet_value != 'unknown' else config.json_rules_path_i
+                    rules_path = config.get_rules_path_for_packet(
+                        packet_value) if packet_value != 'unknown' else config.json_rules_path_i
 
                     for variable, rule_data in rules.items():
                         records.append({
@@ -404,13 +431,16 @@ class ReportFactory:
                             'instrument_name': instrument
                         })
                 except Exception as e:
-                    logger.warning(f"Could not load rules for instrument {instrument}: {e}")
+                    logger.warning(
+                        f"Could not load rules for instrument {instrument}: {e}")
                     continue
 
         result_df = pd.DataFrame(records)
 
         # Export
-        filename = f"Log_RulesValidation_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Log_RulesValidation_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Validation_Logs" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -425,7 +455,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated rules validation log: {filename} ({len(result_df)} records)")
+        logger.info(
+            f"Generated rules validation log: {filename} ({
+                len(result_df)} records)")
         return output_path
 
     def generate_json_status_report(
@@ -477,10 +509,12 @@ class ReportFactory:
         if config.upload_ready_path:
             upload_dir = Path(config.upload_ready_path)
             upload_dir.mkdir(parents=True, exist_ok=True)
-            output_path = upload_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+            output_path = upload_dir / \
+                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
         else:
             # Fallback to export_config output_dir if no upload path configured
-            output_path = export_config.output_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+            output_path = export_config.output_dir / \
+                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
 
         with open(output_path, 'w') as f:
             json.dump(json_data, f, indent=2)
@@ -504,11 +538,11 @@ class ReportFactory:
     ) -> Optional[Path]:
         """
         Generate Data_Fetched report containing all fetched records.
-        
+
         Args:
             all_records_df: DataFrame containing all fetched records
             export_config: Export configuration
-            
+
         Returns:
             Path to generated Data_Fetched report file or None if no data
         """
@@ -536,7 +570,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated Data_Fetched report: {filename} ({len(all_records_df)} records)")
+        logger.info(
+            f"Generated Data_Fetched report: {filename} ({
+                len(all_records_df)} records)")
         return output_path
 
     def _generate_basic_json_report(
@@ -547,12 +583,12 @@ class ReportFactory:
     ) -> Path:
         """
         Generate basic JSON status report for default run mode.
-        
+
         Args:
             all_records_df: DataFrame containing all fetched records
             df_errors: DataFrame containing validation errors
             export_config: Export configuration
-            
+
         Returns:
             Path to generated JSON report file
         """
@@ -568,24 +604,24 @@ class ReportFactory:
             "summary": {
                 "total_records_fetched": len(all_records_df),
                 "total_validation_errors": len(df_errors),
-                "participants_with_errors": len(df_errors['ptid'].unique()) if not df_errors.empty else 0
-            },
+                "participants_with_errors": len(
+                    df_errors['ptid'].unique()) if not df_errors.empty else 0},
             "files_generated": [
                 "Errors/",
                 "Data_Fetched/",
-                "QC_Status_Report.json"
-            ]
-        }
+                "QC_Status_Report.json"]}
 
         # Get output path
         config = get_config()
         if config.upload_ready_path:
             upload_dir = Path(config.upload_ready_path)
             upload_dir.mkdir(parents=True, exist_ok=True)
-            output_path = upload_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+            output_path = upload_dir / \
+                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
         else:
             # Fallback to export_config output_dir if no upload path configured
-            output_path = export_config.output_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+            output_path = export_config.output_dir / \
+                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
 
         with open(output_path, 'w') as f:
             json.dump(json_data, f, indent=2)
@@ -615,7 +651,7 @@ class ReportFactory:
     ) -> List[Path]:
         """
         Export all reports with consistent naming and structure.
-        
+
         Args:
             df_errors: DataFrame of all validation errors
             df_logs: DataFrame of comprehensive validation logs
@@ -625,7 +661,7 @@ class ReportFactory:
             detailed_validation_logs_df: DataFrame of pre-validation logs
             export_config: Export configuration
             report_config: Report configuration
-            
+
         Returns:
             List of paths to generated report files
         """
@@ -633,20 +669,26 @@ class ReportFactory:
         generated_files = []
 
         # Check if detailed run is enabled
-        detailed_run = getattr(self.context.config, 'detailed_run', False) if self.context.config else False
+        detailed_run = getattr(
+            self.context.config,
+            'detailed_run',
+            False) if self.context.config else False
 
-        # Always generate core outputs: Errors, Data_Fetched (all_records), and Json files
+        # Always generate core outputs: Errors, Data_Fetched (all_records), and
+        # Json files
         error_path = self.generate_error_report(df_errors, export_config)
         if error_path:
             generated_files.append(error_path)
 
         # Generate Data_Fetched report (this is the all_records_df data)
-        data_fetched_path = self._generate_data_fetched_report(all_records_df, export_config)
+        data_fetched_path = self._generate_data_fetched_report(
+            all_records_df, export_config)
         if data_fetched_path:
             generated_files.append(data_fetched_path)
 
         # Always generate basic JSON status report
-        json_path = self._generate_basic_json_report(all_records_df, df_errors, export_config)
+        json_path = self._generate_basic_json_report(
+            all_records_df, df_errors, export_config)
         generated_files.append(json_path)
 
         # Only generate detailed outputs if detailed_run flag is set
@@ -657,7 +699,8 @@ class ReportFactory:
             if logs_path:
                 generated_files.append(logs_path)
 
-            passed_path = self.generate_passed_validations_report(df_passed, export_config)
+            passed_path = self.generate_passed_validations_report(
+                df_passed, export_config)
             if passed_path:
                 generated_files.append(passed_path)
 
@@ -679,24 +722,32 @@ class ReportFactory:
             generated_files.append(ptid_path)
 
             # Generate Rules Validation log (only if passed_rules flag is enabled)
-            passed_rules_enabled = getattr(self.context.config, 'passed_rules', False) if self.context.config else False
+            passed_rules_enabled = getattr(
+                self.context.config,
+                'passed_rules',
+                False) if self.context.config else False
             if passed_rules_enabled:
-                logger.info("Passed rules flag enabled - generating comprehensive Rules Validation log...")
+                logger.info(
+                    "Passed rules flag enabled - generating comprehensive Rules Validation log...")
                 rules_log_path = self.generate_rules_validation_log(
                     all_records_df, export_config, report_config
                 )
                 generated_files.append(rules_log_path)
             else:
-                logger.info("Passed rules flag disabled - skipping Rules Validation log (use --passed-rules/-ps to generate)")
+                logger.info(
+                    "Passed rules flag disabled - skipping Rules Validation log (use --passed-rules/-ps to generate)")
 
-            # Generate detailed JSON status report (requires status report to be created first)
-            detailed_json_path = self.generate_json_status_report(status_path, export_config)
+            # Generate detailed JSON status report (requires status report to be
+            # created first)
+            detailed_json_path = self.generate_json_status_report(
+                status_path, export_config)
             generated_files.append(detailed_json_path)
 
             # Create detailed generation summary report
             self._create_generation_summary(export_config)
         else:
-            logger.info("Standard run mode - generating core outputs only (Errors, Data_Fetched, Json)")
+            logger.info(
+                "Standard run mode - generating core outputs only (Errors, Data_Fetched, Json)")
 
         logger.info(f"Report generation complete: {len(generated_files)} files created")
         return generated_files
@@ -714,7 +765,9 @@ class ReportFactory:
             for report in self._generated_reports
         ])
 
-        filename = f"Generation_Summary_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Generation_Summary_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / filename
 
         summary_df.to_csv(output_path, index=False)
@@ -754,7 +807,7 @@ def create_legacy_export_results_to_csv(
 ) -> List[Path]:
     """
     Legacy compatibility wrapper for export_results_to_csv.
-    
+
     This function maintains the old interface while using the new ReportFactory.
     """
     export_config = ExportConfiguration(

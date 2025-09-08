@@ -13,9 +13,11 @@ The improved pipeline operates in clear stages:
 5. **Report Generation**: Generate all reports with unified interface
 
 MAIN ENTRY POINTS:
-- `run_improved_report_pipeline()` - NEW: Structured pipeline with result objects (RECOMMENDED)
+- `run_improved_report_pipeline()` - NEW: Structured pipeline with result objects
+  (RECOMMENDED)
 - `run_report_pipeline()` - LEGACY: Backward compatible interface
-- `process_instruments_etl()` - LEGACY: ETL-style interface for backward compatibility
+- `process_instruments_etl()` - LEGACY: ETL-style interface for backward
+  compatibility
 - `validate_data()` - UTILITY: Data validation for specific datasets
 
 PIPELINE UTILITIES:
@@ -109,7 +111,10 @@ def process_instruments_etl(
     output_path: Optional[Union[str, Path]] = None,
     date_tag: Optional[str] = None,
     time_tag: Optional[str] = None,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> Tuple[
+    pd.DataFrame, pd.DataFrame, pd.DataFrame,
+    pd.DataFrame, pd.DataFrame, pd.DataFrame
+]:
     """
     LEGACY: ETL-optimized processing of instruments.
 
@@ -179,7 +184,9 @@ def run_report_pipeline(config: QCConfig):
             result = run_improved_report_pipeline(config)
 
             if not result.success:
-                raise RuntimeError(f"Pipeline execution failed: {result.pipeline_error}")
+                raise RuntimeError(
+                    f"Pipeline execution failed: {
+                        result.pipeline_error}")
 
         # Log success with metrics in production format
         logger.info(f"Data retrieved: {result.data_fetch.records_processed:,} records")
@@ -189,7 +196,9 @@ def run_report_pipeline(config: QCConfig):
         logger.info(f"Rules loaded: {rules_count} rule sets for 3 packets")
 
         # Log validation completion
-        logger.info(f"Validation complete: {result.data_fetch.records_processed:,} records processed")
+        logger.info(
+            f"Validation complete: {
+                result.data_fetch.records_processed:,} records processed")
 
         # Extract output directory information
         output_name = result.output_directory.name
@@ -282,7 +291,8 @@ class _SchemaAndRulesCache:
                         from pipeline.utils.instrument_mapping import (
                             load_dynamic_rules_for_instrument,
                         )
-                        dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
+                        dynamic_rules = load_dynamic_rules_for_instrument(
+                            instrument_name)
                         rules = dynamic_rules.get(variant, {})
                     else:
                         from pipeline.utils.instrument_mapping import (
@@ -290,7 +300,8 @@ class _SchemaAndRulesCache:
                         )
                         rules = load_json_rules_for_instrument(instrument_name)
 
-                    # Build schema without temporal rules since no datastore is available
+                    # Build schema without temporal rules since no datastore is
+                    # available
                     schema = build_cerberus_schema_for_instrument(
                         instrument_name,
                         include_temporal_rules=False
@@ -340,30 +351,37 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
 
             # Get schema and rules from cache - handle dynamic instruments properly
             if is_dynamic_rule_instrument(instrument_name):
-                # For dynamic instruments, we need to get the discriminant variable value
+                # For dynamic instruments, we need to get the discriminant variable
+                # value
                 discriminant_var = get_discriminant_variable(instrument_name)
                 discriminant_value = record_dict.get(discriminant_var, '')
 
                 # Get the cached schema structure (which contains variants)
-                schema_variants, rules = self._get_cached_schema_and_rules(instrument_name)
+                schema_variants, rules = self._get_cached_schema_and_rules(
+                    instrument_name)
 
                 # Select the appropriate schema variant
                 if discriminant_value in schema_variants:
                     schema = schema_variants[discriminant_value]
                 else:
-                    # Fallback to first available variant if discriminant value not found
+                    # Fallback to first available variant if discriminant value not
+                    # found
                     available_variants = list(schema_variants.keys())
                     if available_variants:
                         schema = schema_variants[available_variants[0]]
-                        logger.warning(f"Discriminant value '{discriminant_value}' not found for {instrument_name}, using {available_variants[0]}")
+                        logger.warning(
+                            f"Discriminant value '{discriminant_value}' not found for {instrument_name}, using {
+                                available_variants[0]}")
                     else:
                         schema = {}
-                        logger.error(f"No schema variants available for {instrument_name}")
+                        logger.error(
+                            f"No schema variants available for {instrument_name}")
             else:
                 # For standard instruments, get schema directly
                 schema, rules = self._get_cached_schema_and_rules(instrument_name)
 
-            # Create QualityCheck instance without datastore (temporal rules already excluded from schema)
+            # Create QualityCheck instance without datastore (temporal rules already
+            # excluded from schema)
             qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
 
             # Validate record
@@ -401,14 +419,18 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                 })
             else:
-                # Record passed validation - capture detailed information for each validated field
+                # Record passed validation - capture detailed information for each
+                # validated field
                 packet_value = record_dict.get('packet', 'unknown')
                 rule_file = f"{instrument_name}_rules.json"
 
                 # Log detailed passed validations for each field that has rules
                 for field_name, field_value in record_dict.items():
                     # Skip metadata fields
-                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                    if field_name in [
+                        primary_key_field,
+                        'redcap_event_name',
+                            'instrument_name']:
                         continue
 
                     # Get the JSON rule for this field if it exists in validation_rules
@@ -451,7 +473,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         """
         total_records = len(logs)
         error_count = len(errors)
-        success_rate = ((total_records - error_count) / total_records * 100) if total_records > 0 else 0
+        success_rate = ((total_records - error_count) /
+                        total_records * 100) if total_records > 0 else 0
 
         logger.info(f"Validation completed for {instrument_name}")
         logger.info(f"  Records processed: {total_records}")
@@ -527,17 +550,23 @@ def validate_data_with_hierarchical_routing(
     logs = []
     passed_records = []
 
-    logger.debug(f"Starting hierarchical validation for {instrument_name} with {len(data)} records")
+    logger.debug(
+        f"Starting hierarchical validation for {instrument_name} with {
+            len(data)} records")
 
     for index, record in data.iterrows():
         record_dict = record.to_dict()
 
         try:
             # Use hierarchical rule resolution
-            resolved_rules = hierarchical_resolver.resolve_rules(record_dict, instrument_name)
+            resolved_rules = hierarchical_resolver.resolve_rules(
+                record_dict, instrument_name)
 
             if not resolved_rules:
-                logger.warning(f"No rules resolved for {instrument_name}, skipping record {record_dict.get(primary_key_field, 'unknown')}")
+                logger.warning(
+                    f"No rules resolved for {instrument_name}, skipping record {
+                        record_dict.get(
+                            primary_key_field, 'unknown')}")
                 continue
 
             # Build schema from resolved rules
@@ -561,7 +590,8 @@ def validate_data_with_hierarchical_routing(
 
             # Get the rules path for this packet (required in production)
             if packet_value == 'unknown' or not packet_value:
-                raise ValueError(f"Record {pk_value}: Missing or invalid packet value. Packet-based routing requires valid packet field (I, I4, or F)")
+                raise ValueError(
+                    f"Record {pk_value}: Missing or invalid packet value. Packet-based routing requires valid packet field (I, I4, or F)")
             rules_path = config.get_rules_path_for_packet(packet_value)
 
             # Add discriminant info for dynamic instruments
@@ -600,13 +630,17 @@ def validate_data_with_hierarchical_routing(
                     'discriminant': discriminant_info,
                 })
             else:
-                # Record passed validation - capture detailed information for each validated field
+                # Record passed validation - capture detailed information for each
+                # validated field
                 rule_file = f"{instrument_name}_rules.json"
 
                 # Log detailed passed validations for each field that has rules
                 for field_name, field_value in record_dict.items():
                     # Skip metadata fields
-                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                    if field_name in [
+                        primary_key_field,
+                        'redcap_event_name',
+                            'instrument_name']:
                         continue
 
                     # Get the JSON rule for this field if it exists in resolved_rules
@@ -636,7 +670,11 @@ def validate_data_with_hierarchical_routing(
                 })
 
         except Exception as e:
-            logger.error(f"Validation error for record {record_dict.get(primary_key_field, 'unknown')}: {e}")
+            logger.error(
+                f"Validation error for record {
+                    record_dict.get(
+                        primary_key_field,
+                        'unknown')}: {e}")
             pk_value = record_dict.get(primary_key_field, 'unknown')
             packet_value = record_dict.get('packet', 'unknown')
             if packet_value == 'unknown' or not packet_value:
@@ -656,7 +694,10 @@ def validate_data_with_hierarchical_routing(
                 'discriminant': '',
             })
 
-    logger.debug(f"Hierarchical validation completed: {len(errors)} errors, {len(passed_records)} passed")
+    logger.debug(
+        f"Hierarchical validation completed: {
+            len(errors)} errors, {
+            len(passed_records)} passed")
     return errors, logs, passed_records
 
 
@@ -692,17 +733,23 @@ def validate_data_with_packet_routing(
     logs = []
     passed_records = []
 
-    logger.debug(f"Starting packet-based validation for {instrument_name} with {len(data)} records")
+    logger.debug(
+        f"Starting packet-based validation for {instrument_name} with {len(data)} records")
 
     for index, record in data.iterrows():
         record_dict = record.to_dict()
 
         try:
             # Get packet-specific rules
-            packet_rules = packet_router.get_rules_for_record(record_dict, instrument_name)
+            packet_rules = packet_router.get_rules_for_record(
+                record_dict, instrument_name)
 
             if not packet_rules:
-                logger.warning(f"No rules found for {instrument_name}, skipping record {record_dict.get(primary_key_field, 'unknown')}")
+                logger.warning(
+                    f"No rules found for {instrument_name}, skipping record {
+                        record_dict.get(
+                            primary_key_field,
+                            'unknown')}")
                 continue
 
             # Handle dynamic routing for instruments like C2/C2T
@@ -713,9 +760,11 @@ def validate_data_with_packet_routing(
 
                 if discriminant_value in packet_rules:
                     final_rules = packet_rules[discriminant_value]
-                    logger.debug(f"Using dynamic rules for {discriminant_var}={discriminant_value}")
+                    logger.debug(
+                        f"Using dynamic rules for {discriminant_var}={discriminant_value}")
                 else:
-                    logger.debug(f"Dynamic discriminant value '{discriminant_value}' not found, using base rules")
+                    logger.debug(
+                        f"Dynamic discriminant value '{discriminant_value}' not found, using base rules")
 
             # Build schema from rules
             from pipeline.utils.schema_builder import (
@@ -723,14 +772,17 @@ def validate_data_with_packet_routing(
             )
             try:
                 # Try to build schema from rules directly
-                schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
+                schema = build_cerberus_schema_for_instrument(
+                    instrument_name, include_temporal_rules=False)
                 # Update schema with packet-specific rules if different
                 if final_rules != packet_rules:
                     # For dynamic instruments, we need to merge the specific variant rules
-                    # This is a simplified approach - in production, you'd want more sophisticated merging
+                    # This is a simplified approach - in production, you'd want more
+                    # sophisticated merging
                     schema.update(final_rules)
             except Exception as e:
-                logger.warning(f"Failed to build schema for {instrument_name}: {e}, using rules directly")
+                logger.warning(
+                    f"Failed to build schema for {instrument_name}: {e}, using rules directly")
                 schema = final_rules
 
             # Perform validation using existing QualityCheck engine
@@ -774,7 +826,8 @@ def validate_data_with_packet_routing(
                     'packet': packet_value,
                 })
             else:
-                # Record passed validation - capture detailed information for each validated field
+                # Record passed validation - capture detailed information for each
+                # validated field
                 packet_value = record_dict.get('packet', 'unknown')
                 if packet_value == 'unknown' or not packet_value:
                     rules_path = "unknown (missing packet)"
@@ -785,7 +838,10 @@ def validate_data_with_packet_routing(
                 # Log detailed passed validations for each field that has rules
                 for field_name, field_value in record_dict.items():
                     # Skip metadata fields
-                    if field_name in [primary_key_field, 'redcap_event_name', 'instrument_name']:
+                    if field_name in [
+                        primary_key_field,
+                        'redcap_event_name',
+                            'instrument_name']:
                         continue
 
                     # Get the JSON rule for this field if it exists in final_rules
@@ -812,7 +868,11 @@ def validate_data_with_packet_routing(
                 })
 
         except Exception as e:
-            logger.error(f"Error validating record {record_dict.get(primary_key_field, 'unknown')}: {e}")
+            logger.error(
+                f"Error validating record {
+                    record_dict.get(
+                        primary_key_field,
+                        'unknown')}: {e}")
             # Add system error entry
             packet_value = record_dict.get('packet', 'unknown')
             if packet_value == 'unknown' or not packet_value:
@@ -832,10 +892,9 @@ def validate_data_with_packet_routing(
             })
 
     logger.info(f"Packet-based validation complete for {instrument_name}: "
-               f"{len(passed_records)} passed, {len(errors)} errors")
+                f"{len(passed_records)} passed, {len(errors)} errors")
 
     return errors, logs, passed_records
-
 
 
 def _get_schema_and_rules_for_record(
@@ -953,7 +1012,9 @@ def create_pipeline_orchestrator(config: QCConfig) -> PipelineOrchestrator:
     return PipelineOrchestrator(config)
 
 
-def run_pipeline_stage_by_stage(config: QCConfig, stop_after_stage: Optional[str] = None) -> PipelineExecutionResult:
+def run_pipeline_stage_by_stage(
+        config: QCConfig,
+        stop_after_stage: Optional[str] = None) -> PipelineExecutionResult:
     """
     Run pipeline with option to stop after a specific stage (useful for debugging).
 

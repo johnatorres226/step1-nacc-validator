@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 class HierarchicalRuleResolver:
     """
     Resolves rules with packet + dynamic instrument routing.
-    
+
     This class combines the packet-based routing from Phase 1 with the existing
     dynamic instrument routing to provide a comprehensive rule resolution system
     that handles both packet types (I, I4, F) and instrument variants (C2, C2T).
@@ -33,7 +33,7 @@ class HierarchicalRuleResolver:
     def __init__(self, config: Optional[QCConfig] = None):
         """
         Initialize the hierarchical rule resolver.
-        
+
         Args:
             config: Optional QCConfig instance. If not provided, will use get_config()
         """
@@ -43,19 +43,20 @@ class HierarchicalRuleResolver:
         self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("HierarchicalRuleResolver initialized")
 
-    def resolve_rules(self, record: Dict[str, Any], instrument_name: str) -> Dict[str, Any]:
+    def resolve_rules(self, record: Dict[str, Any],
+                      instrument_name: str) -> Dict[str, Any]:
         """
         Resolve rules using both packet and dynamic instrument routing.
-        
+
         This method implements a hierarchical resolution strategy:
         1. First, determine the packet type (I, I4, F) and get packet-specific base rules
         2. Then, if the instrument supports dynamic routing, apply variant-specific rules
         3. Return the most specific rule set applicable to the record
-        
+
         Args:
             record: The data record containing packet and discriminant values
             instrument_name: Name of the instrument to get rules for
-            
+
         Returns:
             Dictionary containing the resolved validation rules
         """
@@ -87,22 +88,24 @@ class HierarchicalRuleResolver:
         # Cache the resolved rules
         self._resolution_cache[cache_key] = resolved_rules
 
-        logger.debug(f"Resolved rules for {instrument_name} in packet {packet}: {type(resolved_rules)}")
+        logger.debug(
+            f"Resolved rules for {instrument_name} in packet {packet}: {
+                type(resolved_rules)}")
         return resolved_rules
 
     def load_all_rules_for_instrument(self, instrument_name: str) -> Dict[str, Any]:
         """
         Load all possible rule variants for an instrument during rules loading phase.
-        
+
         This method is specifically designed for the rules loading stage and:
         1. Loads rules for all packet types (I, I4, F)
         2. For dynamic instruments, loads all variants
         3. Returns a comprehensive rule structure for runtime resolution
         4. Suppresses warnings about missing discriminant variables
-        
+
         Args:
             instrument_name: Name of the instrument to load rules for
-            
+
         Returns:
             Dictionary containing all rule variants organized by packet and variant
         """
@@ -119,9 +122,10 @@ class HierarchicalRuleResolver:
                     if isinstance(base_rules, dict) and base_rules:
                         all_rules[packet] = base_rules
                         logger.debug(
-                            f"Rules loading: Loaded {len(base_rules)} variants for {instrument_name} "
-                            f"in packet {packet}: {list(base_rules.keys())}"
-                        )
+                            f"Rules loading: Loaded {
+                                len(base_rules)} variants for {instrument_name} " f"in packet {packet}: {
+                                list(
+                                    base_rules.keys())}")
                     else:
                         all_rules[packet] = base_rules
                 else:
@@ -129,14 +133,16 @@ class HierarchicalRuleResolver:
                     all_rules[packet] = base_rules
 
             except Exception as e:
-                logger.debug(f"Could not load rules for {instrument_name} in packet {packet}: {e}")
+                logger.debug(
+                    f"Could not load rules for {instrument_name} in packet {packet}: {e}")
                 continue
 
         # Return the most comprehensive rule set found
         # Priority: I4 > I > F (or return the first available)
         for packet in ['I4', 'I', 'F']:
             if packet in all_rules and all_rules[packet]:
-                logger.debug(f"Rules loading complete for {instrument_name}, using packet {packet} as template")
+                logger.debug(
+                    f"Rules loading complete for {instrument_name}, using packet {packet} as template")
                 return all_rules[packet]
 
         logger.warning(f"No rules found for instrument {instrument_name} in any packet")
@@ -145,14 +151,14 @@ class HierarchicalRuleResolver:
     def get_packet_rules(self, packet: str, instrument_name: str) -> Dict[str, Any]:
         """
         Get packet-specific base rules.
-        
+
         This method delegates to the PacketRuleRouter from Phase 1 to get
         the appropriate rule set for the given packet type.
-        
+
         Args:
             packet: Packet type (I, I4, F)
             instrument_name: Name of the instrument
-            
+
         Returns:
             Dictionary containing packet-specific rules
         """
@@ -170,14 +176,14 @@ class HierarchicalRuleResolver:
     ) -> Dict[str, Any]:
         """
         Apply dynamic instrument routing to base rules.
-        
+
         Args:
             base_rules: Base rules from packet routing
             record: Data record containing discriminant values
             instrument_name: Name of the instrument
             packet: Packet type for logging purposes
             is_rules_loading: Flag indicating if this is called during rules loading phase
-            
+
         Returns:
             Dictionary containing variant-specific rules
         """
@@ -202,9 +208,13 @@ class HierarchicalRuleResolver:
             # When discriminant is missing, use the first available variant as default
             if isinstance(base_rules, dict) and base_rules:
                 default_variant = list(base_rules.keys())[0]
-                logger.info(f"Using default variant '{default_variant}' for {instrument_name}")
+                logger.info(
+                    f"Using default variant '{default_variant}' for {instrument_name}")
                 logger.debug(f"base_rules keys: {list(base_rules.keys())}")
-                logger.debug(f"Returning rules for variant '{default_variant}': {type(base_rules[default_variant])}")
+                logger.debug(
+                    f"Returning rules for variant '{default_variant}': {
+                        type(
+                            base_rules[default_variant])}")
                 return base_rules[default_variant]
             return base_rules
 
@@ -226,7 +236,7 @@ class HierarchicalRuleResolver:
     def get_cache_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics for monitoring and optimization.
-        
+
         Returns:
             Dictionary containing cache performance metrics
         """
@@ -240,7 +250,7 @@ class HierarchicalRuleResolver:
     def clear_cache(self) -> None:
         """
         Clear all cached rules for memory management.
-        
+
         This method clears both the hierarchical cache and the underlying
         packet router cache.
         """
@@ -251,15 +261,17 @@ class HierarchicalRuleResolver:
     def preload_rules_for_packet(self, packet: str, instrument_names: list) -> None:
         """
         Preload rules for a specific packet and list of instruments.
-        
+
         This method can be used to warm up the cache for better performance
         when processing large batches of data.
-        
+
         Args:
             packet: Packet type to preload (I, I4, F)
             instrument_names: List of instrument names to preload
         """
-        logger.info(f"Preloading rules for packet {packet} and {len(instrument_names)} instruments")
+        logger.info(
+            f"Preloading rules for packet {packet} and {
+                len(instrument_names)} instruments")
 
         for instrument_name in instrument_names:
             try:
