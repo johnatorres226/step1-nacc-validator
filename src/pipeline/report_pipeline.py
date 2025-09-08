@@ -133,7 +133,8 @@ def process_instruments_etl(
     """
     logger.warning(
         "process_instruments_etl() is using the legacy interface. "
-        "Consider using PipelineOrchestrator directly for better structure."
+        "Consider using PipelineOrchestrator directly for better "
+        "structure."
     )
 
     try:
@@ -591,7 +592,10 @@ def validate_data_with_hierarchical_routing(
             # Get the rules path for this packet (required in production)
             if packet_value == 'unknown' or not packet_value:
                 raise ValueError(
-                    f"Record {pk_value}: Missing or invalid packet value. Packet-based routing requires valid packet field (I, I4, or F)")
+                    f"Record {pk_value}: Missing or invalid packet value. "
+                    f"Packet-based routing requires valid packet field "
+                    f"(I, I4, or F)"
+                )
             rules_path = config.get_rules_path_for_packet(packet_value)
 
             # Add discriminant info for dynamic instruments
@@ -624,7 +628,10 @@ def validate_data_with_hierarchical_routing(
                     primary_key_field: pk_value,
                     'instrument_name': instrument_name,
                     'validation_status': 'FAILED',
-                    'error_count': len([err for field_errors in validation_result.errors.values() for err in field_errors]),
+                    'error_count': len([
+                        err for field_errors in validation_result.errors.values()
+                        for err in field_errors
+                    ]),
                     'redcap_event_name': record_dict.get('redcap_event_name', ''),
                     'packet': packet_value,
                     'discriminant': discriminant_info,

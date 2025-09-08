@@ -256,7 +256,9 @@ class ReportFactory:
         """
         Generate QC Status Report with Pass/Fail status per instrument per participant.
 
-        Format: ptid, redcap_event_name, [instrument Pass/Fail columns], qc_status_complete, qc_run_by, qc_last_run, qc_status, quality_control_check_complete
+        Format: ptid, redcap_event_name, [instrument Pass/Fail columns], 
+        qc_status_complete, qc_run_by, qc_last_run, qc_status, 
+        quality_control_check_complete
         """
         from ..config_manager import get_instruments
         instruments = get_instruments()

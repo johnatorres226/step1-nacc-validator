@@ -539,7 +539,10 @@ class QCConfig:
         path = packet_paths.get(packet.upper())
         if not path:
             raise ValueError(
-                f"No rules path configured for packet '{packet}'. Required environment variables: JSON_RULES_PATH_I, JSON_RULES_PATH_I4, JSON_RULES_PATH_F")
+                f"No rules path configured for packet '{packet}'. "
+                f"Required environment variables: JSON_RULES_PATH_I, "
+                f"JSON_RULES_PATH_I4, JSON_RULES_PATH_F"
+            )
         return path
 
     def validate(self) -> List[str]:
