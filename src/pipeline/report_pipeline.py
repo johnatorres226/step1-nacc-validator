@@ -95,9 +95,9 @@ def operation_context(operation_name: str, details: str = ""):
     try:
         yield
         duration = time.time() - start_time
-        logger.info(f"✅ {operation_name.title()} complete ({duration:.1f}s)")
+        logger.info(f"{operation_name.title()} complete ({duration:.1f}s)")
     except Exception as e:
-        logger.error(f"❌ {operation_name.title()} failed: {e}")
+        logger.error(f"{operation_name.title()} failed: {e}")
         raise
 
 

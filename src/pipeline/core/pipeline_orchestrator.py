@@ -68,43 +68,41 @@ class PipelineOrchestrator:
         # Create output directory
         output_dir = self._create_output_directory(output_path, date_tag, time_tag)
         
-        self.logger.info("="*80)
-        self.logger.info("STARTING IMPROVED QC PIPELINE")
-        self.logger.info("="*80)
+        self.logger.info("Starting QC pipeline")
         self.logger.info(f"Configuration: {len(self.config.instruments)} instruments, mode: {self.config.mode}")
         self.logger.info(f"Output directory: {output_dir}")
         
         try:
             # Stage 1: Data Fetching
-            self.logger.info("STAGE 1: Data Fetching")
+            self.logger.info("Stage 1: Data Fetching")
             data_fetch_result = self._execute_data_fetch_stage(output_dir, date_tag, time_tag)
-            self.logger.info(f"✅ Data fetch completed: {data_fetch_result.records_processed} records in {data_fetch_result.execution_time:.2f}s")
+            self.logger.info(f"Data fetch completed: {data_fetch_result.records_processed} records in {data_fetch_result.execution_time:.2f}s")
             
             # Stage 2: Rules Loading
-            self.logger.info("STAGE 2: Rules Loading")
+            self.logger.info("Stage 2: Rules Loading")
             rules_loading_result = self._execute_rules_loading_stage()
-            self.logger.info(f"✅ Rules loading completed: {rules_loading_result.loaded_instruments_count}/{len(self.config.instruments)} instruments in {rules_loading_result.loading_time:.2f}s")
+            self.logger.info(f"Rules loading completed: {rules_loading_result.loaded_instruments_count}/{len(self.config.instruments)} instruments in {rules_loading_result.loading_time:.2f}s")
             
             # Stage 3: Data Preparation
-            self.logger.info("STAGE 3: Data Preparation")
+            self.logger.info("Stage 3: Data Preparation")
             data_prep_result = self._execute_data_preparation_stage(
                 data_fetch_result, rules_loading_result
             )
-            self.logger.info(f"✅ Data preparation completed: {data_prep_result.total_records_prepared} records prepared in {data_prep_result.preparation_time:.2f}s")
+            self.logger.info(f"Data preparation completed: {data_prep_result.total_records_prepared} records prepared in {data_prep_result.preparation_time:.2f}s")
             
             # Stage 4: Validation
-            self.logger.info("STAGE 4: Validation Processing")
+            self.logger.info("Stage 4: Validation Processing")
             validation_result = self._execute_validation_stage(
                 data_prep_result, rules_loading_result
             )
-            self.logger.info(f"✅ Validation completed: {validation_result.total_errors} errors found in {validation_result.validation_time:.2f}s")
+            self.logger.info(f"Validation completed: {validation_result.total_errors} errors found in {validation_result.validation_time:.2f}s")
             
             # Stage 5: Report Generation
-            self.logger.info("STAGE 5: Report Generation")
+            self.logger.info("Stage 5: Report Generation")
             report_result = self._execute_report_generation_stage(
                 validation_result, data_prep_result, output_dir, date_tag, time_tag
             )
-            self.logger.info(f"✅ Report generation completed: {report_result.total_files_created} files created in {report_result.export_time:.2f}s")
+            self.logger.info(f"Report generation completed: {report_result.total_files_created} files created in {report_result.export_time:.2f}s")
             
             # Create final result
             total_time = time.time() - self.start_time
@@ -121,11 +119,9 @@ class PipelineOrchestrator:
                 success=True
             )
             
-            self.logger.info("="*80)
-            self.logger.info("PIPELINE EXECUTION COMPLETED SUCCESSFULLY")
+            self.logger.info("Pipeline execution completed successfully")
             self.logger.info(f"Total execution time: {total_time:.2f}s")
             self.logger.info(f"Output directory: {output_dir}")
-            self.logger.info("="*80)
             
             return result
             
@@ -136,11 +132,9 @@ class PipelineOrchestrator:
             # Create failed result with whatever stages completed
             failed_result = self._create_failed_result(e, total_time, output_dir)
             
-            self.logger.error("="*80)
-            self.logger.error("PIPELINE EXECUTION FAILED")
+            self.logger.error("Pipeline execution failed")
             self.logger.error(f"Error: {e}")
             self.logger.error(f"Execution time: {total_time:.2f}s")
-            self.logger.error("="*80)
             
             return failed_result
     
@@ -223,14 +217,8 @@ class PipelineOrchestrator:
             
             for instrument in self.config.instruments:
                 try:
-                    # For each instrument, we need to get rules for all packet types
-                    # Use hierarchical resolver to handle both packet and dynamic routing
-                    instrument_rules = {}
-                    
-                    # Create a sample record to determine packet routing (this is a placeholder approach)
-                    # In production, packet detection would be done per-record during validation
-                    sample_record = {"packet": "I"}  # Default to I packet for rule loading
-                    instrument_rules = hierarchical_resolver.resolve_rules(sample_record, instrument)
+                    # Use the new rules loading method that handles dynamic instruments properly
+                    instrument_rules = hierarchical_resolver.load_all_rules_for_instrument(instrument)
                     
                     if instrument_rules:
                         rules_cache[instrument] = instrument_rules

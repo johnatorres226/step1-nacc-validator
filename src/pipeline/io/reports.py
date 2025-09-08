@@ -492,6 +492,110 @@ class ReportFactory:
         logger.info(f"Generated JSON status report: {output_path}")
         return output_path
     
+    def _generate_data_fetched_report(
+        self,
+        all_records_df: pd.DataFrame,
+        export_config: ExportConfiguration
+    ) -> Optional[Path]:
+        """
+        Generate Data_Fetched report containing all fetched records.
+        
+        Args:
+            all_records_df: DataFrame containing all fetched records
+            export_config: Export configuration
+            
+        Returns:
+            Path to generated Data_Fetched report file or None if no data
+        """
+        if all_records_df.empty:
+            logger.info("No fetched data found - skipping Data_Fetched report")
+            return None
+        
+        # Create standardized filename
+        filename = f"Data_Fetched_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / "Data_Fetched" / filename
+        
+        # Ensure directory exists
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Export with consistent formatting
+        all_records_df.to_csv(output_path, index=False)
+        
+        # Track metadata
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+        self._generated_reports.append(ReportMetadata(
+            report_type="data_fetched",
+            filename=filename,
+            rows_exported=len(all_records_df),
+            file_size_mb=file_size_mb,
+            export_timestamp=datetime.now()
+        ))
+        
+        logger.info(f"Generated Data_Fetched report: {filename} ({len(all_records_df)} records)")
+        return output_path
+    
+    def _generate_basic_json_report(
+        self,
+        all_records_df: pd.DataFrame,
+        df_errors: pd.DataFrame,
+        export_config: ExportConfiguration
+    ) -> Path:
+        """
+        Generate basic JSON status report for default run mode.
+        
+        Args:
+            all_records_df: DataFrame containing all fetched records
+            df_errors: DataFrame containing validation errors
+            export_config: Export configuration
+            
+        Returns:
+            Path to generated JSON report file
+        """
+        import json
+        from ..config_manager import get_config
+        
+        # Create basic JSON structure
+        json_data = {
+            "report_type": "basic_qc_status",
+            "generation_timestamp": datetime.now().isoformat(),
+            "run_mode": "standard",
+            "summary": {
+                "total_records_fetched": len(all_records_df),
+                "total_validation_errors": len(df_errors),
+                "participants_with_errors": len(df_errors['ptid'].unique()) if not df_errors.empty else 0
+            },
+            "files_generated": [
+                "Errors/",
+                "Data_Fetched/",
+                "QC_Status_Report.json"
+            ]
+        }
+        
+        # Get output path
+        config = get_config()
+        if config.upload_ready_path:
+            upload_dir = Path(config.upload_ready_path)
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            output_path = upload_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+        else:
+            # Fallback to export_config output_dir if no upload path configured
+            output_path = export_config.output_dir / f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+        
+        with open(output_path, 'w') as f:
+            json.dump(json_data, f, indent=2)
+        
+        file_size_mb = output_path.stat().st_size / (1024 * 1024)
+        self._generated_reports.append(ReportMetadata(
+            report_type="basic_json_status",
+            filename=output_path.name,
+            rows_exported=0,  # Not applicable for summary report
+            file_size_mb=file_size_mb,
+            export_timestamp=datetime.now()
+        ))
+        
+        logger.info(f"Generated basic JSON status report: {output_path.name}")
+        return output_path
+    
     def export_all_reports(
         self,
         df_errors: pd.DataFrame,
@@ -522,48 +626,71 @@ class ReportFactory:
         logger.info("Starting unified report generation...")
         generated_files = []
         
-        # Generate all report types
+        # Check if detailed run is enabled
+        detailed_run = getattr(self.context.config, 'detailed_run', False) if self.context.config else False
+        
+        # Always generate core outputs: Errors, Data_Fetched (all_records), and Json files
         error_path = self.generate_error_report(df_errors, export_config)
         if error_path:
             generated_files.append(error_path)
         
-        logs_path = self.generate_validation_logs_report(df_logs, export_config)
-        if logs_path:
-            generated_files.append(logs_path)
+        # Generate Data_Fetched report (this is the all_records_df data)
+        data_fetched_path = self._generate_data_fetched_report(all_records_df, export_config)
+        if data_fetched_path:
+            generated_files.append(data_fetched_path)
         
-        passed_path = self.generate_passed_validations_report(df_passed, export_config)
-        if passed_path:
-            generated_files.append(passed_path)
-        
-        aggregate_path = self.generate_aggregate_error_report(
-            df_errors, all_records_df, export_config, report_config
-        )
-        generated_files.append(aggregate_path)
-        
-        status_path = self.generate_status_report(
-            all_records_df, complete_visits_df, detailed_validation_logs_df,
-            export_config, report_config, df_errors
-        )
-        generated_files.append(status_path)
-        
-        # Generate PTID Completed Visits report
-        ptid_path = self.generate_ptid_completed_visits_report(
-            complete_visits_df, export_config, report_config
-        )
-        generated_files.append(ptid_path)
-        
-        # Generate Rules Validation log
-        rules_log_path = self.generate_rules_validation_log(
-            all_records_df, export_config, report_config
-        )
-        generated_files.append(rules_log_path)
-        
-        # Generate JSON status report
-        json_path = self.generate_json_status_report(status_path, export_config)
+        # Always generate basic JSON status report
+        json_path = self._generate_basic_json_report(all_records_df, df_errors, export_config)
         generated_files.append(json_path)
         
-        # Create summary report of all generated files
-        self._create_generation_summary(export_config)
+        # Only generate detailed outputs if detailed_run flag is set
+        if detailed_run:
+            logger.info("Detailed run mode enabled - generating additional reports...")
+            
+            logs_path = self.generate_validation_logs_report(df_logs, export_config)
+            if logs_path:
+                generated_files.append(logs_path)
+            
+            passed_path = self.generate_passed_validations_report(df_passed, export_config)
+            if passed_path:
+                generated_files.append(passed_path)
+            
+            aggregate_path = self.generate_aggregate_error_report(
+                df_errors, all_records_df, export_config, report_config
+            )
+            generated_files.append(aggregate_path)
+            
+            status_path = self.generate_status_report(
+                all_records_df, complete_visits_df, detailed_validation_logs_df,
+                export_config, report_config, df_errors
+            )
+            generated_files.append(status_path)
+            
+            # Generate PTID Completed Visits report
+            ptid_path = self.generate_ptid_completed_visits_report(
+                complete_visits_df, export_config, report_config
+            )
+            generated_files.append(ptid_path)
+            
+            # Generate Rules Validation log (only if passed_rules flag is enabled)
+            passed_rules_enabled = getattr(self.context.config, 'passed_rules', False) if self.context.config else False
+            if passed_rules_enabled:
+                logger.info("Passed rules flag enabled - generating comprehensive Rules Validation log...")
+                rules_log_path = self.generate_rules_validation_log(
+                    all_records_df, export_config, report_config
+                )
+                generated_files.append(rules_log_path)
+            else:
+                logger.info("Passed rules flag disabled - skipping Rules Validation log (use --passed-rules/-ps to generate)")
+            
+            # Generate detailed JSON status report (requires status report to be created first)
+            detailed_json_path = self.generate_json_status_report(status_path, export_config)
+            generated_files.append(detailed_json_path)
+            
+            # Create detailed generation summary report
+            self._create_generation_summary(export_config)
+        else:
+            logger.info("Standard run mode - generating core outputs only (Errors, Data_Fetched, Json)")
         
         logger.info(f"Report generation complete: {len(generated_files)} files created")
         return generated_files
