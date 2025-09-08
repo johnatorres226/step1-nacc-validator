@@ -114,11 +114,15 @@ uds_events = [
 """
 Here are the configurations for fetching and filtering data from REDCap.
 
-complete_instruments_vars is a dict. of these elements: {instrument_name}_complete
+complete_instruments_vars is a dict. of these elements:
+{instrument_name}_complete
 
-complete_events_with_incomplete_qc_filter_logic is a string to serve as the REDCap filter logic
-    This filter selects complete events that have NOT been QC'd yet (qc_status_complete = 0 or empty)
-    Format: "([{instrument_name}_complete]=2 and [{instrument_name}_complete]=2 and ...) and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
+complete_events_with_incomplete_qc_filter_logic is a string to serve as the
+REDCap filter logic
+    This filter selects complete events that have NOT been QC'd yet
+    (qc_status_complete = 0 or empty)
+    Format: "([{instrument_name}_complete]=2 and [{instrument_name}_complete]=2
+    and ...) and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
 
 """
 complete_instruments_vars = [f"{inst}_complete" for inst in instruments]

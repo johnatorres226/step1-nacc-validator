@@ -162,7 +162,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
         print(f"{stage_name:<25} {std_time:<12.2f} {det_time:<12.2f} {diff:<12.2f}")
 
     # Report generation breakdown
-    print(f"\n📁 REPORT GENERATION ANALYSIS:")
+    print("\n📁 REPORT GENERATION ANALYSIS:")
     print("-" * 60)
 
     report_gen_overhead = detailed_timings.get(
@@ -173,7 +173,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
                                100:.1f}% of detailed run time")
 
     # File size analysis
-    print(f"\n📈 FILE SIZE ANALYSIS:")
+    print("\n📈 FILE SIZE ANALYSIS:")
     print("-" * 60)
 
     # Core files
@@ -210,7 +210,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print(f"\nTotal additional file size: {total_detailed_size:.2f} MB")
 
     # Performance bottlenecks
-    print(f"\n🎯 PERFORMANCE BOTTLENECKS:")
+    print("\n🎯 PERFORMANCE BOTTLENECKS:")
     print("-" * 60)
 
     if 'Rules_Validation' in detailed_reports:
@@ -219,10 +219,10 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
             f"⚠️  Rules Validation Log: {
                 rules_info['row_count']:,} rows ({
                 rules_info['file_size_mb']:.1f} MB)")
-        print(f"   This is likely the main performance bottleneck in detailed mode")
+        print("   This is likely the main performance bottleneck in detailed mode")
 
     # Recommendations
-    print(f"\n💡 OPTIMIZATION RECOMMENDATIONS:")
+    print("\n💡 OPTIMIZATION RECOMMENDATIONS:")
     print("-" * 60)
     print("1. Consider making Rules Validation Log optional or sampling-based")
     print("2. Implement lazy loading for large detailed reports")

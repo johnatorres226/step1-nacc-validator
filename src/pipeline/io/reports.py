@@ -510,11 +510,15 @@ class ReportFactory:
             upload_dir = Path(config.upload_ready_path)
             upload_dir.mkdir(parents=True, exist_ok=True)
             output_path = upload_dir / \
-                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+                f"QC_Status_Report_{
+                    export_config.date_tag}_{
+                    export_config.time_tag}.json"
         else:
             # Fallback to export_config output_dir if no upload path configured
             output_path = export_config.output_dir / \
-                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+                f"QC_Status_Report_{
+                    export_config.date_tag}_{
+                    export_config.time_tag}.json"
 
         with open(output_path, 'w') as f:
             json.dump(json_data, f, indent=2)
@@ -617,11 +621,15 @@ class ReportFactory:
             upload_dir = Path(config.upload_ready_path)
             upload_dir.mkdir(parents=True, exist_ok=True)
             output_path = upload_dir / \
-                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+                f"QC_Status_Report_{
+                    export_config.date_tag}_{
+                    export_config.time_tag}.json"
         else:
             # Fallback to export_config output_dir if no upload path configured
             output_path = export_config.output_dir / \
-                f"QC_Status_Report_{export_config.date_tag}_{export_config.time_tag}.json"
+                f"QC_Status_Report_{
+                    export_config.date_tag}_{
+                    export_config.time_tag}.json"
 
         with open(output_path, 'w') as f:
             json.dump(json_data, f, indent=2)

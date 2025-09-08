@@ -311,7 +311,8 @@ class PipelineOrchestrator:
                 complete_visits_result = CompleteVisitsResult(
                     summary_dataframe=complete_visits_df,
                     complete_visits_tuples=complete_visits_tuples,
-                    total_visits_processed=len(data_df.groupby([self.config.primary_key_field, 'redcap_event_name'])),
+                    total_visits_processed=len(data_df.groupby(
+                        [self.config.primary_key_field, 'redcap_event_name'])),
                     complete_visits_count=len(complete_visits_df),
                     processing_time=visits_time
                 )
@@ -444,7 +445,10 @@ class PipelineOrchestrator:
             all_records_df = pd.DataFrame()
             if records_for_status:
                 all_records_df = pd.concat(records_for_status, ignore_index=True).drop_duplicates(
-                    subset=[self.config.primary_key_field, "redcap_event_name", "instrument_name"]
+                    subset=[
+                        self.config.primary_key_field,
+                        "redcap_event_name",
+                        "instrument_name"]
                 )
 
             execution_time = time.time() - stage_start

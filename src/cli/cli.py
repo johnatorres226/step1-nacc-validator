@@ -42,28 +42,40 @@ def cli(log_level: str):
     # Suppress the UserWarning from cerberus about the custom 'compatibility' rule
     warnings.filterwarnings(
         "ignore",
-        message="No validation schema is defined for the arguments of rule 'compatibility'")
+        message=(
+            "No validation schema is defined for the arguments of rule "
+            "'compatibility'"))
 
 
 @cli.command()
 @click.option('--detailed', '-d', is_flag=True, help='Show detailed configuration.')
-@click.option('--json-output', is_flag=True, help='Output configuration as JSON.')
+@click.option(
+    '--json-output', is_flag=True, help='Output configuration as JSON.')
 def config(detailed: bool, json_output: bool):
     """Displays the current configuration status and validates settings."""
     try:
         config_instance = get_config(force_reload=True)
         errors = config_instance.validate()
         status = {
-            "valid": not errors, "errors": errors, "redcap_configured": bool(
-                config_instance.api_token and config_instance.api_url), "output_path_exists": Path(
-                config_instance.output_path).exists(), "packet_rules_configured": bool(
-                config_instance.json_rules_path_i and config_instance.json_rules_path_i4 and config_instance.json_rules_path_f), }
+            "valid": not errors,
+            "errors": errors,
+            "redcap_configured": bool(
+                config_instance.api_token and config_instance.api_url),
+            "output_path_exists": Path(config_instance.output_path).exists(),
+            "packet_rules_configured": bool(
+                config_instance.json_rules_path_i and
+                config_instance.json_rules_path_i4 and
+                config_instance.json_rules_path_f),
+        }
     except SystemExit:
         # This happens if get_config fails validation internally
         # In this case, we can assume the config is invalid
         status = {
             "valid": False,
-            "errors": ["Critical configuration error. Run with --detailed for more info."],
+            "errors": [
+                "Critical configuration error. "
+                "Run with --detailed for more info."
+            ],
             "redcap_configured": False,
             "output_path_exists": False,
             "packet_rules_configured": False,
@@ -133,9 +145,12 @@ def config(detailed: bool, json_output: bool):
 @click.option('--log', '-l', is_flag=True,
               help='Show terminal logging during execution.')
 @click.option('--detailed-run', '-dr', is_flag=True,
-              help='Generate detailed outputs including Validation_Logs, Completed_Visits, Reports, and Generation_Summary files.')
+              help=('Generate detailed outputs including Validation_Logs, '
+                    'Completed_Visits, Reports, and Generation_Summary files.'))
 @click.option('--passed-rules', '-ps', is_flag=True,
-              help='Generate comprehensive Rules Validation log for diagnostic purposes (requires --detailed-run/-dr, large file, slow generation).')
+              help=('Generate comprehensive Rules Validation log for '
+                    'diagnostic purposes (requires --detailed-run/-dr, '
+                    'large file, slow generation).'))
 def run(
     mode: str,
     output_dir: str,
@@ -177,7 +192,9 @@ def run(
     try:
         if log:
             # Only show initialization message if logging is enabled
-            with operation_context("initialization", "Setting up QC validation pipeline"):
+            with operation_context(
+                "initialization", "Setting up QC validation pipeline"
+            ):
                 logger.info(f"Running QC pipeline in '{mode}' mode.")
 
                 # Get base configuration
