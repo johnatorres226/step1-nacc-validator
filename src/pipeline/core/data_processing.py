@@ -81,7 +81,8 @@ def extract_variables_from_rules(rules: Dict[str, Any]) -> List[str]:
     return list(rules.keys())
 
 
-def extract_variables_from_dynamic_instrument(instrument_name: str) -> List[str]:
+def extract_variables_from_dynamic_instrument(
+        instrument_name: str) -> List[str]:
     """
     Extract variables from dynamic instrument processor.
 
@@ -121,7 +122,8 @@ def get_variables_for_instrument(
 # TYPE CASTING FUNCTIONS
 # =============================================================================
 
-def detect_column_type(field_name: str, rules: Dict[str, Any]) -> Optional[str]:
+def detect_column_type(
+        field_name: str, rules: Dict[str, Any]) -> Optional[str]:
     """
     Detect the expected type for a column from rules.
 
@@ -275,7 +277,8 @@ def create_instrument_to_variables_map(
                 f"Mapped {
                     len(variables)} variables to instrument '{instrument}'.")
         else:
-            logger.warning(f"No variables found for instrument '{instrument}'.")
+            logger.warning(
+                f"No variables found for instrument '{instrument}'.")
 
     return instrument_variable_map
 
@@ -390,7 +393,8 @@ def prepare_instrument_data_cache(
 
     except Exception as e:
         logger.error(f"Failed to prepare instrument data cache: {e}")
-        raise DataProcessingError(f"Instrument cache preparation failed: {e}") from e
+        raise DataProcessingError(
+            f"Instrument cache preparation failed: {e}") from e
 
 
 # =============================================================================
@@ -408,6 +412,5 @@ def _preprocess_cast_types(
     warnings.warn(
         "_preprocess_cast_types is deprecated. Use preprocess_cast_types() instead.",
         DeprecationWarning,
-        stacklevel=2
-    )
+        stacklevel=2)
     return preprocess_cast_types(df, rules)

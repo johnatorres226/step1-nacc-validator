@@ -221,7 +221,8 @@ class TestInstrumentSpecificRouting:
                 from src.pipeline.config_manager import is_dynamic_rule_instrument
                 result = is_dynamic_rule_instrument(instrument)
                 if expected_dynamic:
-                    assert result == expected_dynamic, f"{instrument} should be dynamic: {expected_dynamic}"
+                    error_msg = f"{instrument} should be dynamic: {expected_dynamic}"
+                    assert result == expected_dynamic, error_msg
             except ImportError:
                 # Function doesn't exist, skip this test
                 pytest.skip("is_dynamic_rule_instrument function not available")

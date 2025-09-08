@@ -80,7 +80,8 @@ def load_json_file(file_path: Path) -> Dict[str, Any]:
         raise RulesLoadingError(f"Cannot read file {file_path}: {e}") from e
 
 
-def merge_rule_dictionaries(rule_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+def merge_rule_dictionaries(
+        rule_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Merge multiple rule dictionaries into one.
 
@@ -133,7 +134,8 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
         return merge_rule_dictionaries(rule_dicts)
 
     except RulesLoadingError as e:
-        logger.error(f"Failed to load rules for instrument {instrument_name}: {e}")
+        logger.error(
+            f"Failed to load rules for instrument {instrument_name}: {e}")
         return {}
 
 
@@ -158,7 +160,8 @@ class RulesCache:
             Dictionary of rules for the instrument.
         """
         if instrument not in self._cache:
-            self._cache[instrument] = load_json_rules_for_instrument(instrument)
+            self._cache[instrument] = load_json_rules_for_instrument(
+                instrument)
         return self._cache[instrument]
 
     def load_multiple(self, instruments: List[str]) -> None:
@@ -185,7 +188,8 @@ class RulesCache:
         return self._cache.copy()
 
 
-def load_rules_for_instruments(instrument_list: List[str]) -> Dict[str, Dict[str, Any]]:
+def load_rules_for_instruments(
+        instrument_list: List[str]) -> Dict[str, Dict[str, Any]]:
     """
     Load rules for multiple instruments using cache.
 
@@ -205,7 +209,8 @@ def load_rules_for_instruments(instrument_list: List[str]) -> Dict[str, Dict[str
 # =============================================================================
 
 # Keep the original function for backward compatibility during transition
-def load_json_rules_for_instrument_legacy(instrument_name: str) -> Dict[str, Any]:
+def load_json_rules_for_instrument_legacy(
+        instrument_name: str) -> Dict[str, Any]:
     """
     DEPRECATED: Use load_json_rules_for_instrument() instead.
 

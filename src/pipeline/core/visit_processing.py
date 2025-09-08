@@ -71,8 +71,10 @@ def ensure_completion_columns_exist(
     for col in completion_cols:
         if col not in df_copy.columns:
             logger.warning(
-                f"Completion column '{col}' not found in data. Assuming instrument is not complete for all records.")
-            df_copy[col] = '0'  # Default to incomplete if the column is missing
+                f"Completion column '{col}' not found in data. "
+                f"Assuming instrument is not complete for all records.")
+            # Default to incomplete if the column is missing
+            df_copy[col] = '0'
 
     return df_copy
 
@@ -92,7 +94,8 @@ def normalize_completion_column_types(
     """
     df_copy = df.copy()
 
-    # Convert all completion columns to string to handle mixed types (e.g., 2.0, '2', 2)
+    # Convert all completion columns to string to handle mixed types (e.g.,
+    # 2.0, '2', 2)
     for col in completion_cols:
         if col in df_copy.columns:
             df_copy[col] = df_copy[col].astype(str)
@@ -100,7 +103,8 @@ def normalize_completion_column_types(
     return df_copy
 
 
-def create_completion_mask(df: pd.DataFrame, completion_cols: List[str]) -> pd.Series:
+def create_completion_mask(df: pd.DataFrame,
+                           completion_cols: List[str]) -> pd.Series:
     """
     Create boolean mask for records with all instruments complete.
 
@@ -111,7 +115,8 @@ def create_completion_mask(df: pd.DataFrame, completion_cols: List[str]) -> pd.S
     Returns:
         Boolean series indicating records with all instruments complete.
     """
-    # Create a boolean mask for completion status (all completion columns must be '2')
+    # Create a boolean mask for completion status (all completion columns must
+    # be '2')
     completion_mask = (df[completion_cols] == '2').all(axis=1)
     return completion_mask
 
@@ -133,7 +138,8 @@ def identify_complete_visits(
     visit_completion = df.groupby([primary_key_field, 'redcap_event_name'])[
         '_temp_all_complete'].all()
 
-    # Get packet information for each visit (take the first packet value for each visit)
+    # Get packet information for each visit (take the first packet value for
+    # each visit)
     visit_packets = df.groupby([primary_key_field, 'redcap_event_name'])[
         'packet'].first()
 
@@ -182,7 +188,9 @@ def create_complete_visits_summary(
     report_df['complete_instruments_count'] = len(completion_cols)
     report_df['completion_status'] = 'All Complete'
 
-    logger.debug(f"ETL identified {len(report_df)} truly complete visits (optimized).")
+    logger.debug(
+        f"ETL identified {
+            len(report_df)} truly complete visits (optimized).")
 
     return report_df
 
@@ -241,20 +249,24 @@ def build_complete_visits_df(
         completion_cols = generate_completion_column_names(instrument_list)
 
         # Step 3: Ensure completion columns exist
-        df_with_cols = ensure_completion_columns_exist(data_df, completion_cols)
+        df_with_cols = ensure_completion_columns_exist(
+            data_df, completion_cols)
 
         # Step 4: Normalize column types
-        df_normalized = normalize_completion_column_types(df_with_cols, completion_cols)
+        df_normalized = normalize_completion_column_types(
+            df_with_cols, completion_cols)
 
         # Step 5: Create completion mask
         primary_key_field = get_config().primary_key_field
-        completion_mask = create_completion_mask(df_normalized, completion_cols)
+        completion_mask = create_completion_mask(
+            df_normalized, completion_cols)
 
         # Add the completion mask as a temporary column for groupby operations
         df_normalized['_temp_all_complete'] = completion_mask
 
         # Step 6: Identify complete visits
-        complete_visits = identify_complete_visits(df_normalized, primary_key_field)
+        complete_visits = identify_complete_visits(
+            df_normalized, primary_key_field)
 
         # Clean up temporary column
         df_normalized.drop('_temp_all_complete', axis=1, inplace=True)
@@ -274,7 +286,8 @@ def build_complete_visits_df(
         raise
     except Exception as e:
         logger.error(f"Failed to build complete visits dataframe: {e}")
-        raise DataProcessingError(f"Complete visits processing failed: {e}") from e
+        raise DataProcessingError(
+            f"Complete visits processing failed: {e}") from e
 
 
 # =============================================================================

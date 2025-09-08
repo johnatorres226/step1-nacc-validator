@@ -107,7 +107,8 @@ def _build_schema_from_raw(
             if cerberus_key:
                 # If a mapping exists, add the rule to the schema
                 cerberus_rules[cerberus_key] = rule_value
-            # Unrecognized keys (e.g., metadata like 'description') are ignored.
+            # Unrecognized keys (e.g., metadata like 'description') are
+            # ignored.
 
         if cerberus_rules:
             schema[var] = cerberus_rules

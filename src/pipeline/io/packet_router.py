@@ -84,8 +84,7 @@ class PacketRuleRouter:
             return self._load_rules_from_path(rules_path, instrument_name)
         except Exception as e:
             raise RuntimeError(
-                f"Failed to load rules for {instrument_name} from {rules_path}: {e}"
-            ) from e
+                f"Failed to load rules for {instrument_name} from {rules_path}: {e}") from e
 
     def _load_rules_from_path(self, rules_path: str,
                               instrument_name: str) -> Dict[str, Any]:
@@ -106,7 +105,8 @@ class PacketRuleRouter:
 
         # Handle dynamic instruments differently - they need nested structure
         if is_dynamic_rule_instrument(instrument_name):
-            return self._load_dynamic_rules_from_path(rules_path, instrument_name)
+            return self._load_dynamic_rules_from_path(
+                rules_path, instrument_name)
 
         # Standard instruments - merge all rule files as before
         rule_files = self.config.get_instrument_json_mapping().get(instrument_name, [])
@@ -127,9 +127,12 @@ class PacketRuleRouter:
                     with file_path.open('r') as f:
                         file_rules = json.load(f)
                         combined_rules.update(file_rules)
-                        logger.debug(f"Loaded {len(file_rules)} rules from {file_path}")
+                        logger.debug(
+                            f"Loaded {
+                                len(file_rules)} rules from {file_path}")
                 except json.JSONDecodeError as e:
-                    logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
+                    logger.error(
+                        f"Invalid JSON in rule file: {file_path} - {e}")
                 except Exception as e:
                     logger.error(f"Error loading rule file: {file_path} - {e}")
             else:
@@ -139,7 +142,8 @@ class PacketRuleRouter:
         # for cross-platform compatibility
         is_f_rules_path = Path(
             rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
-        if rule_files and len(missing_files) == len(rule_files) and is_f_rules_path:
+        if rule_files and len(missing_files) == len(
+                rule_files) and is_f_rules_path:
             if not self._f_rules_warning_logged:
                 logger.warning(
                     "F packet rules are not yet implemented. All F rule files "
@@ -181,7 +185,8 @@ class PacketRuleRouter:
                             f"Loaded {
                                 len(rules)} rules for {variant} from {file_path}")
                 except json.JSONDecodeError as e:
-                    logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
+                    logger.error(
+                        f"Invalid JSON in rule file: {file_path} - {e}")
                 except Exception as e:
                     logger.error(f"Error loading rule file: {file_path} - {e}")
             else:
@@ -201,7 +206,8 @@ class PacketRuleRouter:
                 self._f_rules_warning_logged = True
         else:
             for variant, file_path in missing_variants:
-                logger.warning(f"Rule file not found for {variant}: {file_path}")
+                logger.warning(
+                    f"Rule file not found for {variant}: {file_path}")
 
         logger.debug(
             f"Loaded dynamic rules for {instrument_name}: {
@@ -262,7 +268,8 @@ class PacketRuleRouter:
         logger.info("Cleared packet rule router cache")
 
 
-def create_packet_router(config: Optional[QCConfig] = None) -> PacketRuleRouter:
+def create_packet_router(
+        config: Optional[QCConfig] = None) -> PacketRuleRouter:
     """
     Factory function to create a PacketRuleRouter instance.
 

@@ -81,7 +81,8 @@ class CustomErrorHandler(BasicErrorHandler):
         # Cerberus uses bit 5 and bit 7 to mark specific error types
         # Check https://docs.python-cerberus.org/customize.html for more info
         # Error messages are synced with ErrorDefs using the error code
-        # Error codes are used to map b/w cerberus errors and NACC QC check codes
+        # Error codes are used to map b/w cerberus errors and NACC QC check
+        # codes
         custom_errors = {
             0x1000:
             "cannot be greater than current date {0}",

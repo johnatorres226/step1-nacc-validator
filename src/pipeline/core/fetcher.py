@@ -130,7 +130,8 @@ class RedcapApiClient:
             return data
 
         except requests.exceptions.Timeout:
-            error_msg = f"API request timed out after {self.config.timeout} seconds"
+            error_msg = f"API request timed out after {
+                self.config.timeout} seconds"
             logger.error(error_msg)
             raise RuntimeError(error_msg)
         except requests.exceptions.RequestException as e:
@@ -161,7 +162,8 @@ class DataValidator:
         # Validate required fields
         validation_errors = DataContract.validate_required_fields(df)
         if validation_errors:
-            error_msg = "Data validation failed: " + "; ".join(validation_errors)
+            error_msg = "Data validation failed: " + \
+                "; ".join(validation_errors)
             logger.error(error_msg)
             raise ValueError(error_msg)
 
@@ -177,7 +179,8 @@ class DataValidator:
 
         # Handle missing ptid - this is now an error condition
         if 'ptid' not in df.columns:
-            raise ValueError("Critical error: 'ptid' column missing from REDCap data")
+            raise ValueError(
+                "Critical error: 'ptid' column missing from REDCap data")
 
         # Handle missing redcap_event_name
         if 'redcap_event_name' not in df.columns and not df.empty:
@@ -225,15 +228,16 @@ class DataTransformer:
                         str(row[completion_var]) != '2'):
 
                     # Nullify all variables for incomplete instruments
-                    instrument_vars = instrument_to_vars_map.get(instrument, [])
+                    instrument_vars = instrument_to_vars_map.get(
+                        instrument, [])
                     for var in instrument_vars:
                         if var in transformed_df.columns:
                             transformed_df.at[index, var] = pd.NA
 
-                    logger.debug(
-                        f"Nullified data for incomplete instrument '{instrument}' " f"in record PTID {
-                            row.get(
-                                'ptid', 'N/A')}")
+                logger.debug(
+                    f"Nullified data for incomplete instrument '{instrument}' "
+                    f"in record PTID {row.get('ptid', 'N/A')}"
+                )
 
         logger.info("Instrument subset transformation complete")
         return transformed_df
@@ -247,7 +251,8 @@ class DataTransformer:
     def _apply_ptid_filter(self, data: pd.DataFrame) -> pd.DataFrame:
         """Apply PTID filtering to the data."""
         if 'ptid' not in data.columns:
-            logger.warning("'ptid' column not found, ignoring ptid_list filter")
+            logger.warning(
+                "'ptid' column not found, ignoring ptid_list filter")
             return data
 
         if not self.context.config.ptid_list:
@@ -255,7 +260,8 @@ class DataTransformer:
 
         initial_count = len(data)
         ptid_list_str = [str(p) for p in self.context.config.ptid_list]
-        filtered_data = data[data['ptid'].isin(ptid_list_str)].reset_index(drop=True)
+        filtered_data = data[data['ptid'].isin(
+            ptid_list_str)].reset_index(drop=True)
 
         logger.info(
             f"Applied PTID filtering: {initial_count} → {
@@ -271,10 +277,14 @@ class DataSaver:
         self.context = context
         self.saved_files: List[Path] = []
 
-    def save_etl_output(self, df: pd.DataFrame, filename_prefix: str) -> Optional[Path]:
+    def save_etl_output(
+            self,
+            df: pd.DataFrame,
+            filename_prefix: str) -> Optional[Path]:
         """Save ETL output with consistent naming."""
         if df.empty:
-            logger.warning(f"Empty DataFrame, skipping save for {filename_prefix}")
+            logger.warning(
+                f"Empty DataFrame, skipping save for {filename_prefix}")
             return None
 
         if not self.context.output_path:
@@ -325,7 +335,8 @@ class FilterLogicManager:
 
         elif config.mode == 'custom':
             if config.include_qced:
-                logger.info("Custom mode: Including already QCed data - no filtering")
+                logger.info(
+                    "Custom mode: Including already QCed data - no filtering")
                 return None
             else:
                 logger.info("Custom mode: Using QC status check filter logic")
@@ -401,8 +412,10 @@ class RedcapETLPipeline:
                 saved_files=saved_files
             )
 
-            logger.info(f"ETL pipeline completed: {result.records_processed} records "
-                        f"processed in {execution_time:.2f} seconds")
+            logger.info(
+                f"ETL pipeline completed: {
+                    result.records_processed} records " f"processed in {
+                    execution_time:.2f} seconds")
 
             return result
 
@@ -416,7 +429,8 @@ class RedcapETLPipeline:
                                date_tag: Optional[str],
                                time_tag: Optional[str]) -> None:
         """Initialize ETL components with proper context."""
-        self.context = ETLContext.create(self.config, output_path, date_tag, time_tag)
+        self.context = ETLContext.create(
+            self.config, output_path, date_tag, time_tag)
         self.api_client = RedcapApiClient(self.config)
         self.transformer = DataTransformer(self.context)
         self.saver = DataSaver(self.context)
@@ -485,7 +499,8 @@ class RedcapETLPipeline:
         if filter_logic:
             payload['filterLogic'] = filter_logic
             logger.info(
-                "Applying filter logic (see complete_events_with_incomplete_qc_filter_logic in config_manager.py)")
+                "Applying filter logic (see complete_events_with_incomplete_qc_filter_logic "
+                "in config_manager.py)")
 
         return payload
 

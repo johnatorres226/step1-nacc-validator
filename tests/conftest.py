@@ -393,7 +393,7 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_report_header(config):
     """Add custom header to pytest report."""
+    version = config.getoption('--version') if hasattr(config, 'getoption') else 'Unknown'
     return ["UDSv4 REDCap QC Validator - Essential Test Suite",
             "Testing configuration, fetching, routing, validation, and outputs",
-            f"Python version: {config.getoption('--version') if hasattr(config,
-                                                                        'getoption') else 'Unknown'}"]
+            f"Python version: {version}"]

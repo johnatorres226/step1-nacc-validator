@@ -98,8 +98,10 @@ class DataQualityAnalyzer:
 
             # Calculate coverage
             data_vars = [var for var in rule_vars if var in data_df.columns]
-            missing_vars = [var for var in rule_vars if var not in data_df.columns]
-            coverage_pct = len(data_vars) / len(rule_vars) * 100 if rule_vars else 100.0
+            missing_vars = [
+                var for var in rule_vars if var not in data_df.columns]
+            coverage_pct = len(data_vars) / len(rule_vars) * \
+                100 if rule_vars else 100.0
 
             report = CoverageReport(
                 instrument_name=instrument,
@@ -156,8 +158,8 @@ class DataQualityAnalyzer:
         self._orphaned_columns = orphaned
         return orphaned
 
-    def generate_summary(self,
-                         data_df: Optional[pd.DataFrame] = None) -> QualitySummary:
+    def generate_summary(
+            self, data_df: Optional[pd.DataFrame] = None) -> QualitySummary:
         """
         Generate high-level summary of data quality.
 
@@ -174,8 +176,10 @@ class DataQualityAnalyzer:
         total_instruments = len(self._coverage_reports)
         total_rule_variables = sum(
             r.total_rule_variables for r in self._coverage_reports)
-        matched_variables = sum(r.matched_variables for r in self._coverage_reports)
-        complete_instruments = sum(1 for r in self._coverage_reports if r.is_complete)
+        matched_variables = sum(
+            r.matched_variables for r in self._coverage_reports)
+        complete_instruments = sum(
+            1 for r in self._coverage_reports if r.is_complete)
         total_data_columns = len(data_df.columns) if data_df is not None else 0
 
         overall_coverage = (matched_variables / total_rule_variables * 100
@@ -208,11 +212,10 @@ class DataQualityAnalyzer:
             return {
                 'summary': {
                     'total_instruments': summary.total_instruments,
-                    'overall_coverage': f"{summary.overall_coverage_percentage:.1f}%",
+                    'overall_coverage': f"{
+                        summary.overall_coverage_percentage:.1f}%",
                     'complete_instruments': summary.complete_instruments,
-                    'orphaned_columns_count': summary.orphaned_columns_count
-                }
-            }
+                    'orphaned_columns_count': summary.orphaned_columns_count}}
 
         elif self.verbosity_level == "detailed":
             return {
@@ -274,7 +277,11 @@ class DataQualityAnalyzer:
                 missing_counts[var] = missing_counts.get(var, 0) + 1
 
         # Return top 10 most common missing variables
-        return sorted(missing_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        return sorted(
+            missing_counts.items(),
+            key=lambda x: x[1],
+            reverse=True)[
+            :10]
 
 
 def create_simplified_debug_info(

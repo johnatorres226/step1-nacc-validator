@@ -73,7 +73,8 @@ def load_dynamic_rules_for_instrument(
             logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
             raise
         except Exception as e:
-            logger.error(f"An unexpected error occurred while loading {file_path}: {e}")
+            logger.error(
+                f"An unexpected error occurred while loading {file_path}: {e}")
             raise
 
     logger.debug(
@@ -104,7 +105,8 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
 
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
-        logger.warning(f"No JSON rule files found for instrument: {instrument_name}")
+        logger.warning(
+            f"No JSON rule files found for instrument: {instrument_name}")
         return {}
 
     combined_rules = {}
@@ -120,7 +122,9 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
                     f"Could not decode JSON from {file_path}: {e}",
                     exc_info=True)
             except Exception as e:
-                logger.error(f"Error reading rule file {file_path}: {e}", exc_info=True)
+                logger.error(
+                    f"Error reading rule file {file_path}: {e}",
+                    exc_info=True)
         else:
             logger.warning(f"JSON rule file not found: {file_path}")
 

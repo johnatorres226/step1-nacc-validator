@@ -113,7 +113,8 @@ class DynamicInstrumentProcessor:
                 relevant_cols.append(var)
 
         # Add completion columns
-        completion_cols = [col for col in get_completion_columns() if col in df.columns]
+        completion_cols = [
+            col for col in get_completion_columns() if col in df.columns]
         relevant_cols.extend(completion_cols)
 
         # Add discriminant variable
@@ -121,7 +122,8 @@ class DynamicInstrumentProcessor:
             relevant_cols.append(self.discriminant_var)
 
         # Remove duplicates and ensure columns exist
-        relevant_cols = list(set([col for col in relevant_cols if col in df.columns]))
+        relevant_cols = list(
+            set([col for col in relevant_cols if col in df.columns]))
 
         # Filter DataFrame
         instrument_df = pd.DataFrame()
@@ -130,8 +132,10 @@ class DynamicInstrumentProcessor:
             non_core_cols = [col for col in relevant_cols
                              if col not in core_cols and not col.endswith('_complete')]
             if non_core_cols:
-                has_data_mask = instrument_df[non_core_cols].notna().any(axis=1)
-                instrument_df = instrument_df[has_data_mask].reset_index(drop=True)
+                has_data_mask = instrument_df[non_core_cols].notna().any(
+                    axis=1)
+                instrument_df = instrument_df[has_data_mask].reset_index(
+                    drop=True)
 
         return instrument_df, instrument_variables
 
@@ -151,13 +155,15 @@ class DynamicInstrumentProcessor:
                     self.discriminant_var}' not found in data")
             return []
 
-        variants = df[self.discriminant_var].dropna().str.upper().unique().tolist()
+        variants = df[self.discriminant_var].dropna(
+        ).str.upper().unique().tolist()
         return [v for v in variants if v in self.rule_mappings]
 
     def _get_rule_map(self) -> Dict[str, Dict[str, Any]]:
         """Load and cache rule map for this instrument."""
         if self._rule_cache is None:
-            self._rule_cache = load_dynamic_rules_for_instrument(self.instrument_name)
+            self._rule_cache = load_dynamic_rules_for_instrument(
+                self.instrument_name)
         return self._rule_cache
 
 
@@ -280,7 +286,8 @@ class InstrumentDataProcessor(ABC):
         ]
 
         if non_core_cols:
-            # Filter to records that have data in at least one instrument variable
+            # Filter to records that have data in at least one instrument
+            # variable
             has_data_mask = df[non_core_cols].notna().any(axis=1)
             return df[has_data_mask].reset_index(drop=True)
 
@@ -454,7 +461,9 @@ class InstrumentDataCache:
         """Get variables for an instrument."""
         return self._variables_map.get(instrument, [])
 
-    def get_processor(self, instrument: str) -> Optional[InstrumentDataProcessor]:
+    def get_processor(
+            self,
+            instrument: str) -> Optional[InstrumentDataProcessor]:
         """Get processor for an instrument."""
         return self._processors.get(instrument)
 

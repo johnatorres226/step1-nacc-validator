@@ -18,7 +18,8 @@ def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, flo
     """Run the pipeline and extract timing information from logs."""
 
     # Build command
-    python_exe = "C:/Users/johtorres/Documents/Github_Repos/final-projects/(Step 1) udsv4-redcap-qc-validator/.venv/Scripts/python.exe"
+    base_path = "C:/Users/johtorres/Documents/Github_Repos/final-projects"
+    python_exe = f"{base_path}/(Step 1) udsv4-redcap-qc-validator/.venv/Scripts/python.exe"
     cmd = [python_exe, "-m", "src.cli.cli", "run", "-i", "PERF", "-l"]
     if detailed:
         cmd.append("-dr")

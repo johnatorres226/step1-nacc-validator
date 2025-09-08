@@ -189,7 +189,8 @@ def build_detailed_validation_logs(
     """
     try:
         if df.empty:
-            logger.warning(f"No records to process for instrument: {instrument}")
+            logger.warning(
+                f"No records to process for instrument: {instrument}")
             return []
 
         logs = []
@@ -210,7 +211,8 @@ def build_detailed_validation_logs(
             f"Validation logging failed for {instrument}: {e}") from e
 
 
-def build_validation_logs_summary(logs: List[Dict[str, Any]]) -> ValidationLogsData:
+def build_validation_logs_summary(
+        logs: List[Dict[str, Any]]) -> ValidationLogsData:
     """
     Build summary statistics for validation logs.
 
@@ -257,7 +259,8 @@ def build_detailed_validation_logs_vectorized(
     """
     try:
         if df.empty:
-            logger.warning(f"No records to process for instrument: {instrument}")
+            logger.warning(
+                f"No records to process for instrument: {instrument}")
             return []
 
         instrument_complete_col = f"{instrument}_complete"

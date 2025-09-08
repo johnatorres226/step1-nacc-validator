@@ -92,7 +92,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated error report: {filename} ({len(df_errors)} errors)")
+        logger.info(
+            f"Generated error report: {filename} ({
+                len(df_errors)} errors)")
         return output_path
 
     def generate_validation_logs_report(
@@ -103,15 +105,16 @@ class ReportFactory:
         """
         Generate Event Completeness Screening log report.
 
-        Format: ptid, redcap_event_name, instrument_name, target_variable, completeness_status, processing_status, pass_fail, error
+        Format: ptid, redcap_event_name, instrument_name, target_variable, 
+        completeness_status, processing_status, pass_fail, error
         """
         if df_logs.empty:
             logger.info("No validation logs found - skipping logs report")
             return None
 
-        filename = f"Log_EventCompletenessScreening_{
-            export_config.date_tag}_{
-            export_config.time_tag}.csv"
+        filename = (f"Log_EventCompletenessScreening_"
+                    f"{export_config.date_tag}_"
+                    f"{export_config.time_tag}.csv")
         output_path = export_config.output_dir / "Validation_Logs" / filename
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,7 +129,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated validation logs: {filename} ({len(df_logs)} entries)")
+        logger.info(
+            f"Generated validation logs: {filename} ({
+                len(df_logs)} entries)")
         return output_path
 
     def generate_passed_validations_report(
@@ -137,7 +142,8 @@ class ReportFactory:
         """
         Generate passed validations report with detailed rule information.
 
-        Format: ptid, variable, current_value, json_rule, rule_file, redcap_event_name, instrument_name
+        Format: ptid, variable, current_value, json_rule, rule_file, 
+        redcap_event_name, instrument_name
         """
         if not export_config.include_passed:
             logger.info("Passed validations export disabled - skipping")
@@ -185,7 +191,8 @@ class ReportFactory:
         from ..config_manager import get_instruments
         instruments = get_instruments()
 
-        # Get unique participants and events (remove duplicates from all_records_df)
+        # Get unique participants and events (remove duplicates from
+        # all_records_df)
         unique_records = all_records_df[[
             report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
 
@@ -207,14 +214,17 @@ class ReportFactory:
             # Pivot to get instruments as columns
             for _, row in error_counts.iterrows():
                 mask = (
-                    (result_df[report_config.primary_key_field] == row[report_config.primary_key_field]) &
+                    (result_df[report_config.primary_key_field] == 
+                     row[report_config.primary_key_field]) &
                     (result_df['redcap_event_name'] == row['redcap_event_name'])
                 )
                 if row['instrument_name'] in instruments:
-                    result_df.loc[mask, row['instrument_name']] = row['error_count']
+                    result_df.loc[mask,
+                                  row['instrument_name']] = row['error_count']
 
         # Calculate total error count
-        instrument_cols = [col for col in result_df.columns if col in instruments]
+        instrument_cols = [
+            col for col in result_df.columns if col in instruments]
         result_df['total_error_count'] = result_df[instrument_cols].sum(axis=1)
 
         # Sort by ptid and event
@@ -256,14 +266,15 @@ class ReportFactory:
         """
         Generate QC Status Report with Pass/Fail status per instrument per participant.
 
-        Format: ptid, redcap_event_name, [instrument Pass/Fail columns], 
-        qc_status_complete, qc_run_by, qc_last_run, qc_status, 
+        Format: ptid, redcap_event_name, [instrument Pass/Fail columns],
+        qc_status_complete, qc_run_by, qc_last_run, qc_status,
         quality_control_check_complete
         """
         from ..config_manager import get_instruments
         instruments = get_instruments()
 
-        # Get unique participants and events (remove duplicates from all_records_df)
+        # Get unique participants and events (remove duplicates from
+        # all_records_df)
         unique_records = all_records_df[[
             report_config.primary_key_field, 'redcap_event_name']].drop_duplicates()
 
@@ -284,7 +295,8 @@ class ReportFactory:
 
             for _, row in error_groups.iterrows():
                 mask = (
-                    (result_df[report_config.primary_key_field] == row[report_config.primary_key_field]) &
+                    (result_df[report_config.primary_key_field] == 
+                     row[report_config.primary_key_field]) &
                     (result_df['redcap_event_name'] == row['redcap_event_name'])
                 )
                 if row['instrument_name'] in instruments:
@@ -303,7 +315,8 @@ class ReportFactory:
                     failed_instruments.append(instrument)
 
             if failed_instruments:
-                return f"Failed in instruments: {', '.join(failed_instruments)}"
+                return f"Failed in instruments: {
+                    ', '.join(failed_instruments)}"
             else:
                 return "Pass"
 
@@ -333,7 +346,9 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-        logger.info(f"Generated status report: {filename} ({len(result_df)} metrics)")
+        logger.info(
+            f"Generated status report: {filename} ({
+                len(result_df)} metrics)")
         return output_path
 
     def generate_ptid_completed_visits_report(
@@ -557,7 +572,9 @@ class ReportFactory:
             return None
 
         # Create standardized filename
-        filename = f"Data_Fetched_{export_config.date_tag}_{export_config.time_tag}.csv"
+        filename = f"Data_Fetched_{
+            export_config.date_tag}_{
+            export_config.time_tag}.csv"
         output_path = export_config.output_dir / "Data_Fetched" / filename
 
         # Ensure directory exists
@@ -703,9 +720,11 @@ class ReportFactory:
 
         # Only generate detailed outputs if detailed_run flag is set
         if detailed_run:
-            logger.info("Detailed run mode enabled - generating additional reports...")
+            logger.info(
+                "Detailed run mode enabled - generating additional reports...")
 
-            logs_path = self.generate_validation_logs_report(df_logs, export_config)
+            logs_path = self.generate_validation_logs_report(
+                df_logs, export_config)
             if logs_path:
                 generated_files.append(logs_path)
 
@@ -720,9 +739,12 @@ class ReportFactory:
             generated_files.append(aggregate_path)
 
             status_path = self.generate_status_report(
-                all_records_df, complete_visits_df, detailed_validation_logs_df,
-                export_config, report_config, df_errors
-            )
+                all_records_df,
+                complete_visits_df,
+                detailed_validation_logs_df,
+                export_config,
+                report_config,
+                df_errors)
             generated_files.append(status_path)
 
             # Generate PTID Completed Visits report
@@ -731,7 +753,8 @@ class ReportFactory:
             )
             generated_files.append(ptid_path)
 
-            # Generate Rules Validation log (only if passed_rules flag is enabled)
+            # Generate Rules Validation log (only if passed_rules flag is
+            # enabled)
             passed_rules_enabled = getattr(
                 self.context.config,
                 'passed_rules',
@@ -745,7 +768,8 @@ class ReportFactory:
                 generated_files.append(rules_log_path)
             else:
                 logger.info(
-                    "Passed rules flag disabled - skipping Rules Validation log (use --passed-rules/-ps to generate)")
+                    "Passed rules flag disabled - skipping Rules Validation log "
+                    "(use --passed-rules/-ps to generate)")
 
             # Generate detailed JSON status report (requires status report to be
             # created first)
@@ -759,10 +783,13 @@ class ReportFactory:
             logger.info(
                 "Standard run mode - generating core outputs only (Errors, Data_Fetched, Json)")
 
-        logger.info(f"Report generation complete: {len(generated_files)} files created")
+        logger.info(
+            f"Report generation complete: {
+                len(generated_files)} files created")
         return generated_files
 
-    def _create_generation_summary(self, export_config: ExportConfiguration) -> Path:
+    def _create_generation_summary(
+            self, export_config: ExportConfiguration) -> Path:
         """Create a summary of all generated reports."""
         summary_df = pd.DataFrame([
             {

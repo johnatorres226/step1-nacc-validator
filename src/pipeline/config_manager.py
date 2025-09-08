@@ -294,7 +294,8 @@ class RequiredFieldsValidator(ConfigValidator):
 
         for env_var, path in required_packet_paths.items():
             if not path:
-                errors.append(f"Missing required environment variable: {env_var}")
+                errors.append(
+                    f"Missing required environment variable: {env_var}")
 
         return errors
 
@@ -323,8 +324,9 @@ class PathValidator(ConfigValidator):
                 Path(config.output_path).mkdir(parents=True, exist_ok=True)
             except OSError as e:
                 errors.append(
-                    f"OUTPUT_PATH '{
-                        config.output_path}' is not a valid directory and could not be created: {e}")
+                    f"OUTPUT_PATH '{config.output_path}' is not a valid directory "
+                    f"and could not be created: {e}"
+                )
 
         # Validate and create log path if needed
         if config.log_path and not Path(config.log_path).is_dir():
@@ -399,15 +401,18 @@ class QCConfig:
         default_factory=lambda: os.getenv('REDCAP_API_URL') or None)
     redcap_api_url: Optional[str] = field(default_factory=lambda: os.getenv(
         'REDCAP_API_URL') or None)  # Alias for backward compatibility
-    project_id: Optional[str] = field(default_factory=lambda: os.getenv('PROJECT_ID'))
+    project_id: Optional[str] = field(
+        default_factory=lambda: os.getenv('PROJECT_ID'))
 
     # --- Path Configuration ---
     output_path: str = field(
         default_factory=lambda: os.getenv(
             'OUTPUT_PATH', str(
                 project_root / "output")))
-    log_path: Optional[str] = field(default_factory=lambda: os.getenv('LOG_PATH'))
-    status_path: Optional[str] = field(default_factory=lambda: os.getenv('STATUS_PATH'))
+    log_path: Optional[str] = field(
+        default_factory=lambda: os.getenv('LOG_PATH'))
+    status_path: Optional[str] = field(
+        default_factory=lambda: os.getenv('STATUS_PATH'))
     upload_ready_path: Optional[str] = field(
         default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
 
@@ -432,9 +437,12 @@ class QCConfig:
     )))
 
     # --- QC Pipeline Behavior ---
-    mode: str = 'complete_visits'  # 'complete_visits', 'all_visits', 'ivp_only', 'fvp_only'
+    # 'complete_visits', 'all_visits', 'ivp_only', 'fvp_only'
+    mode: str = 'complete_visits'
     test_mode: bool = False  # Use test database instead of production database
-    log_level: str = field(default_factory=lambda: os.getenv('LOG_LEVEL', 'INFO'))
+    log_level: str = field(
+        default_factory=lambda: os.getenv(
+            'LOG_LEVEL', 'INFO'))
     user_initials: Optional[str] = None
     ptid_list: Optional[List[str]] = None
     include_qced: bool = False
@@ -445,8 +453,15 @@ class QCConfig:
     passed_rules: bool = False
 
     # --- Performance & Retries ---
-    max_workers: int = field(default_factory=lambda: int(os.getenv('MAX_WORKERS', '4')))
-    timeout: int = field(default_factory=lambda: int(os.getenv('TIMEOUT', '300')))
+    max_workers: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                'MAX_WORKERS', '4')))
+    timeout: int = field(
+        default_factory=lambda: int(
+            os.getenv(
+                'TIMEOUT',
+                '300')))
     retry_attempts: int = field(
         default_factory=lambda: int(
             os.getenv(
@@ -486,15 +501,19 @@ class QCConfig:
         if self.status_path:
             self.status_path = str(Path(self.status_path).resolve())
         if self.upload_ready_path:
-            self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
+            self.upload_ready_path = str(
+                Path(self.upload_ready_path).resolve())
 
         # Resolve packet-specific rule paths (required for production)
         if self.json_rules_path_i:
-            self.json_rules_path_i = str(Path(self.json_rules_path_i).resolve())
+            self.json_rules_path_i = str(
+                Path(self.json_rules_path_i).resolve())
         if self.json_rules_path_i4:
-            self.json_rules_path_i4 = str(Path(self.json_rules_path_i4).resolve())
+            self.json_rules_path_i4 = str(
+                Path(self.json_rules_path_i4).resolve())
         if self.json_rules_path_f:
-            self.json_rules_path_f = str(Path(self.json_rules_path_f).resolve())
+            self.json_rules_path_f = str(
+                Path(self.json_rules_path_f).resolve())
 
         self._validate_config()
 
@@ -579,7 +598,8 @@ def load_config_from_env() -> QCConfig:
     return QCConfig()
 
 
-def get_config(force_reload: bool = False, skip_validation: bool = False) -> QCConfig:
+def get_config(force_reload: bool = False,
+               skip_validation: bool = False) -> QCConfig:
     """
     Returns a singleton instance of the QCConfig.
     On first call, it loads, validates, and caches the configuration.
@@ -660,14 +680,25 @@ class CerberusCompatibilityAdapter:
 
     def __init__(self):
         self.supported_cerberus_rules = {
-            "type", "nullable", "min", "max", "regex", "allowed", "forbidden", "filled",
-            "required", "anyof", "oneof", "allof", "formatting"
-        }
+            "type",
+            "nullable",
+            "min",
+            "max",
+            "regex",
+            "allowed",
+            "forbidden",
+            "filled",
+            "required",
+            "anyof",
+            "oneof",
+            "allof",
+            "formatting"}
         self.custom_rules = {
             "compatibility", "temporalrules"
         }
 
-    def extract_cerberus_rules(self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_cerberus_rules(
+            self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract only the rules that are supported by standard Cerberus.
 
@@ -686,7 +717,8 @@ class CerberusCompatibilityAdapter:
 
         return cerberus_rules
 
-    def extract_custom_rules(self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_custom_rules(
+            self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract custom rules that need special handling.
 
@@ -721,7 +753,8 @@ class ModernSchemaBuilder:
     def __init__(self):
         self.compatibility_adapter = CerberusCompatibilityAdapter()
 
-    def build_schema_for_instrument(self, instrument_name: str) -> Dict[str, Any]:
+    def build_schema_for_instrument(
+            self, instrument_name: str) -> Dict[str, Any]:
         """
         Build a proper schema structure for an instrument.
 
@@ -839,7 +872,8 @@ class CompatibilityValidator:
         return errors
 
     def _validate_single_compatibility_rule(
-            self, record: Dict[str, Any], rule: Dict[str, Any], rule_index: int) -> Optional[Dict[str, Any]]:
+            self, record: Dict[str, Any], rule: Dict[str, Any], rule_index: int
+    ) -> Optional[Dict[str, Any]]:
         """Validate a single compatibility rule."""
         # Import here to avoid circular dependencies
         from nacc_form_validator.json_logic import jsonLogic
@@ -862,8 +896,7 @@ class CompatibilityValidator:
                     "rule_index": rule_index,
                     "error": "THEN condition failed when IF condition was true",
                     "if_condition": if_condition,
-                    "then_condition": then_condition
-                }
+                    "then_condition": then_condition}
         elif not if_result and else_condition:
             # IF is false, check ELSE condition
             else_result = jsonLogic(else_condition, record)
@@ -872,8 +905,7 @@ class CompatibilityValidator:
                     "rule_index": rule_index,
                     "error": "ELSE condition failed when IF condition was false",
                     "if_condition": if_condition,
-                    "else_condition": else_condition
-                }
+                    "else_condition": else_condition}
 
         return None
 

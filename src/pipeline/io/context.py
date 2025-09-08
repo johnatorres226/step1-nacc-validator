@@ -36,7 +36,9 @@ class ProcessingContext:
         """Get variables for a specific instrument from the rules cache."""
         return list(self.rules_cache.get(instrument, {}).keys())
 
-    def filter_to_instruments(self, instruments: List[str]) -> 'ProcessingContext':
+    def filter_to_instruments(
+            self,
+            instruments: List[str]) -> 'ProcessingContext':
         """Create a new context filtered to specific instruments."""
         return ProcessingContext(
             data_df=self.data_df,

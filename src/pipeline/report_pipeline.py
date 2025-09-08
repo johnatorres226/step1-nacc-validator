@@ -129,7 +129,8 @@ def process_instruments_etl(
 
     Returns:
         A tuple of DataFrames:
-        (df_errors, df_logs, df_passed, all_records_df, complete_visits_df, detailed_validation_logs)
+        (df_errors, df_logs, df_passed, all_records_df, complete_visits_df, 
+         detailed_validation_logs)
     """
     logger.warning(
         "process_instruments_etl() is using the legacy interface. "
@@ -143,7 +144,9 @@ def process_instruments_etl(
         result = orchestrator.run_pipeline(output_path, date_tag, time_tag)
 
         if not result.success:
-            raise RuntimeError(f"Pipeline execution failed: {result.pipeline_error}")
+            raise RuntimeError(
+                f"Pipeline execution failed: {
+                    result.pipeline_error}")
 
         # Extract data for legacy interface
         complete_visits_df = pd.DataFrame()
@@ -190,7 +193,9 @@ def run_report_pipeline(config: QCConfig):
                         result.pipeline_error}")
 
         # Log success with metrics in production format
-        logger.info(f"Data retrieved: {result.data_fetch.records_processed:,} records")
+        logger.info(
+            f"Data retrieved: {
+                result.data_fetch.records_processed:,} records")
 
         # Log rules loading information
         rules_count = len(result.rules_loading.instruments_processed)
@@ -238,7 +243,8 @@ def _collect_processed_records_info(
     # Count records by instrument
     instrument_counts = {}
     if 'instrument_name' in all_records_df.columns:
-        instrument_counts = all_records_df['instrument_name'].value_counts().to_dict()
+        instrument_counts = all_records_df['instrument_name'].value_counts(
+        ).to_dict()
 
     return total_records, error_records, instrument_counts
 
@@ -309,7 +315,8 @@ class _SchemaAndRulesCache:
                     )
                     self._cache[cache_key] = (schema, rules)
                 except Exception as e:
-                    logger.warning(f"Failed to load rules for {instrument_name}: {e}")
+                    logger.warning(
+                        f"Failed to load rules for {instrument_name}: {e}")
                     self._cache[cache_key] = ({}, {})
 
         return self._cache[cache_key]
@@ -350,7 +357,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         for index, record in data.iterrows():
             record_dict = record.to_dict()
 
-            # Get schema and rules from cache - handle dynamic instruments properly
+            # Get schema and rules from cache - handle dynamic instruments
+            # properly
             if is_dynamic_rule_instrument(instrument_name):
                 # For dynamic instruments, we need to get the discriminant variable
                 # value
@@ -371,19 +379,24 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     if available_variants:
                         schema = schema_variants[available_variants[0]]
                         logger.warning(
-                            f"Discriminant value '{discriminant_value}' not found for {instrument_name}, using {
-                                available_variants[0]}")
+                            f"Discriminant value '{discriminant_value}' not found for "
+                            f"{instrument_name}, using {available_variants[0]}"
+                        )
                     else:
                         schema = {}
                         logger.error(
                             f"No schema variants available for {instrument_name}")
             else:
                 # For standard instruments, get schema directly
-                schema, rules = self._get_cached_schema_and_rules(instrument_name)
+                schema, rules = self._get_cached_schema_and_rules(
+                    instrument_name)
 
             # Create QualityCheck instance without datastore (temporal rules already
             # excluded from schema)
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            qc = QualityCheck(
+                schema=schema,
+                pk_field=primary_key_field,
+                datastore=None)
 
             # Validate record
             validation_result = qc.validate_record(record_dict)
@@ -434,7 +447,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                             'instrument_name']:
                         continue
 
-                    # Get the JSON rule for this field if it exists in validation_rules
+                    # Get the JSON rule for this field if it exists in
+                    # validation_rules
                     json_rule = validation_rules.get(field_name, {})
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({
@@ -567,14 +581,16 @@ def validate_data_with_hierarchical_routing(
                 logger.warning(
                     f"No rules resolved for {instrument_name}, skipping record {
                         record_dict.get(
-                            primary_key_field, 'unknown')}")
+                            primary_key_field,
+                            'unknown')}")
                 continue
 
             # Build schema from resolved rules
             from pipeline.utils.schema_builder import _build_schema_from_raw
 
             # For hierarchical routing, always use the resolved rules directly
-            # The hierarchical resolver already provides flat, variant-specific rules
+            # The hierarchical resolver already provides flat, variant-specific
+            # rules
             schema = _build_schema_from_raw(
                 resolved_rules,
                 include_temporal_rules=False,
@@ -582,7 +598,10 @@ def validate_data_with_hierarchical_routing(
             )
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            qc = QualityCheck(
+                schema=schema,
+                pk_field=primary_key_field,
+                datastore=None)
             validation_result = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
@@ -650,7 +669,8 @@ def validate_data_with_hierarchical_routing(
                             'instrument_name']:
                         continue
 
-                    # Get the JSON rule for this field if it exists in resolved_rules
+                    # Get the JSON rule for this field if it exists in
+                    # resolved_rules
                     json_rule = resolved_rules.get(field_name, {})
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({
@@ -771,9 +791,11 @@ def validate_data_with_packet_routing(
                         f"Using dynamic rules for {discriminant_var}={discriminant_value}")
                 else:
                     logger.debug(
-                        f"Dynamic discriminant value '{discriminant_value}' not found, using base rules")
+                        f"Dynamic discriminant value '{discriminant_value}' not found, "
+                        f"using base rules"
+                    )
 
-            # Build schema from rules
+        # Build schema from rules
             from pipeline.utils.schema_builder import (
                 build_cerberus_schema_for_instrument,
             )
@@ -793,7 +815,10 @@ def validate_data_with_packet_routing(
                 schema = final_rules
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            qc = QualityCheck(
+                schema=schema,
+                pk_field=primary_key_field,
+                datastore=None)
             validation_result = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
@@ -851,7 +876,8 @@ def validate_data_with_packet_routing(
                             'instrument_name']:
                         continue
 
-                    # Get the JSON rule for this field if it exists in final_rules
+                    # Get the JSON rule for this field if it exists in
+                    # final_rules
                     json_rule = final_rules.get(field_name, {})
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({

@@ -9,7 +9,13 @@ This module provides comprehensive logging infrastructure with:
 - Flexible configuration for different environments
 
 Features:
-- Terminal color support with auto-detection
+- Terminal color support with auto-detectio                   self.logger.info(
+                    f"{self.operation_name}: {message} "
+                    f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)"
+                )           self.logger.info(
+                    f"{self.operation_name}: {message} "
+                    f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)"
+                )
 - Multiple log levels and formatters
 - File and console logging
 - Progress tracking with context managers
@@ -96,7 +102,8 @@ class ColoredFormatter(logging.Formatter):
 
         # Add color if enabled
         if self.use_colors and record.levelname.split()[-1] in self.COLORS:
-            level_name = record.levelname.split()[-1]  # Get level name without icon
+            # Get level name without icon
+            level_name = record.levelname.split()[-1]
             color = self.COLORS[level_name]
             reset = self.COLORS['RESET']
             record.levelname = f"{color}{record.levelname}{reset}"
@@ -219,7 +226,9 @@ def setup_logging(
 
     # Structured JSON file handler if requested
     if structured_logging and log_file:
-        json_log_path = Path(str(log_file).replace('.log', '_structured.jsonl'))
+        json_log_path = Path(
+            str(log_file).replace(
+                '.log', '_structured.jsonl'))
         handlers['json_file'] = {
             'class': 'logging.handlers.RotatingFileHandler',
             'level': logging.DEBUG,
@@ -240,7 +249,10 @@ def setup_logging(
             'use_icons': False  # Disable icons to reduce clutter
         },
         'detailed_file': {
-            'format': '%(asctime)s | %(levelname)-8s | %(name)-20s | %(filename)s:%(lineno)d | %(message)s',
+            'format': (
+                '%(asctime)s | %(levelname)-8s | %(name)-20s | '
+                '%(filename)s:%(lineno)d | %(message)s'
+            ),
             'datefmt': '%Y-%m-%d %H:%M:%S'
         },
         'json_structured': {
@@ -323,10 +335,28 @@ class JSONFormatter(logging.Formatter):
 
         # Add any extra fields
         for key, value in record.__dict__.items():
-            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-                           'filename', 'module', 'exc_info', 'exc_text', 'stack_info',
-                           'lineno', 'funcName', 'created', 'msecs', 'relativeCreated',
-                           'thread', 'threadName', 'processName', 'process', 'message']:
+            if key not in [
+                'name',
+                'msg',
+                'args',
+                'levelname',
+                'levelno',
+                'pathname',
+                'filename',
+                'module',
+                'exc_info',
+                'exc_text',
+                'stack_info',
+                'lineno',
+                'funcName',
+                'created',
+                'msecs',
+                'relativeCreated',
+                'thread',
+                'threadName',
+                'processName',
+                'process',
+                    'message']:
                 log_entry[key] = value
 
         return json.dumps(log_entry)
@@ -342,7 +372,8 @@ def get_logger(name: str) -> logging.Logger:
 class QCLogger:
     """Context manager for QC operations with progress tracking."""
 
-    def __init__(self, operation_name: str, logger: Optional[logging.Logger] = None):
+    def __init__(self, operation_name: str,
+                 logger: Optional[logging.Logger] = None):
         self.operation_name = operation_name
         self.logger = logger or get_logger('qc_operation')
         self.start_time = None
@@ -370,8 +401,10 @@ class QCLogger:
                     'Configuration Check',
                     'Environment Setup',
                         'QC Pipeline']:
-                    self.logger.info(f"Completed operation: {self.operation_name} "
-                                     f"(Duration: {duration:.2f}s)")
+                    self.logger.info(
+                        f"Completed operation: {
+                            self.operation_name} " f"(Duration: {
+                            duration:.2f}s)")
             else:
                 self.logger.error(f"Failed operation: {self.operation_name} "
                                   f"(Duration: {duration:.2f}s) - {exc_val}")
@@ -393,8 +426,10 @@ class QCLogger:
 
                 if self.total_steps:
                     progress = (self.steps_completed / self.total_steps) * 100
-                    self.logger.info(f"{self.operation_name}: {message} "
-                                     f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)")
+                    self.logger.info(
+                        f"{self.operation_name}: {message} "
+                        f"({self.steps_completed}/{self.total_steps} - {progress:.1f}%)"
+                    )
                 else:
                     self.logger.info(f"{self.operation_name}: {message}")
 
@@ -406,7 +441,8 @@ class QCLogger:
     def log_error(self, message: str, exception: Optional[Exception] = None):
         """Log an error during the operation."""
         if exception:
-            self.logger.error(f"{self.operation_name} Error: {message} - {exception}")
+            self.logger.error(
+                f"{self.operation_name} Error: {message} - {exception}")
             self.logger.debug(
                 f"Full traceback for {
                     self.operation_name}",
@@ -434,7 +470,8 @@ def _parse_file_size(size_str: str) -> int:
 
 
 @contextmanager
-def log_performance(operation_name: str, logger: Optional[logging.Logger] = None):
+def log_performance(operation_name: str,
+                    logger: Optional[logging.Logger] = None):
     """Context manager for logging operation performance."""
     if logger is None:
         logger = get_logger('performance')
@@ -459,7 +496,8 @@ def log_dataframe_info(df, name: str, logger: Optional[logging.Logger] = None):
 
     # Only log if dataframe is large or in debug mode
     if len(df) > 1000 or logger.isEnabledFor(logging.DEBUG):
-        logger.info(f"DataFrame '{name}': {len(df)} rows, {len(df.columns)} columns")
+        logger.info(
+            f"DataFrame '{name}': {len(df)} rows, {len(df.columns)} columns")
 
     if logger.isEnabledFor(logging.DEBUG):
         logger.debug(f"DataFrame '{name}' columns: {list(df.columns)}")

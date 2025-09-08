@@ -28,18 +28,22 @@ logger = get_logger('cli')
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help']))
 @click.version_option(version="1.0.0")
-@click.option(
-    '--log-level',
-    type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR'], case_sensitive=False),
-    default='INFO',
-    help='Set the logging level.',
-)
+@click.option('--log-level',
+              type=click.Choice(['DEBUG',
+                                 'INFO',
+                                 'WARNING',
+                                 'ERROR'],
+                                case_sensitive=False),
+              default='INFO',
+              help='Set the logging level.',
+              )
 def cli(log_level: str):
     """UDSv4 REDCap QC Validator - A comprehensive CLI for data quality control."""
     # Only setup minimal logging - detailed logging will be configured in
     # individual commands
     setup_logging(log_level='ERROR')  # Suppress startup messages
-    # Suppress the UserWarning from cerberus about the custom 'compatibility' rule
+    # Suppress the UserWarning from cerberus about the custom 'compatibility'
+    # rule
     warnings.filterwarnings(
         "ignore",
         message=(
@@ -48,7 +52,8 @@ def cli(log_level: str):
 
 
 @cli.command()
-@click.option('--detailed', '-d', is_flag=True, help='Show detailed configuration.')
+@click.option('--detailed', '-d', is_flag=True,
+              help='Show detailed configuration.')
 @click.option(
     '--json-output', is_flag=True, help='Output configuration as JSON.')
 def config(detailed: bool, json_output: bool):
@@ -88,11 +93,14 @@ def config(detailed: bool, json_output: bool):
     if status['valid']:
         console.print("UDSv4 QC Validator Status: Ready")
     else:
-        console.print("UDSv4 QC Validator Status: Configuration issues detected")
+        console.print(
+            "UDSv4 QC Validator Status: Configuration issues detected")
 
     console.print("\nSystem Configuration:")
 
-    console.print(f"Overall System: {'Ready' if status['valid'] else 'Issues Found'}")
+    console.print(
+        f"Overall System: {
+            'Ready' if status['valid'] else 'Issues Found'}")
     if status['errors']:
         console.print(f"  Issues: {len(status['errors'])}")
 
@@ -109,7 +117,11 @@ def config(detailed: bool, json_output: bool):
     if detailed and 'legacy_compatibility' in status:
         legacy_info = status['legacy_compatibility']
         console.print("\nData Components:")
-        console.print(f"Instruments: {legacy_info.get('instruments_count', 0)}")
+        console.print(
+            f"Instruments: {
+                legacy_info.get(
+                    'instruments_count',
+                    0)}")
         console.print(f"Events: {legacy_info.get('events_count', 0)}")
         console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
@@ -129,11 +141,13 @@ def config(detailed: bool, json_output: bool):
               default='complete_visits',
               help='Select the QC validation mode. [default: complete_visits]',
               )
-@click.option(
-    '--output-dir',
-    type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
-    help='Override the default output directory.',
-)
+@click.option('--output-dir',
+              type=click.Path(file_okay=False,
+                              dir_okay=True,
+                              writable=True,
+                              resolve_path=True),
+              help='Override the default output directory.',
+              )
 @click.option('--event', 'events', multiple=True,
               help='Specify one or more events to run.')
 @click.option('--ptid', 'ptid_list', multiple=True,
@@ -168,8 +182,7 @@ def run(
     if passed_rules and not detailed_run:
         raise click.ClickException(
             "The --passed-rules/-ps option requires --detailed-run/-dr to be enabled. "
-            "Use: udsv4-qc run -i INITIALS -dr -ps"
-        )
+            "Use: udsv4-qc run -i INITIALS -dr -ps")
 
     # Configure logging properly using the logging_config module
     if log:
@@ -240,7 +253,10 @@ def run(
             with operation_context("qc_validation", f"Processing {mode} mode"):
                 run_report_pipeline(config=base_config)
 
-            logger.info(f"Results saved to: {Path(base_config.output_path).resolve()}")
+            logger.info(
+                f"Results saved to: {
+                    Path(
+                        base_config.output_path).resolve()}")
             logger.info("QC validation pipeline complete")
         else:
             # Silent execution
@@ -249,7 +265,8 @@ def run(
     except Exception as e:
         if log:
             logger.error(f"QC validation pipeline failed: {e}")
-            console.print("An error occurred. Check the logs above for details.")
+            console.print(
+                "An error occurred. Check the logs above for details.")
         else:
             console.print(f"QC validation pipeline failed: {e}")
         sys.exit(1)
@@ -257,13 +274,17 @@ def run(
 
 def _display_run_summary(config: QCConfig):
     """Displays a summary of the QC run configuration."""
-    mode_title = config.mode.replace('_', ' ').title() if config.mode else "N/A"
+    mode_title = config.mode.replace(
+        '_', ' ').title() if config.mode else "N/A"
     console.print(f"\nQC Run Configuration (Mode: {mode_title})")
 
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
     console.print(f"Output Directory: {Path(config.output_path).resolve()}")
     console.print(f"Log Level: {config.log_level}")
-    console.print(f"Events: {'All' if not config.events else ', '.join(config.events)}")
+    console.print(
+        f"Events: {
+            'All' if not config.events else ', '.join(
+                config.events)}")
     console.print(
         f"Participants: {
             'All' if not config.ptid_list else ', '.join(
