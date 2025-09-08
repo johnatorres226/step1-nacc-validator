@@ -402,6 +402,8 @@ class QCConfig:
     user_initials: Optional[str] = None
     ptid_list: Optional[List[str]] = None
     include_qced: bool = False
+    detailed_run: bool = False  # Generate detailed outputs (Validation_Logs, Completed_Visits, Reports, Generation_Summary)
+    passed_rules: bool = False  # Generate comprehensive Rules Validation log (large file, slow generation)
     
     # --- Performance & Retries ---
     max_workers: int = field(default_factory=lambda: int(os.getenv('MAX_WORKERS', '4')))

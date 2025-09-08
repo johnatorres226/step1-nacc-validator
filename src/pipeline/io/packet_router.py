@@ -28,6 +28,7 @@ class PacketRuleRouter:
         """
         self.config = config if config is not None else get_config()
         self._rule_cache = {}
+        self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("PacketRuleRouter initialized")
     
     def get_rules_for_record(self, record: Dict[str, Any], instrument_name: str) -> Dict[str, Any]:
@@ -114,6 +115,7 @@ class PacketRuleRouter:
         combined_rules = {}
         rules_dir = Path(rules_path)
         
+        missing_files = []
         for file_name in rule_files:
             file_path = rules_dir / file_name
             if file_path.exists():
@@ -127,8 +129,17 @@ class PacketRuleRouter:
                 except Exception as e:
                     logger.error(f"Error loading rule file: {file_path} - {e}")
             else:
-                logger.warning(f"Rule file not found: {file_path}")
+                missing_files.append(str(file_path))
         
+        # Check if all files are missing for F packet rules - use Path operations for cross-platform compatibility
+        is_f_rules_path = Path(rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
+        if rule_files and len(missing_files) == len(rule_files) and is_f_rules_path:
+            if not self._f_rules_warning_logged:
+                logger.warning(f"F packet rules are not yet implemented. All F rule files are missing across all instruments. Suppressing subsequent warnings.")
+                self._f_rules_warning_logged = True
+        else:
+            for file_path in missing_files:
+                logger.warning(f"Rule file not found: {file_path}")
         return combined_rules
 
     def _load_dynamic_rules_from_path(self, rules_path: str, instrument_name: str) -> Dict[str, Any]:
@@ -147,6 +158,7 @@ class PacketRuleRouter:
         rule_mappings = get_rule_mappings(instrument_name)
         rule_map = {}
         rules_dir = Path(rules_path)
+        missing_variants = []
         
         for variant, filename in rule_mappings.items():
             file_path = rules_dir / filename
@@ -161,6 +173,16 @@ class PacketRuleRouter:
                 except Exception as e:
                     logger.error(f"Error loading rule file: {file_path} - {e}")
             else:
+                missing_variants.append((variant, str(file_path)))
+        
+        # Check if all files are missing for F packet rules - use Path operations for cross-platform compatibility
+        is_f_rules_path = Path(rules_path).parts[-2:] == ('F', 'rules') if len(Path(rules_path).parts) >= 2 else False
+        if rule_mappings and len(missing_variants) == len(rule_mappings) and is_f_rules_path:
+            if not self._f_rules_warning_logged:
+                logger.warning(f"F packet rules are not yet implemented. All F rule files are missing across all instruments. Suppressing subsequent warnings.")
+                self._f_rules_warning_logged = True
+        else:
+            for variant, file_path in missing_variants:
                 logger.warning(f"Rule file not found for {variant}: {file_path}")
         
         logger.debug(f"Loaded dynamic rules for {instrument_name}: {list(rule_map.keys())}")

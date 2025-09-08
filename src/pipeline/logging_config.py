@@ -43,11 +43,11 @@ class ColoredFormatter(logging.Formatter):
         'RESET': '\033[0m'       # Reset
     }
     
-    # Icons for different log levels - simplified
+    # Icons for different log levels - simplified and professional
     ICONS = {
         'DEBUG': '•',
-        'INFO': '✓',
-        'WARNING': '!',
+        'INFO': '▶',
+        'WARNING': '⚠',
         'ERROR': '✗',
         'CRITICAL': '✗✗'
     }
@@ -99,55 +99,39 @@ class ColoredFormatter(logging.Formatter):
 
 
 class ProductionCLIFormatter(logging.Formatter):
-    """Streamlined formatter for production CLI operations."""
-    
-    OPERATION_ICONS = {
-        'fetch': '🔄',
-        'route': '🗂️ ',
-        'rules': '📋',
-        'validate': '🔍',
-        'generate': '📊',
-        'complete': '✅',
-        'error': '❌',
-        'warning': '⚠️ '
-    }
+    """Streamlined formatter for production CLI operations with minimal visual clutter."""
     
     def __init__(self, fmt=None, datefmt=None):
-        # Use a simple format for production CLI
+        # Use a clean format for production CLI
         if fmt is None:
-            fmt = '%(message)s'
+            fmt = '%(asctime)s | %(levelname)-7s | %(message)s'
+        if datefmt is None:
+            datefmt = '%H:%M:%S'
         super().__init__(fmt=fmt, datefmt=datefmt)
     
     def format(self, record):
-        """Format with operation context and minimal noise."""
-        # Look for operation context in the message or record
+        """Format with minimal decoration and clean output."""
+        # Clean up the message to remove redundant icons and formatting
         message = record.getMessage()
         
-        # Check if this is an operation-related message
-        for operation, icon in self.OPERATION_ICONS.items():
-            if operation in message.lower() or (hasattr(record, 'operation') and getattr(record, 'operation', '') == operation):
-                # Apply appropriate icon and clean formatting
-                if record.levelno >= logging.ERROR:
-                    # Error messages
-                    if not message.startswith('❌'):
-                        message = f"❌ {message}"
-                elif record.levelno >= logging.WARNING:
-                    # Warning messages
-                    if not message.startswith('⚠️'):
-                        message = f"⚠️  {message}"
-                elif 'complete' in message.lower() and record.levelno <= logging.INFO:
-                    # Success messages
-                    if not message.startswith('✅'):
-                        message = f"✅ {message}"
-                elif any(op in message.lower() for op in ['fetching', 'applying', 'allocating', 'validating', 'generating']):
-                    # Progress messages
-                    for op, icon in self.OPERATION_ICONS.items():
-                        if op in message.lower() and not message.startswith(icon):
-                            message = f"{icon} {message}"
-                            break
+        # Remove excessive emojis and visual clutter
+        # Remove common emoji patterns that are overused
+        emoji_patterns = [
+            '✅ ', '🔄 ', '📋 ', '📊 ', 'ℹ️  ', '⚠️  ',
+            '===', '---', '***'
+        ]
+        
+        for pattern in emoji_patterns:
+            if message.startswith(pattern):
+                message = message[len(pattern):]
                 break
         
-        # Create a new record with the formatted message
+        # Clean up repeated information
+        if 'complete' in message.lower() and 'completed' in message.lower():
+            # Avoid saying "completed" twice
+            message = message.replace('completed', 'done')
+        
+        # Create a new record with the cleaned message
         record = logging.makeLogRecord(record.__dict__)
         record.msg = message
         record.args = ()
@@ -205,6 +189,11 @@ def setup_logging(
             'formatter': 'colored_console',
             'stream': 'ext://sys.stdout'
         }
+    else:
+        # Add NullHandler when console output is disabled to prevent logs from going to stderr
+        handlers['null'] = {
+            'class': 'logging.NullHandler',
+        }
     
     # File handler with rotation if specified
     if log_file:
@@ -238,7 +227,7 @@ def setup_logging(
     formatters = {
         'colored_console': {
             '()': ColoredFormatter,
-            'format': '%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s',
+            'format': '%(asctime)s | %(levelname)-7s | %(message)s',
             'datefmt': '%H:%M:%S',
             'use_colors': True,
             'use_icons': False  # Disable icons to reduce clutter
