@@ -2,6 +2,8 @@
 
 A comprehensive Quality Control (QC) validation system for NACC UDSv4 (Uniform Data Set version 4) REDCap data. This system provides automated data extraction, validation, and quality assurance for REDCap-based research data, ensuring compliance with NACC data quality standards and protocols.
 
+> **✨ New: Poetry Integration** - This project now uses Poetry for modern dependency management, cross-platform compatibility, and reproducible builds. Existing users can migrate by following the [Poetry installation instructions](#-installation-with-poetry-recommended) below.
+
 ## 📖 What This Project Does
 
 The UDSv4 REDCap QC Validator is designed to:
@@ -16,12 +18,21 @@ The UDSv4 REDCap QC Validator is designed to:
 ## 🛠 Technologies and Dependencies
 
 ### Core Technologies
-- **Python 3.9+**: Primary programming language
+- **Python 3.11+**: Primary programming language (Poetry managed)
+- **Poetry**: Modern dependency management and packaging tool
 - **REDCap API**: For secure data extraction from REDCap databases
 - **Cerberus**: Advanced data validation and schema enforcement
 - **pandas**: Data manipulation and analysis
 - **Click**: Modern command-line interface framework
 - **Rich**: Enhanced console output and formatting
+
+### Development Tools
+- **Poetry**: Dependency management, virtual environments, and packaging
+- **pytest**: Testing framework with coverage reporting
+- **Black**: Code formatting
+- **Flake8**: Code linting
+- **mypy**: Static type checking
+- **pre-commit**: Git hooks for code quality
 
 ### Validation Engine
 - **JSON Logic**: Flexible rule-based validation system
@@ -54,19 +65,156 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+- **Python 3.11+** installed on your system
+- **Git** for cloning the repository
+- **REDCap API credentials** and access
+- **Poetry** for dependency management (installation instructions below)
+
+## 📦 Installation with Poetry (Recommended)
+
+Poetry provides modern dependency management with deterministic builds and cross-platform compatibility.
+
+### Step 1: Install Poetry
+
+#### Windows (PowerShell)
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+```
+
+#### Linux/macOS
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+#### Alternative: Using pip
+```bash
+pip install poetry
+```
+
+### Step 2: Clone and Setup Project
+
+```bash
+# Clone the repository
+git clone https://github.com/johnatorres226/step1-nacc-validator.git
+cd step1-nacc-validator
+
+# Install dependencies (creates virtual environment automatically)
+poetry install
+
+# Verify installation
+poetry run udsv4-qc --help
+```
+
+### Step 3: Environment Configuration
+
+Create a `.env` file in the project root:
+
+```env
+REDCAP_API_URL=https://your-redcap-instance/api/
+REDCAP_API_TOKEN=your_api_token_here
+PROJECT_ID=your_project_id
+JSON_RULES_PATH_I=config/I/
+JSON_RULES_PATH_I4=config/I4/
+JSON_RULES_PATH_F=config/F/
+```
+
+### Step 4: Create Output Directory
+
+```bash
+mkdir output
+```
+
+### Step 5: Verify Setup
+
+```bash
+# Check configuration
+poetry run udsv4-qc config
+
+# Test CLI functionality
+poetry run udsv4-qc --version
+```
+
+## 🔨 Building and Development
+
+### Development Setup
+
+```bash
+# Install with development dependencies
+poetry install --with dev
+
+# Activate virtual environment shell
+poetry shell
+
+# Run tests
+poetry run pytest
+
+# Run tests with coverage
+poetry run pytest --cov=qc_pipeline --cov-report=html
+
+# Code formatting
+poetry run black .
+
+# Type checking
+poetry run mypy src/
+
+# Linting
+poetry run flake8
+```
+
+### Building the Package
+
+```bash
+# Build wheel and source distribution
+poetry build
+
+# Check build artifacts
+ls dist/
+
+# Install from built package (for testing)
+pip install dist/udsv4_redcap_qc_validator-*.whl
+```
+
+### Poetry Commands Reference
+
+```bash
+# Dependency management
+poetry add package-name              # Add runtime dependency
+poetry add --group dev package-name  # Add development dependency
+poetry remove package-name           # Remove dependency
+poetry update                        # Update all dependencies
+poetry show --tree                   # Show dependency tree
+
+# Environment management
+poetry env info                      # Show environment info
+poetry env list                      # List environments
+poetry shell                         # Activate environment shell
+poetry run command                   # Run command in environment
+
+# Package management
+poetry build                         # Build package
+poetry publish                       # Publish to PyPI (if configured)
+poetry version patch                 # Bump version (patch/minor/major)
+```
+
+## 🎯 Alternative Installation (Legacy)
+
+If you prefer traditional pip/venv setup:
+
 ### Windows Prerequisites
 
-- Python 3.9 or higher installed
+- Python 3.11 or higher installed
 - REDCap API credentials
 - Access to validation rule files (JSON format)
 
-### Installation Steps
+### Legacy Installation Steps
 
 1. **Clone and setup the environment:**
 
    ```bash
-   git clone <repository-url>
-   cd udsv4-redcap-qc-validator
+   git clone https://github.com/johnatorres226/step1-nacc-validator.git
+   cd step1-nacc-validator
    python -m venv .venv
    .venv\Scripts\activate
    pip install -e .
@@ -74,16 +222,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 2. **Configure your environment:**
 
-   Create a `.env` file in the project root:
-
-   ```env
-   REDCAP_API_URL=https://your-redcap-instance/api/
-   REDCAP_API_TOKEN=your_api_token_here
-   PROJECT_ID=your_project_id
-   JSON_RULES_PATH_I=config/I/
-   JSON_RULES_PATH_I4=config/I4/
-   JSON_RULES_PATH_F=config/F/
-   ```
+   Create a `.env` file in the project root with the same content as shown above.
 
 3. **Create required directories:**
 
@@ -100,21 +239,64 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💻 Main Commands
 
-The system provides two primary validation modes:
+The system provides two primary validation modes. Use Poetry commands for the best experience:
 
 ### Core Commands
 
-- `udsv4-qc config` - Display configuration status and validation
-- `udsv4-qc run` - Execute QC validation pipeline
+```bash
+# Display configuration status and validation
+poetry run udsv4-qc config
+
+# Execute QC validation pipeline
+poetry run udsv4-qc run
+```
 
 ### Main Validation Modes
 
 ```bash
 # Validate complete visits (all instruments completed)
-udsv4-qc run --mode complete_visits --initials "ABC"
+poetry run udsv4-qc run --mode complete_visits --initials "ABC"
 
 # Validate individual completed instruments
-udsv4-qc run --mode complete_instruments --initials "ABC"
+poetry run udsv4-qc run --mode complete_instruments --initials "ABC"
+
+# Custom validation with specific filters
+poetry run udsv4-qc run --mode custom --initials "ABC" --event "baseline_visit" --ptid "NACC123"
+```
+
+### Advanced Command Options
+
+```bash
+# Generate detailed outputs with coverage reports
+poetry run udsv4-qc run --mode complete_visits --initials "ABC" --detailed-run --passed-rules
+
+# Specify custom output directory
+poetry run udsv4-qc run --mode complete_visits --initials "ABC" --output-dir "/custom/path"
+
+# Enable verbose logging during execution
+poetry run udsv4-qc run --mode complete_visits --initials "ABC" --log
+
+# Process specific events and participants
+poetry run udsv4-qc run --mode custom --initials "ABC" --event "baseline_visit" --event "followup_visit" --ptid "NACC123" --ptid "NACC456"
+```
+
+### Testing Commands
+
+```bash
+# Run all tests
+poetry run pytest
+
+# Run tests with coverage
+poetry run pytest --cov=qc_pipeline --cov-report=html
+
+# Run specific test categories
+poetry run pytest -m unit           # Unit tests only
+poetry run pytest -m integration    # Integration tests only
+poetry run pytest -m config         # Configuration tests only
+
+# Run tests for specific components
+poetry run pytest tests/test_configuration.py
+poetry run pytest -k "validation"
 ```
 
 ### Command Parameters
@@ -122,18 +304,50 @@ udsv4-qc run --mode complete_instruments --initials "ABC"
 - `--mode` - Validation mode (complete_visits, complete_instruments, custom)
 - `--initials` - User initials for tracking and reporting (required)
 - `--output-dir` - Custom output directory path
-- `--event` - Specify specific REDCap events to process
-- `--ptid` - Target specific participant IDs
+- `--event` - Specify specific REDCap events to process (can be used multiple times)
+- `--ptid` - Target specific participant IDs (can be used multiple times)
+- `--detailed-run` - Generate comprehensive output files including logs and reports
+- `--passed-rules` - Include detailed validation logs (requires --detailed-run)
+- `--log` - Enable verbose terminal logging during execution
+- `--include-qced` - Include records that have already been QCed (custom mode only)
 
 **For complete command reference and advanced usage, see [QUICK_START.md](QUICK_START.md)**
 
 ## 🔧 System Requirements
 
-- **Operating System**: Windows 10/11 (primary target), macOS, Linux
-- **Python Version**: 3.9 or higher
+- **Operating System**: Windows 10/11, macOS, Linux (cross-platform support via Poetry)
+- **Python Version**: 3.11 or higher
+- **Package Manager**: Poetry (recommended) or pip
 - **Memory**: 512MB minimum, 2GB recommended for large datasets
-- **Storage**: 100MB for installation, additional space for output files
-- **Network**: Access to REDCap API endpoint
+- **Storage**: 100MB for installation, additional space for output files and Poetry cache
+- **Network**: Access to REDCap API endpoint and Poetry package repositories
+
+### Poetry-Specific Requirements
+
+- **Poetry**: Version 1.0+ for dependency management and virtual environment handling
+- **Build Tools**: Automatically managed by Poetry for cross-platform compatibility
+- **Virtual Environment**: Automatically created and managed by Poetry
+
+## 🚀 Cross-Platform Compatibility
+
+This project is designed to work seamlessly across different operating systems:
+
+### Windows
+- Native PowerShell and Command Prompt support
+- Automatic virtual environment creation via Poetry
+- Windows-specific dependency handling
+
+### Linux/Unix
+- Bash and shell script compatibility
+- Native package compilation support
+- System package integration
+
+### macOS
+- Homebrew integration potential
+- Native macOS development support
+- Apple Silicon compatibility
+
+**Note**: Poetry ensures identical dependency resolution and virtual environments across all platforms.
 
 ## 🔐 Security Considerations
 
@@ -144,11 +358,107 @@ udsv4-qc run --mode complete_instruments --initials "ABC"
 
 ## 🤝 Contributing
 
-1. Follow the existing code structure and architectural patterns
-2. Add comprehensive tests for new features
-3. Update documentation when making changes
-4. Use type hints and docstrings consistently
-5. Test on Windows environment as primary target platform
+We welcome contributions! Follow these guidelines for the best development experience:
+
+### Development Setup
+
+1. **Fork and clone the repository**
+2. **Set up development environment with Poetry:**
+   ```bash
+   poetry install --with dev
+   poetry shell
+   ```
+3. **Verify setup:**
+   ```bash
+   poetry run pytest
+   poetry run black --check .
+   poetry run flake8
+   poetry run mypy src/
+   ```
+
+### Development Workflow
+
+1. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes following these guidelines:**
+   - Follow the existing code structure and architectural patterns
+   - Add comprehensive tests for new features using pytest
+   - Update documentation when making changes
+   - Use type hints and docstrings consistently
+   - Format code with Black: `poetry run black .`
+   - Ensure linting passes: `poetry run flake8`
+   - Verify type checking: `poetry run mypy src/`
+
+3. **Test your changes:**
+   ```bash
+   # Run all tests
+   poetry run pytest
+   
+   # Run tests with coverage
+   poetry run pytest --cov=qc_pipeline --cov-report=html
+   
+   # Run specific test categories
+   poetry run pytest -m unit
+   poetry run pytest -m integration
+   ```
+
+4. **Quality checks:**
+   ```bash
+   # Code formatting
+   poetry run black .
+   
+   # Linting
+   poetry run flake8
+   
+   # Type checking
+   poetry run mypy src/
+   
+   # Dependency security check
+   poetry audit
+   ```
+
+5. **Commit and push:**
+   ```bash
+   git add .
+   git commit -m "feat: description of your changes"
+   git push origin feature/your-feature-name
+   ```
+
+6. **Create a Pull Request with:**
+   - Clear description of changes
+   - Test results and coverage information
+   - Any breaking changes or migration notes
+
+### Testing Guidelines
+
+- **Unit Tests**: Test individual functions and methods
+- **Integration Tests**: Test component interactions
+- **Configuration Tests**: Test environment and setup scenarios
+- **Cross-Platform Testing**: Verify functionality on Windows, Linux, macOS
+
+### Code Quality Standards
+
+- **Type Safety**: Use mypy for static type checking
+- **Code Style**: Black formatting with 88-character line length
+- **Linting**: Flake8 for code quality checks
+- **Documentation**: Comprehensive docstrings and comments
+- **Testing**: Minimum 80% test coverage for new code
+
+### Adding Dependencies
+
+```bash
+# Add runtime dependency
+poetry add package-name
+
+# Add development dependency
+poetry add --group dev package-name
+
+# Update lock file
+poetry lock --no-update
+```
 
 ---
 

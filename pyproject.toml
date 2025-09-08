@@ -1,39 +1,41 @@
 [project]
-name = "udsv4-redcap-qc-validator"         # The name of your Python project/package
-version = "0.1.0"                          # Initial version of the project
-description = "QC validator for UDSv4 REDCap data"  # Short description of the project
-license = "Mozilla Public License 2.0"                            # License for the project
+name = "udsv4-redcap-qc-validator"
+version = "0.1.0"
+description = "QC validator for UDSv4 REDCap data"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Mozilla Public License 2.0"}
 authors = [
-    { name="John Torres", email="sdccunm.john@gmail.com" }
+    {name = "John Torres", email = "sdccunm.john@gmail.com"}
 ]
 maintainers = [
-  {name = "John Torres", email = "sdccunm.john@gmail.com"}
+    {name = "John Torres", email = "sdccunm.john@gmail.com"}
 ]
-readme = "README.md"                       # Path to the README file
-requires-python = ">=3.12"                  # Minimum Python version required
+keywords = ["redcap", "qc", "validation", "udsv4", "nacc"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
 dependencies = [
     "cerberus>=1.3.5",
     "python-dateutil>=2.9.0",
-    "pytest>=7.2.0",
     "types-python-dateutil>=2.9.0.20240316",
     "json-logic",
     "python-dotenv",
+    "python-decouple",
     "jsonschema",
     "pandas",
     "requests",
     "setuptools",
-    "IPython",
+    "ipython",
     "click>=8.0.0",
     "rich>=13.0.0",
     "typer>=0.9.0"
 ]
-
-[tool.setuptools]
-package-dir = {"" = "src", "nacc_form_validator" = "nacc_form_validator"}
-packages = ["pipeline", "cli", "nacc_form_validator"]
-
-[project.scripts]
-udsv4-qc = "cli.cli:cli"
 
 [project.optional-dependencies]
 dev = [
@@ -48,9 +50,23 @@ dev = [
     "twine>=4.0.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/johnatorres226/step1-nacc-validator"
+Repository = "https://github.com/johnatorres226/step1-nacc-validator"
+
+[project.scripts]
+udsv4-qc = "cli.cli:cli"
+
+[tool.poetry]
+packages = [
+    { include = "pipeline", from = "src" },
+    { include = "cli", from = "src" },
+    { include = "nacc_form_validator" },
+]
+
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]   # Build system requirements
-build-backend = "setuptools.build_meta"     # Build backend to use setuptools
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
@@ -99,6 +115,8 @@ strict_equality = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = [
+    "-ra",
+    "-q", 
     "--strict-markers",
     "--strict-config",
     "--verbose",
@@ -115,7 +133,22 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
+    "config: marks tests related to configuration",
+    "fetching: marks tests related to data fetching",
+    "routing: marks tests related to data routing",
+    "validation: marks tests related to pipeline validation",
+    "output: marks tests related to output generation",
 ]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning", 
+    "ignore::PendingDeprecationWarning",
+]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+junit_family = "xunit2"
 
 [tool.coverage.run]
 source = ["qc_pipeline"]
