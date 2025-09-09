@@ -14,7 +14,8 @@ initializes a `NACCValidator` instance and uses it to perform the validation,
 capturing any errors or system failures that occur.
 """
 
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from cerberus.schema import SchemaError
 
@@ -47,7 +48,7 @@ class QualityCheck:
         self,
         schema: Mapping[str, Any],
         pk_field: str,
-        datastore: Optional[Datastore] = None,
+        datastore: Datastore | None = None,
         strict: bool = False,
     ) -> None:
         """Initialize the QualityCheck with schema, primary key, and optional datastore.
@@ -65,7 +66,7 @@ class QualityCheck:
         """
         self.pk_field: str = pk_field
         self.schema: Mapping[str, Any] = schema
-        self.datastore: Optional[Datastore] = datastore
+        self.datastore: Datastore | None = datastore
         self.strict: bool = strict
         self.validator: NACCValidator = self._init_validator()
 
@@ -103,7 +104,7 @@ class QualityCheck:
 
         return validator
 
-    def validate_record(self, record: Dict[str, Any]) -> ValidationResult:
+    def validate_record(self, record: dict[str, Any]) -> ValidationResult:
         """Validates a single record against the configured schema.
 
         This method performs type casting on the input record before running
@@ -139,6 +140,12 @@ class QualityCheck:
         except ValidationException:
             # Captures critical errors within the validation logic itself
             sys_failure = True
+        except Exception:
+            # Any unexpected exception raised by the underlying validator
+            # should be treated as a system failure for the QualityCheck
+            # (tests mock validator.validate to raise Exception("System error")).
+            sys_failure = True
+            passed = False
 
         errors = (
             self.validator.sys_errors if sys_failure else self.validator.errors

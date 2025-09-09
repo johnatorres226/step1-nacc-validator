@@ -8,21 +8,22 @@ for the same instrument based on a discriminant variable in the data.
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-from ..config_manager import (
+from src.pipeline.config_manager import (
     get_config,
     get_rule_mappings,
     instrument_json_mapping,
     is_dynamic_rule_instrument,
 )
-from ..logging_config import get_logger
+from src.pipeline.logging_config import get_logger
+
 
 logger = get_logger(__name__)
 
 
 def load_dynamic_rules_for_instrument(
-        instrument_name: str) -> Dict[str, Dict[str, Any]]:
+        instrument_name: str) -> dict[str, dict[str, Any]]:
     """
     Loads rules for instruments that use dynamic rule selection.
 
@@ -44,15 +45,15 @@ def load_dynamic_rules_for_instrument(
         json.JSONDecodeError: If a rule file contains invalid JSON.
     """
     if not is_dynamic_rule_instrument(instrument_name):
-        raise ValueError(
-            f"Instrument '{instrument_name}' is not configured for dynamic rule selection.")
+        msg = f"Instrument '{instrument_name}' is not configured for dynamic rule selection."
+        raise ValueError(msg)
 
     config = get_config()
     # Use I packet path as default for dynamic instruments
     json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError(
-            "JSON_RULES_PATH_I is not configured. Please check your environment settings.")
+        msg = "JSON_RULES_PATH_I is not configured. Please check your environment settings."
+        raise ValueError(msg)
 
     json_rules_path = Path(json_rules_dir)
     rule_mappings = get_rule_mappings(instrument_name)
@@ -62,28 +63,25 @@ def load_dynamic_rules_for_instrument(
     for variant, filename in rule_mappings.items():
         file_path = json_rules_path / filename
         try:
-            with file_path.open('r') as f:
+            with file_path.open("r") as f:
                 rules = json.load(f)
                 rule_map[variant] = rules
             routes_loaded.append(f"{variant} ({len(rules)} rules)")
         except FileNotFoundError:
-            logger.error(f"Rule file not found: {file_path}")
+            logger.exception("Rule file not found: %s", file_path)
             raise
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in rule file: {file_path} - {e}")
+        except json.JSONDecodeError:
+            logger.exception("Invalid JSON in rule file: %s", file_path)
             raise
-        except Exception as e:
-            logger.error(
-                f"An unexpected error occurred while loading {file_path}: {e}")
+        except Exception:
+            logger.exception("An unexpected error occurred while loading %s", file_path)
             raise
 
-    logger.debug(
-        f"Loaded dynamic rules for {instrument_name}: {
-            ', '.join(routes_loaded)}")
+    logger.debug("Loaded dynamic rules for %s: %s", instrument_name, ", ".join(routes_loaded))
     return rule_map
 
 
-def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
+def load_json_rules_for_instrument(instrument_name: str) -> dict[str, Any]:
     """
     Loads all JSON validation rules for a given standard instrument.
 
@@ -100,13 +98,12 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
     # Use I packet path as default for general rule loading
     json_rules_dir = config.json_rules_path_i
     if not json_rules_dir:
-        raise ValueError(
-            "JSON_RULES_PATH_I is not configured. Please check your environment settings.")
+        msg = "JSON_RULES_PATH_I is not configured. Please check your environment settings."
+        raise ValueError(msg)
 
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
-        logger.warning(
-            f"No JSON rule files found for instrument: {instrument_name}")
+        logger.warning("No JSON rule files found for instrument: %s", instrument_name)
         return {}
 
     combined_rules = {}
@@ -114,18 +111,14 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
         file_path = Path(json_rules_dir) / file_name
         if file_path.exists():
             try:
-                with file_path.open('r') as f:
+                with file_path.open("r") as f:
                     rules = json.load(f)
                     combined_rules.update(rules)
-            except json.JSONDecodeError as e:
-                logger.error(
-                    f"Could not decode JSON from {file_path}: {e}",
-                    exc_info=True)
-            except Exception as e:
-                logger.error(
-                    f"Error reading rule file {file_path}: {e}",
-                    exc_info=True)
+            except json.JSONDecodeError:
+                logger.exception("Could not decode JSON from %s", file_path)
+            except Exception:
+                logger.exception("Error reading rule file %s", file_path)
         else:
-            logger.warning(f"JSON rule file not found: {file_path}")
+            logger.warning("JSON rule file not found: %s", file_path)
 
     return combined_rules

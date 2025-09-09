@@ -6,10 +6,8 @@ A professional command-line tool for running quality control validation
 on UDSv4 REDCap data with comprehensive reporting and configuration management.
 """
 
-import sys
 import warnings
 from pathlib import Path
-from typing import List
 
 import click
 from rich.console import Console
@@ -21,64 +19,65 @@ from pipeline.config_manager import (
 from pipeline.logging_config import get_logger, setup_logging
 from pipeline.report_pipeline import operation_context, run_report_pipeline
 
+
 # Initialize console and logger
 console = Console()
-logger = get_logger('cli')
+logger = get_logger("cli")
 
 
-@click.group(context_settings=dict(help_option_names=['-h', '--help']), invoke_without_command=True)
+@click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
 @click.version_option(version="1.0.0")
-@click.option('--log-level',
-              type=click.Choice(['DEBUG',
-                                 'INFO',
-                                 'WARNING',
-                                 'ERROR'],
+@click.option("--log-level",
+              type=click.Choice(["DEBUG",
+                                 "INFO",
+                                 "WARNING",
+                                 "ERROR"],
                                 case_sensitive=False),
-              default='INFO',
-              help='Set the logging level.',
+              default="INFO",
+              help="Set the logging level.",
               )
-@click.option('--mode',
-              '-m',
-              type=click.Choice(['complete_visits',
-                                 'all_incomplete_visits',
-                                 'custom'],
+@click.option("--mode",
+              "-m",
+              type=click.Choice(["complete_visits",
+                                 "all_incomplete_visits",
+                                 "custom"],
                                 case_sensitive=False),
-              default='complete_visits',
-              help='Select the QC validation mode. [default: complete_visits]',
+              default="complete_visits",
+              help="Select the QC validation mode. [default: complete_visits]",
               )
-@click.option('--output-dir',
+@click.option("--output-dir",
               type=click.Path(file_okay=False,
                               dir_okay=True,
                               writable=True,
                               resolve_path=True),
-              help='Override the default output directory.',
+              help="Override the default output directory.",
               )
-@click.option('--event', 'events', multiple=True,
-              help='Specify one or more events to run.')
-@click.option('--ptid', 'ptid_list', multiple=True,
-              help='Specify one or more PTIDs to check.')
-@click.option('--include-qced', is_flag=True,
-              help='Include records that have already been QCed.')
-@click.option('--initials', '-i', 'user_initials', required=False,
-              help='User initials for reporting (3 characters max).')
-@click.option('--log', '-l', is_flag=True,
-              help='Show terminal logging during execution.')
-@click.option('--detailed-run', '-dr', is_flag=True,
-              help=('Generate detailed outputs including Validation_Logs, '
-                    'Completed_Visits, Reports, and Generation_Summary files.'))
-@click.option('--passed-rules', '-ps', is_flag=True,
-              help=('Generate comprehensive Rules Validation log for '
-                    'diagnostic purposes (requires --detailed-run/-dr, '
-                    'large file, slow generation).'))
+@click.option("--event", "events", multiple=True,
+              help="Specify one or more events to run.")
+@click.option("--ptid", "ptid_list", multiple=True,
+              help="Specify one or more PTIDs to check.")
+@click.option("--include-qced", is_flag=True,
+              help="Include records that have already been QCed.")
+@click.option("--initials", "-i", "user_initials", required=False,
+              help="User initials for reporting (3 characters max).")
+@click.option("--log", "-l", is_flag=True,
+              help="Show terminal logging during execution.")
+@click.option("--detailed-run", "-dr", is_flag=True,
+              help=("Generate detailed outputs including Validation_Logs, "
+                    "Completed_Visits, Reports, and Generation_Summary files."))
+@click.option("--passed-rules", "-ps", is_flag=True,
+              help=("Generate comprehensive Rules Validation log for "
+                    "diagnostic purposes (requires --detailed-run/-dr, "
+                    "large file, slow generation)."))
 @click.pass_context
-def cli(ctx, log_level: str, mode: str, output_dir: str, events: List[str], ptid_list: List[str], include_qced: bool, user_initials: str, log: bool, detailed_run: bool, passed_rules: bool):
+def cli(ctx, log_level: str, mode: str, output_dir: str, events: list[str], ptid_list: list[str], include_qced: bool, user_initials: str, log: bool, detailed_run: bool, passed_rules: bool):
     """UDSv4 REDCap QC Validator - A comprehensive CLI for data quality control.
 
     When invoked without a subcommand, the tool runs the QC pipeline. Use
     the `config` subcommand to inspect configuration.
     """
     # Minimal startup logging - detailed logging configured later
-    setup_logging(log_level='ERROR')
+    setup_logging(log_level="ERROR")
     warnings.filterwarnings(
         "ignore",
         message=(
@@ -92,25 +91,28 @@ def cli(ctx, log_level: str, mode: str, output_dir: str, events: List[str], ptid
     # Otherwise, run the QC pipeline using the parameters provided
     # Validate that --passed-rules can only be used with --detailed-run
     if passed_rules and not detailed_run:
-        raise click.ClickException(
+        _msg = (
             "The --passed-rules/-ps option requires --detailed-run/-dr to be enabled. "
-            "Use: udsv4-qc -i INITIALS -dr -ps")
+            "Use: udsv4-qc -i INITIALS -dr -ps"
+        )
+        raise click.ClickException(_msg)
 
     # Ensure required initials are present for runs
     if not user_initials:
-        raise click.UsageError("The --initials/-i option is required for runs.")
+        _msg = "The --initials/-i option is required for runs."
+        raise click.UsageError(_msg)
 
     # Configure logging properly using the logging_config module
     if log:
         setup_logging(
-            log_level='INFO',
+            log_level="INFO",
             console_output=True,
             structured_logging=False,
             performance_tracking=True
         )
     else:
         setup_logging(
-            log_level='CRITICAL',
+            log_level="CRITICAL",
             console_output=False,
             structured_logging=False,
             performance_tracking=False
@@ -145,27 +147,27 @@ def cli(ctx, log_level: str, mode: str, output_dir: str, events: List[str], ptid
 
         # Execute pipeline
         if log:
-            with operation_context("qc_validation", f"Processing {mode} mode"):
+            with operation_context("qc_validation", "Processing %s mode" % mode):
                 run_report_pipeline(config=base_config)
-            logger.info(f"Results saved to: {Path(base_config.output_path).resolve()}")
+            logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
             logger.info("QC validation pipeline complete")
         else:
             run_report_pipeline(config=base_config)
 
     except Exception as e:
         if log:
-            logger.error(f"QC validation pipeline failed: {e}")
+            logger.exception("QC validation pipeline failed")
             console.print("An error occurred. Check the logs above for details.")
         else:
-            console.print(f"QC validation pipeline failed: {e}")
+            console.print("QC validation pipeline failed: %s" % e)
         ctx.exit(1)
 
 
 @cli.command()
-@click.option('--detailed', '-d', is_flag=True,
-              help='Show detailed configuration.')
+@click.option("--detailed", "-d", is_flag=True,
+              help="Show detailed configuration.")
 @click.option(
-    '--json-output', is_flag=True, help='Output configuration as JSON.')
+    "--json-output", is_flag=True, help="Output configuration as JSON.")
 def config(detailed: bool, json_output: bool):
     """Displays the current configuration status and validates settings."""
     try:
@@ -200,7 +202,7 @@ def config(detailed: bool, json_output: bool):
         console.print_json(data=status)
         return
 
-    if status['valid']:
+    if status["valid"]:
         console.print("UDSv4 QC Validator Status: Ready")
     else:
         console.print(
@@ -211,7 +213,7 @@ def config(detailed: bool, json_output: bool):
     console.print(
         f"Overall System: {
             'Ready' if status['valid'] else 'Issues Found'}")
-    if status['errors']:
+    if status["errors"]:
         console.print(f"  Issues: {len(status['errors'])}")
 
     console.print(
@@ -224,8 +226,8 @@ def config(detailed: bool, json_output: bool):
         f"Validation Rules: {
             'Configured' if status['packet_rules_configured'] else 'Missing'}")
 
-    if detailed and 'legacy_compatibility' in status:
-        legacy_info = status['legacy_compatibility']
+    if detailed and "legacy_compatibility" in status:
+        legacy_info = status["legacy_compatibility"]
         console.print("\nData Components:")
         console.print(
             f"Instruments: {
@@ -235,9 +237,9 @@ def config(detailed: bool, json_output: bool):
         console.print(f"Events: {legacy_info.get('events_count', 0)}")
         console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
-    if status['errors']:
+    if status["errors"]:
         console.print("\nConfiguration Issues:")
-        for error in status['errors']:
+        for error in status["errors"]:
             console.print(f"  - {error}")
 
 
@@ -245,7 +247,7 @@ def config(detailed: bool, json_output: bool):
 def _display_run_summary(config: QCConfig):
     """Displays a summary of the QC run configuration."""
     mode_title = config.mode.replace(
-        '_', ' ').title() if config.mode else "N/A"
+        "_", " ").title() if config.mode else "N/A"
     console.print(f"\nQC Run Configuration (Mode: {mode_title})")
 
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
@@ -260,7 +262,7 @@ def _display_run_summary(config: QCConfig):
             'All' if not config.ptid_list else ', '.join(
                 config.ptid_list)}")
 
-    if config.mode == 'custom':
+    if config.mode == "custom":
         console.print(
             f"Include Previously QCed: {
                 'Yes' if config.include_qced else 'No'}")

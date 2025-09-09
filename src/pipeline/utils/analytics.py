@@ -7,17 +7,18 @@ complex debug functionality with structured, maintainable analytics.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
-from ..config_manager import (
+from src.pipeline.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_special_columns,
     is_dynamic_rule_instrument,
 )
-from ..processors.instrument_processors import DynamicInstrumentProcessor
+from src.pipeline.processors.instrument_processors import DynamicInstrumentProcessor
+
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class CoverageReport:
     instrument_name: str
     total_rule_variables: int
     matched_variables: int
-    missing_variables: List[str]
+    missing_variables: list[str]
     coverage_percentage: float
 
     @property
@@ -65,15 +66,15 @@ class DataQualityAnalyzer:
             verbosity_level: One of "summary", "detailed", "full"
         """
         self.verbosity_level = verbosity_level
-        self._coverage_reports: List[CoverageReport] = []
-        self._orphaned_columns: List[str] = []
+        self._coverage_reports: list[CoverageReport] = []
+        self._orphaned_columns: list[str] = []
 
     def analyze_coverage(
         self,
         data_df: pd.DataFrame,
-        instrument_list: List[str],
-        rules_cache: Dict[str, Dict[str, Any]]
-    ) -> List[CoverageReport]:
+        instrument_list: list[str],
+        rules_cache: dict[str, dict[str, Any]]
+    ) -> list[CoverageReport]:
         """
         Analyze data coverage for given instruments.
 
@@ -118,8 +119,8 @@ class DataQualityAnalyzer:
     def find_orphaned_columns(
         self,
         data_df: pd.DataFrame,
-        rules_cache: Dict[str, Dict[str, Any]]
-    ) -> List[str]:
+        rules_cache: dict[str, dict[str, Any]]
+    ) -> list[str]:
         """
         Find columns present in data but not defined in any rules.
 
@@ -159,7 +160,7 @@ class DataQualityAnalyzer:
         return orphaned
 
     def generate_summary(
-            self, data_df: Optional[pd.DataFrame] = None) -> QualitySummary:
+            self, data_df: pd.DataFrame | None = None) -> QualitySummary:
         """
         Generate high-level summary of data quality.
 
@@ -196,7 +197,7 @@ class DataQualityAnalyzer:
         )
 
     def get_detailed_report(
-            self, data_df: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+            self, data_df: pd.DataFrame | None = None) -> dict[str, Any]:
         """
         Get detailed report based on verbosity level.
 
@@ -210,65 +211,65 @@ class DataQualityAnalyzer:
 
         if self.verbosity_level == "summary":
             return {
-                'summary': {
-                    'total_instruments': summary.total_instruments,
-                    'overall_coverage': f"{
+                "summary": {
+                    "total_instruments": summary.total_instruments,
+                    "overall_coverage": f"{
                         summary.overall_coverage_percentage:.1f}%",
-                    'complete_instruments': summary.complete_instruments,
-                    'orphaned_columns_count': summary.orphaned_columns_count}}
+                    "complete_instruments": summary.complete_instruments,
+                    "orphaned_columns_count": summary.orphaned_columns_count}}
 
-        elif self.verbosity_level == "detailed":
+        if self.verbosity_level == "detailed":
             return {
-                'summary': summary.__dict__,
-                'coverage_by_instrument': [
+                "summary": summary.__dict__,
+                "coverage_by_instrument": [
                     {
-                        'instrument': r.instrument_name,
-                        'coverage': f"{r.coverage_percentage:.1f}%",
-                        'missing_count': len(r.missing_variables)
+                        "instrument": r.instrument_name,
+                        "coverage": f"{r.coverage_percentage:.1f}%",
+                        "missing_count": len(r.missing_variables)
                     }
                     for r in self._coverage_reports
                 ],
-                'issues': {
-                    'incomplete_instruments': [
+                "issues": {
+                    "incomplete_instruments": [
                         r.instrument_name for r in self._coverage_reports
                         if not r.is_complete
                     ],
-                    'orphaned_columns_count': len(self._orphaned_columns)
+                    "orphaned_columns_count": len(self._orphaned_columns)
                 }
             }
 
-        else:  # "full"
-            return {
-                'summary': summary.__dict__,
-                'coverage_reports': [
-                    r.__dict__ for r in self._coverage_reports],
-                'orphaned_columns': self._orphaned_columns,
-                'detailed_analysis': {
-                    'instruments_by_coverage': self._group_instruments_by_coverage(),
-                    'most_common_missing_variables': self._get_common_missing_variables()}}
+        # "full"
+        return {
+            "summary": summary.__dict__,
+            "coverage_reports": [
+                r.__dict__ for r in self._coverage_reports],
+            "orphaned_columns": self._orphaned_columns,
+            "detailed_analysis": {
+                "instruments_by_coverage": self._group_instruments_by_coverage(),
+                "most_common_missing_variables": self._get_common_missing_variables()}}
 
-    def _group_instruments_by_coverage(self) -> Dict[str, List[str]]:
+    def _group_instruments_by_coverage(self) -> dict[str, list[str]]:
         """Group instruments by coverage ranges."""
         groups = {
-            'complete': [],      # 100%
-            'high': [],          # 90-99%
-            'medium': [],        # 70-89%
-            'low': []           # <70%
+            "complete": [],      # 100%
+            "high": [],          # 90-99%
+            "medium": [],        # 70-89%
+            "low": []           # <70%
         }
 
         for report in self._coverage_reports:
             if report.coverage_percentage == 100:
-                groups['complete'].append(report.instrument_name)
+                groups["complete"].append(report.instrument_name)
             elif report.coverage_percentage >= 90:
-                groups['high'].append(report.instrument_name)
+                groups["high"].append(report.instrument_name)
             elif report.coverage_percentage >= 70:
-                groups['medium'].append(report.instrument_name)
+                groups["medium"].append(report.instrument_name)
             else:
-                groups['low'].append(report.instrument_name)
+                groups["low"].append(report.instrument_name)
 
         return groups
 
-    def _get_common_missing_variables(self) -> List[Tuple[str, int]]:
+    def _get_common_missing_variables(self) -> list[tuple[str, int]]:
         """Get most commonly missing variables across instruments."""
         missing_counts = {}
 
@@ -286,10 +287,10 @@ class DataQualityAnalyzer:
 
 def create_simplified_debug_info(
     data_df: pd.DataFrame,
-    instrument_list: List[str],
-    rules_cache: Dict[str, Dict[str, Any]],
+    instrument_list: list[str],
+    rules_cache: dict[str, dict[str, Any]],
     verbosity: str = "summary"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Simplified replacement for debug_variable_mapping.
 

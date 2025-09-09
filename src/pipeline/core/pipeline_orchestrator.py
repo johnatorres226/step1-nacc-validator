@@ -7,7 +7,6 @@ stage separation, comprehensive error handling, and proper data flow tracking.
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 import pandas as pd
 
@@ -27,6 +26,7 @@ from .pipeline_results import (
     ValidationError,
     ValidationResult,
 )
+
 
 logger = get_logger(__name__)
 
@@ -55,9 +55,9 @@ class PipelineOrchestrator:
 
     def run_pipeline(
         self,
-        output_path: Optional[Union[str, Path]] = None,
-        date_tag: Optional[str] = None,
-        time_tag: Optional[str] = None
+        output_path: str | Path | None = None,
+        date_tag: str | None = None,
+        time_tag: str | None = None
     ) -> PipelineExecutionResult:
         """
         Execute the complete QC pipeline with structured stages.
@@ -78,8 +78,11 @@ class PipelineOrchestrator:
 
         self.logger.info("Starting QC pipeline")
         self.logger.info(
-            f"Configuration: {len(self.config.instruments)} instruments, mode: {self.config.mode}")
-        self.logger.info(f"Output directory: {output_dir}")
+            "Configuration: %d instruments, mode: %s",
+            len(self.config.instruments),
+            self.config.mode,
+        )
+        self.logger.info("Output directory: %s", output_dir)
 
         try:
             # Stage 1: Data Fetching
@@ -87,19 +90,20 @@ class PipelineOrchestrator:
             data_fetch_result = self._execute_data_fetch_stage(
                 output_dir, date_tag, time_tag)
             self.logger.info(
-                f"Data fetch completed: {
-                    data_fetch_result.records_processed} records in {
-                    data_fetch_result.execution_time:.2f}s")
+                "Data fetch completed: %d records in %.2fs",
+                data_fetch_result.records_processed,
+                data_fetch_result.execution_time,
+            )
 
             # Stage 2: Rules Loading
             self.logger.info("Stage 2: Rules Loading")
             rules_loading_result = self._execute_rules_loading_stage()
             self.logger.info(
-                f"Rules loading completed: {
-                    rules_loading_result.loaded_instruments_count}/{
-                    len(
-                        self.config.instruments)} instruments in {
-                    rules_loading_result.loading_time:.2f}s")
+                "Rules loading completed: %d/%d instruments in %.2fs",
+                rules_loading_result.loaded_instruments_count,
+                len(self.config.instruments),
+                rules_loading_result.loading_time,
+            )
 
             # Stage 3: Data Preparation
             self.logger.info("Stage 3: Data Preparation")
@@ -107,9 +111,10 @@ class PipelineOrchestrator:
                 data_fetch_result, rules_loading_result
             )
             self.logger.info(
-                f"Data preparation completed: {
-                    data_prep_result.total_records_prepared} records prepared in {
-                    data_prep_result.preparation_time:.2f}s")
+                "Data preparation completed: %d records prepared in %.2fs",
+                data_prep_result.total_records_prepared,
+                data_prep_result.preparation_time,
+            )
 
             # Stage 4: Validation
             self.logger.info("Stage 4: Validation Processing")
@@ -117,18 +122,20 @@ class PipelineOrchestrator:
                 data_prep_result, rules_loading_result
             )
             self.logger.info(
-                f"Validation completed: {
-                    validation_result.total_errors} errors found in {
-                    validation_result.validation_time:.2f}s")
+                "Validation completed: %d errors found in %.2fs",
+                validation_result.total_errors,
+                validation_result.validation_time,
+            )
 
             # Stage 5: Report Generation
             self.logger.info("Stage 5: Report Generation")
             report_result = self._execute_report_generation_stage(
                 validation_result, data_prep_result, output_dir, date_tag, time_tag)
             self.logger.info(
-                f"Report generation completed: {
-                    report_result.total_files_created} files created in {
-                    report_result.export_time:.2f}s")
+                "Report generation completed: %d files created in %.2fs",
+                report_result.total_files_created,
+                report_result.export_time,
+            )
 
             # Create final result
             total_time = time.time() - self.start_time
@@ -146,30 +153,30 @@ class PipelineOrchestrator:
             )
 
             self.logger.info("Pipeline execution completed successfully")
-            self.logger.info(f"Total execution time: {total_time:.2f}s")
-            self.logger.info(f"Output directory: {output_dir}")
+            self.logger.info("Total execution time: %.2fs", total_time)
+            self.logger.info("Output directory: %s", output_dir)
 
             return result
 
         except Exception as e:
             total_time = time.time() - self.start_time if self.start_time else 0
-            self.logger.error(f"Pipeline execution failed: {e}", exc_info=True)
+            self.logger.exception("Pipeline execution failed: %s", e)
 
             # Create failed result with whatever stages completed
             failed_result = self._create_failed_result(
                 e, total_time, output_dir)
 
             self.logger.error("Pipeline execution failed")
-            self.logger.error(f"Error: {e}")
-            self.logger.error(f"Execution time: {total_time:.2f}s")
+            self.logger.error("Error: %s", e)
+            self.logger.error("Execution time: %.2fs", total_time)
 
             return failed_result
 
     def _create_output_directory(
         self,
-        output_path: Optional[Union[str, Path]],
-        date_tag: Optional[str],
-        time_tag: Optional[str]
+        output_path: str | Path | None,
+        date_tag: str | None,
+        time_tag: str | None
     ) -> Path:
         """Create output directory with proper naming."""
         if date_tag is None or time_tag is None:
@@ -191,8 +198,8 @@ class PipelineOrchestrator:
     def _execute_data_fetch_stage(
         self,
         output_dir: Path,
-        date_tag: Optional[str],
-        time_tag: Optional[str]
+        date_tag: str | None,
+        time_tag: str | None
     ) -> DataFetchResult:
         """Execute the data fetching stage."""
         try:
@@ -213,8 +220,8 @@ class PipelineOrchestrator:
                 records_processed=etl_result.records_processed,
                 execution_time=execution_time,
                 source_info={
-                    "redcap_url": getattr(self.config, 'redcap_url', 'N/A'),
-                    "project_id": getattr(self.config, 'project_id', 'N/A')
+                    "redcap_url": getattr(self.config, "redcap_url", "N/A"),
+                    "project_id": getattr(self.config, "project_id", "N/A")
                 },
                 fetch_timestamp=datetime.now(),
                 success=True
@@ -233,10 +240,11 @@ class PipelineOrchestrator:
 
             stage_start = time.time()
 
+            # Use lazy logging to avoid eager formatting
             self.logger.info(
-                f"Loading validation rules for {
-                    len(
-                        self.config.instruments)} instruments using packet routing...")
+                "Loading validation rules for %d instruments using packet routing...",
+                len(self.config.instruments),
+            )
 
             # Initialize packet router for production rule loading
             PacketRuleRouter(self.config)
@@ -318,22 +326,24 @@ class PipelineOrchestrator:
                     summary_dataframe=complete_visits_df,
                     complete_visits_tuples=complete_visits_tuples,
                     total_visits_processed=len(data_df.groupby(
-                        [self.config.primary_key_field, 'redcap_event_name'])),
+                        [self.config.primary_key_field, "redcap_event_name"])),
                     complete_visits_count=len(complete_visits_df),
                     processing_time=visits_time
                 )
 
                 # Filter data to complete visits only
                 if not complete_visits_df.empty:
+                    # Avoid f-strings in logging
                     self.logger.info(
-                        f"Filtering to {
-                            len(complete_visits_df)} complete visits...")
+                        "Filtering to %d complete visits...",
+                        len(complete_visits_df),
+                    )
                     # Create index for comparison
                     data_index = data_df.set_index([
-                        self.config.primary_key_field, 'redcap_event_name'
+                        self.config.primary_key_field, "redcap_event_name"
                     ]).index
                     complete_index = complete_visits_df.set_index([
-                        self.config.primary_key_field, 'redcap_event_name'
+                        self.config.primary_key_field, "redcap_event_name"
                     ]).index
                     complete_visits_mask = data_index.isin(complete_index)
                     data_df = data_df[complete_visits_mask].copy()
@@ -358,11 +368,10 @@ class PipelineOrchestrator:
 
                 # Calculate records per instrument
                 records_per_instrument = {
-                    instrument: len(df) for instrument,
-                    df in instrument_data_cache.items()}
+                    instrument: len(df) for instrument, df in instrument_data_cache.items()
+                }
             else:
-                records_per_instrument = {
-                    inst: 0 for inst in self.config.instruments}
+                records_per_instrument = dict.fromkeys(self.config.instruments, 0)
 
             execution_time = time.time() - stage_start
 
@@ -437,16 +446,16 @@ class PipelineOrchestrator:
                 # name
                 if not df.empty:
                     record_df = df[[self.config.primary_key_field,
-                                    'redcap_event_name']].copy()
-                    record_df['instrument_name'] = instrument
+                                    "redcap_event_name"]].copy()
+                    record_df["instrument_name"] = instrument
                     records_for_status.append(record_df)
                 else:
                     # Create empty DataFrame with proper columns
                     empty_df = pd.DataFrame(
                         columns=[
                             self.config.primary_key_field,
-                            'redcap_event_name',
-                            'instrument_name'])
+                            "redcap_event_name",
+                            "instrument_name"])
                     records_for_status.append(empty_df)
 
             # Create result DataFrames
@@ -501,8 +510,8 @@ class PipelineOrchestrator:
         validation_result: ValidationResult,
         data_prep_result: DataPreparationResult,
         output_dir: Path,
-        date_tag: Optional[str],
-        time_tag: Optional[str]
+        date_tag: str | None,
+        time_tag: str | None
     ) -> ReportGenerationResult:
         """Execute the report generation stage."""
         try:
@@ -568,14 +577,14 @@ class PipelineOrchestrator:
             # Map generated files to report types
             reports_created = {}
             for file_path in generated_files:
-                if 'errors' in file_path.name.lower():
-                    reports_created['errors'] = file_path
-                elif 'logs' in file_path.name.lower():
-                    reports_created['logs'] = file_path
-                elif 'status' in file_path.name.lower():
-                    reports_created['status'] = file_path
-                elif 'visits' in file_path.name.lower():
-                    reports_created['complete_visits'] = file_path
+                if "errors" in file_path.name.lower():
+                    reports_created["errors"] = file_path
+                elif "logs" in file_path.name.lower():
+                    reports_created["logs"] = file_path
+                elif "status" in file_path.name.lower():
+                    reports_created["status"] = file_path
+                elif "visits" in file_path.name.lower():
+                    reports_created["complete_visits"] = file_path
 
             return ReportGenerationResult(
                 generated_files=generated_files,
@@ -596,7 +605,7 @@ class PipelineOrchestrator:
             "config_mode": self.config.mode,
             "instruments_requested": self.config.instruments.copy(),
             "primary_key_field": self.config.primary_key_field,
-            "user_initials": getattr(self.config, 'user_initials', 'N/A')
+            "user_initials": getattr(self.config, "user_initials", "N/A")
         }
 
     def _create_failed_result(

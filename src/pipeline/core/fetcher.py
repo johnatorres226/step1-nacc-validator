@@ -13,7 +13,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import pandas as pd
 import requests
@@ -26,6 +26,7 @@ from ..config_manager import (
 from ..io.rules import load_rules_for_instruments
 from ..logging_config import get_logger
 from .data_processing import get_variables_for_instrument
+
 
 logger = get_logger(__name__)
 
@@ -40,15 +41,14 @@ class ETLContext:
     config: QCConfig
     run_date: str
     time_stamp: str
-    output_path: Optional[Path] = None
+    output_path: Path | None = None
 
     @classmethod
     def create(cls,
                config: QCConfig,
-               output_path: Optional[Union[str,
-                                           Path]] = None,
-               date_tag: Optional[str] = None,
-               time_tag: Optional[str] = None) -> 'ETLContext':
+               output_path: str | Path | None = None,
+               date_tag: str | None = None,
+               time_tag: str | None = None) -> "ETLContext":
         """Create an ETL context with proper timestamp handling."""
         if date_tag and time_tag:
             run_date, time_stamp = date_tag, time_tag
@@ -68,7 +68,7 @@ class ETLResult:
     data: pd.DataFrame
     records_processed: int
     execution_time: float
-    saved_files: List[Path]
+    saved_files: list[Path]
 
     @property
     def is_empty(self) -> bool:
@@ -82,10 +82,10 @@ class ETLResult:
 class DataContract:
     """Defines the expected data structure and validation rules."""
 
-    REQUIRED_FIELDS = ['ptid', 'redcap_event_name']
+    REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 
     @staticmethod
-    def validate_required_fields(df: pd.DataFrame) -> List[str]:
+    def validate_required_fields(df: pd.DataFrame) -> list[str]:
         """Validate that required fields are present in the dataframe."""
         errors = []
         for field in DataContract.REQUIRED_FIELDS:
@@ -105,11 +105,11 @@ class RedcapApiClient:
         self.config = config
         self.session = requests.Session()
         self.session.headers.update({
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json"
         })
 
-    def fetch_data(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def fetch_data(self, payload: dict[str, Any]) -> list[dict[str, Any]]:
         """Fetch data from REDCap API with robust error handling."""
         if not self.config.api_url:
             raise ValueError("REDCap API URL is not configured")
@@ -135,11 +135,25 @@ class RedcapApiClient:
             logger.error(error_msg)
             raise RuntimeError(error_msg)
         except requests.exceptions.RequestException as e:
-            error_msg = f"REDCap API request failed: {str(e)}"
+            # If the response object is available, include its text for
+            # clearer diagnostics (tests mock a 403 with text="Forbidden").
+            resp_text = None
+            try:
+                resp = getattr(e, "response", None)
+                if resp is not None:
+                    resp_text = getattr(resp, "text", None)
+            except Exception:
+                resp_text = None
+
+            if resp_text:
+                error_msg = f"REDCap API request failed: {resp_text}"
+            else:
+                error_msg = f"REDCap API request failed: {e!s}"
+
             logger.error(error_msg)
             raise RuntimeError(error_msg)
         except (ValueError, json.JSONDecodeError) as e:
-            error_msg = f"Failed to parse JSON response: {str(e)}"
+            error_msg = f"Failed to parse JSON response: {e!s}"
             logger.error(error_msg)
             raise RuntimeError(error_msg)
 
@@ -148,7 +162,7 @@ class DataValidator:
     """Handles data validation and quality checks."""
 
     @staticmethod
-    def validate_and_process(raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
+    def validate_and_process(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         """Validate and process raw REDCap data into structured DataFrame."""
         if not raw_data:
             logger.warning("No data to process")
@@ -173,17 +187,17 @@ class DataValidator:
     def _handle_column_mapping(df: pd.DataFrame) -> pd.DataFrame:
         """Handle column mapping and required field creation."""
         # Map record_id to ptid if needed
-        if 'record_id' in df.columns and 'ptid' not in df.columns:
-            df = df.rename(columns={'record_id': 'ptid'})
+        if "record_id" in df.columns and "ptid" not in df.columns:
+            df = df.rename(columns={"record_id": "ptid"})
             logger.debug("Mapped 'record_id' to 'ptid' column")
 
         # Handle missing ptid - this is now an error condition
-        if 'ptid' not in df.columns:
+        if "ptid" not in df.columns:
             raise ValueError(
                 "Critical error: 'ptid' column missing from REDCap data")
 
         # Handle missing redcap_event_name
-        if 'redcap_event_name' not in df.columns and not df.empty:
+        if "redcap_event_name" not in df.columns and not df.empty:
             raise ValueError(
                 "Critical error: 'redcap_event_name' column missing from REDCap data")
 
@@ -199,7 +213,7 @@ class DataTransformer:
     def apply_instrument_subset_transformation(
             self,
             data: pd.DataFrame,
-            instrument_list: List[str]) -> pd.DataFrame:
+            instrument_list: list[str]) -> pd.DataFrame:
         """Transform data by nullifying fields of incomplete instruments."""
         if data.empty:
             logger.warning("Empty DataFrame provided for transformation")
@@ -225,7 +239,7 @@ class DataTransformer:
 
                 if (completion_var in row and
                     pd.notna(row[completion_var]) and
-                        str(row[completion_var]) != '2'):
+                        str(row[completion_var]) != "2"):
 
                     # Nullify all variables for incomplete instruments
                     instrument_vars = instrument_to_vars_map.get(
@@ -250,7 +264,7 @@ class DataTransformer:
 
     def _apply_ptid_filter(self, data: pd.DataFrame) -> pd.DataFrame:
         """Apply PTID filtering to the data."""
-        if 'ptid' not in data.columns:
+        if "ptid" not in data.columns:
             logger.warning(
                 "'ptid' column not found, ignoring ptid_list filter")
             return data
@@ -260,7 +274,7 @@ class DataTransformer:
 
         initial_count = len(data)
         ptid_list_str = [str(p) for p in self.context.config.ptid_list]
-        filtered_data = data[data['ptid'].isin(
+        filtered_data = data[data["ptid"].isin(
             ptid_list_str)].reset_index(drop=True)
 
         logger.info(
@@ -275,12 +289,12 @@ class DataSaver:
 
     def __init__(self, context: ETLContext):
         self.context = context
-        self.saved_files: List[Path] = []
+        self.saved_files: list[Path] = []
 
     def save_etl_output(
             self,
             df: pd.DataFrame,
-            filename_prefix: str) -> Optional[Path]:
+            filename_prefix: str) -> Path | None:
         """Save ETL output with consistent naming."""
         if df.empty:
             logger.warning(
@@ -316,13 +330,13 @@ class FilterLogicManager:
     """Manages REDCap filter logic based on configuration."""
 
     @staticmethod
-    def get_filter_logic(config: QCConfig) -> Optional[str]:
+    def get_filter_logic(config: QCConfig) -> str | None:
         """Determine appropriate REDCap filter logic based on config mode."""
         mode_filters = {
-            'complete_events': complete_events_with_incomplete_qc_filter_logic,
-            'complete_visits': complete_events_with_incomplete_qc_filter_logic,
-            'complete_instruments': qc_filterer_logic,
-            'none': None
+            "complete_events": complete_events_with_incomplete_qc_filter_logic,
+            "complete_visits": complete_events_with_incomplete_qc_filter_logic,
+            "complete_instruments": qc_filterer_logic,
+            "none": None
         }
 
         if config.mode in mode_filters:
@@ -333,18 +347,16 @@ class FilterLogicManager:
                 logger.warning("No filtering enabled. Fetching all records")
             return filter_logic
 
-        elif config.mode == 'custom':
+        if config.mode == "custom":
             if config.include_qced:
                 logger.info(
                     "Custom mode: Including already QCed data - no filtering")
                 return None
-            else:
-                logger.info("Custom mode: Using QC status check filter logic")
-                return qc_filterer_logic
-
-        else:
-            logger.info("Defaulting to QC status check filter logic")
+            logger.info("Custom mode: Using QC status check filter logic")
             return qc_filterer_logic
+
+        logger.info("Defaulting to QC status check filter logic")
+        return qc_filterer_logic
 
 
 # =============================================================================
@@ -368,10 +380,9 @@ class RedcapETLPipeline:
         self.saver = None
 
     def run(self,
-            output_path: Optional[Union[str,
-                                        Path]] = None,
-            date_tag: Optional[str] = None,
-            time_tag: Optional[str] = None) -> ETLResult:
+            output_path: str | Path | None = None,
+            date_tag: str | None = None,
+            time_tag: str | None = None) -> ETLResult:
         """
         Execute the complete ETL pipeline.
 
@@ -420,14 +431,13 @@ class RedcapETLPipeline:
             return result
 
         except Exception as e:
-            logger.error(f"ETL pipeline failed: {str(e)}")
+            logger.error(f"ETL pipeline failed: {e!s}")
             raise
 
     def _initialize_components(self,
-                               output_path: Optional[Union[str,
-                                                           Path]],
-                               date_tag: Optional[str],
-                               time_tag: Optional[str]) -> None:
+                               output_path: str | Path | None,
+                               date_tag: str | None,
+                               time_tag: str | None) -> None:
         """Initialize ETL components with proper context."""
         self.context = ETLContext.create(
             self.config, output_path, date_tag, time_tag)
@@ -435,7 +445,7 @@ class RedcapETLPipeline:
         self.transformer = DataTransformer(self.context)
         self.saver = DataSaver(self.context)
 
-    def _fetch_data(self) -> List[Dict[str, Any]]:
+    def _fetch_data(self) -> list[dict[str, Any]]:
         """Fetch data from REDCap API."""
         # Determine filter logic
         filter_logic = FilterLogicManager.get_filter_logic(self.config)
@@ -471,40 +481,40 @@ class RedcapETLPipeline:
             return raw_data
 
         except Exception as e:
-            logger.error(f"Data fetch failed: {str(e)}")
+            logger.error(f"Data fetch failed: {e!s}")
             raise
 
     def _build_api_payload(self,
-                           instruments: List[str],
-                           filter_logic: Optional[str]) -> Dict[str,
+                           instruments: list[str],
+                           filter_logic: str | None) -> dict[str,
                                                                 Any]:
         """Build REDCap API payload."""
         payload = {
-            'token': self.config.api_token,
-            'content': 'record',
-            'format': 'json',
-            'type': 'flat',
-            'rawOrLabel': 'raw',
-            'rawOrLabelHeaders': 'raw',
-            'exportCheckboxLabel': 'false',
-            'exportSurveyFields': 'false',
-            'exportDataAccessGroups': 'false',
-            'returnFormat': 'json',
+            "token": self.config.api_token,
+            "content": "record",
+            "format": "json",
+            "type": "flat",
+            "rawOrLabel": "raw",
+            "rawOrLabelHeaders": "raw",
+            "exportCheckboxLabel": "false",
+            "exportSurveyFields": "false",
+            "exportDataAccessGroups": "false",
+            "returnFormat": "json",
         }
 
         if instruments:
-            payload['forms'] = ','.join(instruments)
+            payload["forms"] = ",".join(instruments)
         if self.config.events:
-            payload['events'] = ','.join(self.config.events)
+            payload["events"] = ",".join(self.config.events)
         if filter_logic:
-            payload['filterLogic'] = filter_logic
+            payload["filterLogic"] = filter_logic
             logger.info(
                 "Applying filter logic (see complete_events_with_incomplete_qc_filter_logic "
                 "in config_manager.py)")
 
         return payload
 
-    def _validate_data(self, raw_data: List[Dict[str, Any]]) -> pd.DataFrame:
+    def _validate_data(self, raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         """Validate and process raw data."""
         return DataValidator.validate_and_process(raw_data)
 
@@ -517,16 +527,15 @@ class RedcapETLPipeline:
         # Ensure transformer is initialized
         assert self.transformer is not None, "Transformer not initialized"
 
-        if self.config.mode == 'complete_instruments':
+        if self.config.mode == "complete_instruments":
             logger.info("Applying instrument subset transformation")
             return self.transformer.apply_instrument_subset_transformation(
                 data, self.config.instruments
             )
-        else:
-            logger.info("Applying basic filtering")
-            return self.transformer.apply_basic_filtering(data)
+        logger.info("Applying basic filtering")
+        return self.transformer.apply_basic_filtering(data)
 
-    def _save_data(self, data: pd.DataFrame) -> List[Path]:
+    def _save_data(self, data: pd.DataFrame) -> list[Path]:
         """Save processed data."""
         saved_files = []
 

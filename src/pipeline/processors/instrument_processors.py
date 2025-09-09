@@ -5,20 +5,21 @@ This module provides a unified interface for processing different types of instr
 (standard and dynamic) through a strategy pattern, eliminating complex branching logic.
 """
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
-from ..config_manager import (
+from pipeline.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_discriminant_variable,
     get_rule_mappings,
     is_dynamic_rule_instrument,
 )
-from ..io.context import ProcessingContext
-from ..logging_config import get_logger
-from ..utils.instrument_mapping import load_dynamic_rules_for_instrument
+from pipeline.io.context import ProcessingContext
+from pipeline.logging_config import get_logger
+from pipeline.utils.instrument_mapping import load_dynamic_rules_for_instrument
+
 
 logger = get_logger(__name__)
 
@@ -47,8 +48,8 @@ class DynamicInstrumentProcessor:
             ValueError: If instrument is not configured for dynamic rule selection
         """
         if not is_dynamic_rule_instrument(instrument_name):
-            raise ValueError(
-                f"Instrument '{instrument_name}' is not configured for dynamic rule selection")
+            _msg = "Instrument '%s' is not configured for dynamic rule selection"
+            raise ValueError(_msg % instrument_name)
 
         self.instrument_name = instrument_name
         self.discriminant_var = get_discriminant_variable(instrument_name)
@@ -56,7 +57,7 @@ class DynamicInstrumentProcessor:
         self._rule_cache = None
         self._variables_cache = None
 
-    def get_all_variables(self) -> List[str]:
+    def get_all_variables(self) -> list[str]:
         """
         Get all possible variables across all rule variants for this instrument.
 
@@ -72,7 +73,7 @@ class DynamicInstrumentProcessor:
 
         return self._variables_cache
 
-    def get_rules_for_variant(self, variant: str) -> Dict[str, Any]:
+    def get_rules_for_variant(self, variant: str) -> dict[str, Any]:
         """
         Get validation rules for a specific variant.
 
@@ -86,7 +87,7 @@ class DynamicInstrumentProcessor:
         return rule_map.get(variant.upper(), {})
 
     def prepare_data(self, df: pd.DataFrame,
-                     primary_key_field: str) -> Tuple[pd.DataFrame, List[str]]:
+                     primary_key_field: str) -> tuple[pd.DataFrame, list[str]]:
         """
         Prepare data for dynamic instrument processing.
 
@@ -121,16 +122,12 @@ class DynamicInstrumentProcessor:
         if self.discriminant_var in df.columns:
             relevant_cols.append(self.discriminant_var)
 
-        # Remove duplicates and ensure columns exist
-        relevant_cols = list(
-            set([col for col in relevant_cols if col in df.columns]))
-
-        # Filter DataFrame
+    # Filter DataFrame
         instrument_df = pd.DataFrame()
         if relevant_cols:
             instrument_df = df[relevant_cols].copy()
             non_core_cols = [col for col in relevant_cols
-                             if col not in core_cols and not col.endswith('_complete')]
+                             if col not in core_cols and not col.endswith("_complete")]
             if non_core_cols:
                 has_data_mask = instrument_df[non_core_cols].notna().any(
                     axis=1)
@@ -139,7 +136,7 @@ class DynamicInstrumentProcessor:
 
         return instrument_df, instrument_variables
 
-    def get_variants_in_data(self, df: pd.DataFrame) -> List[str]:
+    def get_variants_in_data(self, df: pd.DataFrame) -> list[str]:
         """
         Get list of variants actually present in the data.
 
@@ -150,16 +147,14 @@ class DynamicInstrumentProcessor:
             List of variant values found in the discriminant variable
         """
         if self.discriminant_var not in df.columns:
-            logger.warning(
-                f"Discriminant variable '{
-                    self.discriminant_var}' not found in data")
+            logger.warning("Discriminant variable '%s' not found in data", self.discriminant_var)
             return []
 
         variants = df[self.discriminant_var].dropna(
         ).str.upper().unique().tolist()
         return [v for v in variants if v in self.rule_mappings]
 
-    def _get_rule_map(self) -> Dict[str, Dict[str, Any]]:
+    def _get_rule_map(self) -> dict[str, dict[str, Any]]:
         """Load and cache rule map for this instrument."""
         if self._rule_cache is None:
             self._rule_cache = load_dynamic_rules_for_instrument(
@@ -185,7 +180,7 @@ class InstrumentDataProcessor(ABC):
         self.instrument_name = instrument_name
 
     @staticmethod
-    def create_processor(instrument_name: str) -> 'InstrumentDataProcessor':
+    def create_processor(instrument_name: str) -> "InstrumentDataProcessor":
         """
         Factory method to create appropriate processor for an instrument.
 
@@ -197,14 +192,13 @@ class InstrumentDataProcessor(ABC):
         """
         if is_dynamic_rule_instrument(instrument_name):
             return DynamicInstrumentDataProcessor(instrument_name)
-        else:
-            return StandardInstrumentDataProcessor(instrument_name)
+        return StandardInstrumentDataProcessor(instrument_name)
 
     @abstractmethod
     def prepare_data(
         self,
         context: ProcessingContext
-    ) -> Tuple[pd.DataFrame, List[str]]:
+    ) -> tuple[pd.DataFrame, list[str]]:
         """
         Prepare data for the instrument.
 
@@ -216,7 +210,7 @@ class InstrumentDataProcessor(ABC):
         """
 
     @abstractmethod
-    def get_variables(self, context: ProcessingContext) -> List[str]:
+    def get_variables(self, context: ProcessingContext) -> list[str]:
         """
         Get all variables for this instrument.
 
@@ -230,8 +224,8 @@ class InstrumentDataProcessor(ABC):
     def _get_relevant_columns(
         self,
         df: pd.DataFrame,
-        instrument_variables: List[str]
-    ) -> List[str]:
+        instrument_variables: list[str]
+    ) -> list[str]:
         """
         Get columns relevant to this instrument.
 
@@ -263,7 +257,7 @@ class InstrumentDataProcessor(ABC):
     def _filter_records_with_data(
         self,
         df: pd.DataFrame,
-        relevant_cols: List[str]
+        relevant_cols: list[str]
     ) -> pd.DataFrame:
         """
         Filter DataFrame to only include records with actual data.
@@ -282,7 +276,7 @@ class InstrumentDataProcessor(ABC):
         core_cols = get_core_columns()
         non_core_cols = [
             col for col in relevant_cols
-            if col not in core_cols and not col.endswith('_complete')
+            if col not in core_cols and not col.endswith("_complete")
         ]
 
         if non_core_cols:
@@ -301,14 +295,14 @@ class StandardInstrumentDataProcessor(InstrumentDataProcessor):
     This handles instruments with fixed validation rules.
     """
 
-    def get_variables(self, context: ProcessingContext) -> List[str]:
+    def get_variables(self, context: ProcessingContext) -> list[str]:
         """Get variables for standard instrument from rules cache."""
         return list(context.rules_cache.get(self.instrument_name, {}).keys())
 
     def prepare_data(
         self,
         context: ProcessingContext
-    ) -> Tuple[pd.DataFrame, List[str]]:
+    ) -> tuple[pd.DataFrame, list[str]]:
         """
         Prepare data for standard instrument.
 
@@ -353,14 +347,14 @@ class DynamicInstrumentDataProcessor(InstrumentDataProcessor):
         super().__init__(instrument_name)
         self._processor = DynamicInstrumentProcessor(instrument_name)
 
-    def get_variables(self, context: ProcessingContext) -> List[str]:
+    def get_variables(self, context: ProcessingContext) -> list[str]:
         """Get all possible variables across rule variants."""
         return self._processor.get_all_variables()
 
     def prepare_data(
         self,
         context: ProcessingContext
-    ) -> Tuple[pd.DataFrame, List[str]]:
+    ) -> tuple[pd.DataFrame, list[str]]:
         """
         Prepare data for dynamic instrument using consolidated processor.
 
@@ -374,11 +368,11 @@ class DynamicInstrumentDataProcessor(InstrumentDataProcessor):
             context.data_df, context.primary_key_field
         )
 
-    def get_variants_in_data(self, df: pd.DataFrame) -> List[str]:
+    def get_variants_in_data(self, df: pd.DataFrame) -> list[str]:
         """Get variants present in the data."""
         return self._processor.get_variants_in_data(df)
 
-    def get_rules_for_variant(self, variant: str) -> Dict[str, Any]:
+    def get_rules_for_variant(self, variant: str) -> dict[str, Any]:
         """Get rules for specific variant."""
         return self._processor.get_rules_for_variant(variant)
 
@@ -399,11 +393,11 @@ class InstrumentDataCache:
             context: Processing context containing data and configuration
         """
         self.context = context
-        self._cache: Dict[str, pd.DataFrame] = {}
-        self._processors: Dict[str, InstrumentDataProcessor] = {}
-        self._variables_map: Dict[str, List[str]] = {}
+        self._cache: dict[str, pd.DataFrame] = {}
+        self._processors: dict[str, InstrumentDataProcessor] = {}
+        self._variables_map: dict[str, list[str]] = {}
 
-    def prepare_all(self) -> Dict[str, pd.DataFrame]:
+    def prepare_all(self) -> dict[str, pd.DataFrame]:
         """
         Prepare data for all instruments in the context.
 
@@ -439,16 +433,17 @@ class InstrumentDataCache:
         self._cache[instrument] = instrument_df
         self._variables_map[instrument] = variables
 
-        # Log results
-        from ..logging_config import get_logger
-        logger = get_logger(__name__)
+    # Log results (use lazy logging to avoid unnecessary string formatting)
         logger.debug(
-            f"Prepared {len(instrument_df)} records for instrument '{instrument}' "
-            f"with {len(instrument_df.columns) if not instrument_df.empty else 0} columns"
+            "Prepared %d records for instrument '%s' with %d columns",
+            len(instrument_df),
+            instrument,
+            len(instrument_df.columns) if not instrument_df.empty else 0,
         )
         logger.debug(
-            f"Variables for {instrument}: "
-            f"{variables[:10]}{'...' if len(variables) > 10 else ''}"
+            "Variables for %s: %s",
+            instrument,
+            f"{variables[:10]}{'...' if len(variables) > 10 else ''}",
         )
 
         return instrument_df
@@ -457,13 +452,13 @@ class InstrumentDataCache:
         """Get cached data for an instrument."""
         return self._cache.get(instrument, pd.DataFrame())
 
-    def get_instrument_variables(self, instrument: str) -> List[str]:
+    def get_instrument_variables(self, instrument: str) -> list[str]:
         """Get variables for an instrument."""
         return self._variables_map.get(instrument, [])
 
     def get_processor(
             self,
-            instrument: str) -> Optional[InstrumentDataProcessor]:
+            instrument: str) -> InstrumentDataProcessor | None:
         """Get processor for an instrument."""
         return self._processors.get(instrument)
 

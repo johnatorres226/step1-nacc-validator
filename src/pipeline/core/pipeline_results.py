@@ -8,9 +8,10 @@ interfaces between pipeline steps.
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
+
 
 # =============================================================================
 # PIPELINE STAGE RESULT OBJECTS
@@ -23,10 +24,10 @@ class DataFetchResult:
     data: pd.DataFrame
     records_processed: int
     execution_time: float
-    source_info: Dict[str, Any]
+    source_info: dict[str, Any]
     fetch_timestamp: datetime
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     @property
     def is_empty(self) -> bool:
@@ -46,21 +47,21 @@ class DataFetchResult:
 @dataclass
 class RulesLoadingResult:
     """Result object for rules loading stage."""
-    rules_cache: Dict[str, Dict[str, Any]]
-    instruments_processed: List[str]
+    rules_cache: dict[str, dict[str, Any]]
+    instruments_processed: list[str]
     loading_time: float
-    variable_to_instrument_map: Dict[str, str]
-    instrument_to_variables_map: Dict[str, List[str]]
+    variable_to_instrument_map: dict[str, str]
+    instrument_to_variables_map: dict[str, list[str]]
     success: bool = True
-    failed_instruments: List[str] = field(default_factory=list)
-    error_messages: Dict[str, str] = field(default_factory=dict)
+    failed_instruments: list[str] = field(default_factory=list)
+    error_messages: dict[str, str] = field(default_factory=dict)
 
     @property
     def loaded_instruments_count(self) -> int:
         """Number of instruments successfully loaded."""
         return len(self.instruments_processed) - len(self.failed_instruments)
 
-    def get_rules_for_instrument(self, instrument: str) -> Dict[str, Any]:
+    def get_rules_for_instrument(self, instrument: str) -> dict[str, Any]:
         """Get rules for a specific instrument."""
         return self.rules_cache.get(instrument, {})
 
@@ -74,12 +75,12 @@ class RulesLoadingResult:
 @dataclass
 class DataPreparationResult:
     """Result object for data preparation stage."""
-    instrument_data_cache: Dict[str, pd.DataFrame]
-    complete_visits_data: Optional['CompleteVisitsResult']
+    instrument_data_cache: dict[str, pd.DataFrame]
+    complete_visits_data: Optional["CompleteVisitsResult"]
     preparation_time: float
-    records_per_instrument: Dict[str, int]
+    records_per_instrument: dict[str, int]
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     @property
     def total_records_prepared(self) -> int:
@@ -87,7 +88,7 @@ class DataPreparationResult:
         return sum(self.records_per_instrument.values())
 
     @property
-    def instruments_with_data(self) -> List[str]:
+    def instruments_with_data(self) -> list[str]:
         """List of instruments that have data after preparation."""
         return [inst for inst, count in self.records_per_instrument.items()
                 if count > 0]
@@ -101,7 +102,7 @@ class DataPreparationResult:
 class CompleteVisitsResult:
     """Result object for complete visits processing."""
     summary_dataframe: pd.DataFrame
-    complete_visits_tuples: List[tuple]
+    complete_visits_tuples: list[tuple]
     total_visits_processed: int
     complete_visits_count: int
     processing_time: float
@@ -129,10 +130,10 @@ class ValidationResult:
     validation_logs_df: pd.DataFrame
     all_records_df: pd.DataFrame
     validation_time: float
-    instruments_processed: List[str]
-    validation_summary: Dict[str, Any]
+    instruments_processed: list[str]
+    validation_summary: dict[str, Any]
     success: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     @property
     def total_errors(self) -> int:
@@ -156,25 +157,25 @@ class ValidationResult:
         if self.errors_df.empty:
             return pd.DataFrame()
         return self.errors_df[self.errors_df.get(
-            'instrument_name', '') == instrument]
+            "instrument_name", "") == instrument]
 
 
 @dataclass
 class ReportGenerationResult:
     """Result object for report generation stage."""
-    generated_files: List[Path]
+    generated_files: list[Path]
     export_time: float
-    reports_created: Dict[str, Path]
+    reports_created: dict[str, Path]
     success: bool = True
-    failed_reports: List[str] = field(default_factory=list)
-    error_messages: Dict[str, str] = field(default_factory=dict)
+    failed_reports: list[str] = field(default_factory=list)
+    error_messages: dict[str, str] = field(default_factory=dict)
 
     @property
     def total_files_created(self) -> int:
         """Total number of files created."""
         return len(self.generated_files)
 
-    def get_report_path(self, report_type: str) -> Optional[Path]:
+    def get_report_path(self, report_type: str) -> Path | None:
         """Get path for a specific report type."""
         return self.reports_created.get(report_type)
 
@@ -189,12 +190,12 @@ class PipelineExecutionResult:
     report_generation: ReportGenerationResult
     total_execution_time: float
     output_directory: Path
-    run_metadata: Dict[str, Any]
+    run_metadata: dict[str, Any]
     success: bool = True
-    pipeline_error: Optional[str] = None
+    pipeline_error: str | None = None
 
     @property
-    def pipeline_summary(self) -> Dict[str, Any]:
+    def pipeline_summary(self) -> dict[str, Any]:
         """Generate a summary of the entire pipeline execution."""
         return {
             "success": self.success,
@@ -259,7 +260,7 @@ class PipelineStageError(Exception):
             self,
             stage: str,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         self.stage = stage
         self.original_error = original_error
         super().__init__(f"Pipeline stage '{stage}' failed: {message}")
@@ -271,7 +272,7 @@ class DataFetchError(PipelineStageError):
     def __init__(
             self,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         super().__init__("data_fetch", message, original_error)
 
 
@@ -281,7 +282,7 @@ class RulesLoadingError(PipelineStageError):
     def __init__(
             self,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         super().__init__("rules_loading", message, original_error)
 
 
@@ -291,7 +292,7 @@ class DataPreparationError(PipelineStageError):
     def __init__(
             self,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         super().__init__("data_preparation", message, original_error)
 
 
@@ -301,7 +302,7 @@ class ValidationError(PipelineStageError):
     def __init__(
             self,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         super().__init__("validation", message, original_error)
 
 
@@ -311,5 +312,5 @@ class ReportGenerationError(PipelineStageError):
     def __init__(
             self,
             message: str,
-            original_error: Optional[Exception] = None):
+            original_error: Exception | None = None):
         super().__init__("report_generation", message, original_error)

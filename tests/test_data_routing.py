@@ -15,6 +15,23 @@ from src.pipeline.config_manager import QCConfig
 from src.pipeline.io.packet_router import PacketRuleRouter
 
 
+# Guarded optional module imports so tests can reference them at module level
+try:
+    import src.pipeline.io.hierarchical_router as hierarchical_router_module
+except Exception:
+    hierarchical_router_module = None
+
+try:
+    import src.pipeline.utils.instrument_mapping as instrument_mapping_module
+except Exception:
+    instrument_mapping_module = None
+
+try:
+    import src.pipeline.config_manager as config_manager_module
+except Exception:
+    config_manager_module = None
+
+
 class TestPacketRuleRouter:
     """Test packet-based rule routing functionality."""
 
@@ -24,12 +41,12 @@ class TestPacketRuleRouter:
         router = PacketRuleRouter(config)
 
         assert router.config == config
-        assert hasattr(router, '_rule_cache')
+        assert hasattr(router, "_rule_cache")
         assert isinstance(router._rule_cache, dict)
 
     def test_packet_router_initialization_without_config(self):
         """Test packet router initialization without explicit config."""
-        with patch('src.pipeline.io.packet_router.get_config') as mock_get_config:
+        with patch("src.pipeline.io.packet_router.get_config") as mock_get_config:
             mock_config = QCConfig()
             mock_get_config.return_value = mock_config
 
@@ -44,12 +61,12 @@ class TestPacketRuleRouter:
         router = PacketRuleRouter(config)
 
         # Mock the rule loading
-        with patch.object(router, '_load_rules') as mock_load:
-            mock_rules = {'test_field': {'type': 'string'}}
+        with patch.object(router, "_load_rules") as mock_load:
+            mock_rules = {"test_field": {"type": "string"}}
             mock_load.return_value = mock_rules
 
-            record = {'packet': 'I', 'ptid': 'TEST001'}
-            instrument = 'a1_participant_demographics'
+            record = {"packet": "I", "ptid": "TEST001"}
+            instrument = "a1_participant_demographics"
 
             rules = router.get_rules_for_record(record, instrument)
 
@@ -61,8 +78,8 @@ class TestPacketRuleRouter:
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        record = {'ptid': 'TEST001'}  # No packet field
-        instrument = 'a1_participant_demographics'
+        record = {"ptid": "TEST001"}  # No packet field
+        instrument = "a1_participant_demographics"
 
         with pytest.raises(ValueError) as excinfo:
             router.get_rules_for_record(record, instrument)
@@ -74,8 +91,8 @@ class TestPacketRuleRouter:
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        record = {'packet': 'INVALID', 'ptid': 'TEST001'}
-        instrument = 'a1_participant_demographics'
+        record = {"packet": "INVALID", "ptid": "TEST001"}
+        instrument = "a1_participant_demographics"
 
         with pytest.raises(ValueError) as excinfo:
             router.get_rules_for_record(record, instrument)
@@ -88,13 +105,13 @@ class TestPacketRuleRouter:
         router = PacketRuleRouter(config)
 
         # Valid packets (should not raise)
-        valid_packets = ['I', 'I4', 'F', 'i', 'i4', 'f']  # Test case insensitivity
+        valid_packets = ["I", "I4", "F", "i", "i4", "f"]  # Test case insensitivity
 
         for packet in valid_packets:
-            record = {'packet': packet, 'ptid': 'TEST001'}
-            instrument = 'test_instrument'
+            record = {"packet": packet, "ptid": "TEST001"}
+            instrument = "test_instrument"
 
-            with patch.object(router, '_load_rules', return_value={}):
+            with patch.object(router, "_load_rules", return_value={}):
                 try:
                     router.get_rules_for_record(record, instrument)
                 except ValueError as e:
@@ -102,11 +119,11 @@ class TestPacketRuleRouter:
                         pytest.fail(f"Valid packet '{packet}' was rejected")
 
         # Invalid packets (should raise ValueError or AttributeError)
-        invalid_packets = ['', 'X', 'INVALID', '123', None]
+        invalid_packets = ["", "X", "INVALID", "123", None]
 
         for packet in invalid_packets:
-            record = {'packet': packet, 'ptid': 'TEST001'}
-            instrument = 'test_instrument'
+            record = {"packet": packet, "ptid": "TEST001"}
+            instrument = "test_instrument"
 
             with pytest.raises((ValueError, AttributeError)):
                 router.get_rules_for_record(record, instrument)
@@ -120,20 +137,20 @@ class TestRuleCaching:
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        cache_key = ('I', 'test_instrument')
-        mock_rules = {'test_field': {'type': 'string'}}
+        cache_key = ("I", "test_instrument")
+        mock_rules = {"test_field": {"type": "string"}}
 
         # Populate cache
         router._rule_cache[cache_key] = mock_rules
 
-        with patch.object(router, '_load_rules'):
-            record = {'packet': 'I', 'ptid': 'TEST001'}
-            instrument = 'test_instrument'
+        with patch.object(router, "_load_rules"):
+            record = {"packet": "I", "ptid": "TEST001"}
+            instrument = "test_instrument"
 
             rules = router.get_rules_for_record(record, instrument)
 
             # Verify that we get some rules back
-            assert isinstance(rules, dict) or hasattr(rules, '__getitem__')
+            assert isinstance(rules, dict) or hasattr(rules, "__getitem__")
 
             # Cache behavior depends on implementation - just verify method works
             # The fact that we got rules back is the important part
@@ -144,13 +161,13 @@ class TestRuleCaching:
         router = PacketRuleRouter(config)
 
         # The cache key should combine packet and instrument
-        packet = 'I'
-        instrument = 'a1_participant_demographics'
+        packet = "I"
+        instrument = "a1_participant_demographics"
 
         # Check if we can infer the cache key format
-        with patch.object(router, '_load_rules', return_value={}) as mock_load:
+        with patch.object(router, "_load_rules", return_value={}) as mock_load:
             router.get_rules_for_record(
-                {'packet': packet, 'ptid': 'TEST001'}, instrument)
+                {"packet": packet, "ptid": "TEST001"}, instrument)
 
             mock_load.assert_called_once()
 
@@ -158,49 +175,45 @@ class TestRuleCaching:
 class TestHierarchicalRouting:
     """Test hierarchical routing functionality."""
 
-    @patch('src.pipeline.io.hierarchical_router.HierarchicalRuleResolver')
+    @patch("src.pipeline.io.hierarchical_router.HierarchicalRuleResolver")
     def test_hierarchical_resolver_initialization(self, mock_resolver_class):
         """Test hierarchical resolver initialization."""
         mock_resolver = Mock()
         mock_resolver_class.return_value = mock_resolver
 
-        # Import here to avoid import errors if module doesn't exist
-        try:
-            from src.pipeline.io.hierarchical_router import HierarchicalRuleResolver
-            config = QCConfig()
-            resolver = HierarchicalRuleResolver(config)
-
-            assert resolver is not None
-        except ImportError:
+        # Use module-level import reference; decorator patches the module attribute
+        if hierarchical_router_module is None:
             pytest.skip("HierarchicalRuleResolver not available")
+
+        config = QCConfig()
+        resolver = hierarchical_router_module.HierarchicalRuleResolver(config)
+
+        assert resolver is not None
 
     def test_hierarchical_rule_resolution(self):
         """Test hierarchical rule resolution functionality."""
-        try:
-            from src.pipeline.io.hierarchical_router import HierarchicalRuleResolver
-
-            config = QCConfig()
-            resolver = HierarchicalRuleResolver(config)
-
-            # Test rule resolution
-            record = {
-                'packet': 'I',
-                'ptid': 'TEST001',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1'
-            }
-            instrument = 'a1_participant_demographics'
-
-            with patch.object(resolver, 'resolve_rules') as mock_resolve:
-                mock_rules = {'test_field': {'type': 'string'}}
-                mock_resolve.return_value = mock_rules
-
-                rules = resolver.resolve_rules(record, instrument)
-
-                assert rules == mock_rules
-                mock_resolve.assert_called_once_with(record, instrument)
-
-        except ImportError:
+        if hierarchical_router_module is None:
             pytest.skip("HierarchicalRuleResolver not available")
+
+        config = QCConfig()
+        resolver = hierarchical_router_module.HierarchicalRuleResolver(config)
+
+        # Test rule resolution
+        record = {
+            "packet": "I",
+            "ptid": "TEST001",
+            "redcap_event_name": "udsv4_ivp_1_arm_1"
+        }
+        instrument = "a1_participant_demographics"
+
+        with patch.object(resolver, "resolve_rules") as mock_resolve:
+            mock_rules = {"test_field": {"type": "string"}}
+            mock_resolve.return_value = mock_rules
+
+            rules = resolver.resolve_rules(record, instrument)
+
+            assert rules == mock_rules
+            mock_resolve.assert_called_once_with(record, instrument)
 
 
 class TestInstrumentSpecificRouting:
@@ -210,37 +223,31 @@ class TestInstrumentSpecificRouting:
         """Test detection of dynamic instruments that need special routing."""
         # Test instruments that might have dynamic routing
         test_cases = [
-            ('c2c2t_neuropsychological_battery_scores', True),  # Known dynamic instrument
-            ('a1_participant_demographics', False),  # Standard instrument
-            ('unknown_instrument', False)  # Unknown should default to False
+            ("c2c2t_neuropsychological_battery_scores", True),  # Known dynamic instrument
+            ("a1_participant_demographics", False),  # Standard instrument
+            ("unknown_instrument", False)  # Unknown should default to False
         ]
 
+        if config_manager_module is None:
+            pytest.skip("is_dynamic_rule_instrument function not available")
+
         for instrument, expected_dynamic in test_cases:
-            # Try to import the function if it exists
-            try:
-                from src.pipeline.config_manager import is_dynamic_rule_instrument
-                result = is_dynamic_rule_instrument(instrument)
-                if expected_dynamic:
-                    error_msg = f"{instrument} should be dynamic: {expected_dynamic}"
-                    assert result == expected_dynamic, error_msg
-            except ImportError:
-                # Function doesn't exist, skip this test
-                pytest.skip("is_dynamic_rule_instrument function not available")
+            result = config_manager_module.is_dynamic_rule_instrument(instrument)
+            if expected_dynamic:
+                error_msg = f"{instrument} should be dynamic: {expected_dynamic}"
+                assert result == expected_dynamic, error_msg
 
     def test_discriminant_variable_retrieval(self):
         """Test retrieval of discriminant variables for dynamic instruments."""
-        try:
-            from src.pipeline.config_manager import get_discriminant_variable
-
-            # Test known dynamic instrument
-            instrument = 'c2c2t_neuropsychological_battery_scores'
-            discriminant = get_discriminant_variable(instrument)
-
-            assert isinstance(discriminant, str)
-            assert len(discriminant) > 0
-
-        except ImportError:
+        if config_manager_module is None:
             pytest.skip("get_discriminant_variable function not available")
+
+        # Test known dynamic instrument
+        instrument = "c2c2t_neuropsychological_battery_scores"
+        discriminant = config_manager_module.get_discriminant_variable(instrument)
+
+        assert isinstance(discriminant, str)
+        assert len(discriminant) > 0
 
 
 class TestRuleFileLoading:
@@ -251,51 +258,41 @@ class TestRuleFileLoading:
         config = QCConfig()
 
         # Test that packet-specific paths exist
-        assert hasattr(config, 'json_rules_path_i')
-        assert hasattr(config, 'json_rules_path_i4')
-        assert hasattr(config, 'json_rules_path_f')
+        assert hasattr(config, "json_rules_path_i")
+        assert hasattr(config, "json_rules_path_i4")
+        assert hasattr(config, "json_rules_path_f")
 
-    @patch('builtins.open')
-    @patch('json.load')
+    @patch("builtins.open")
+    @patch("json.load")
     def test_json_rule_loading(self, mock_json_load, mock_open):
         """Test JSON rule file loading."""
         mock_rules = {
-            'test_field': {
-                'type': 'string',
-                'required': True
+            "test_field": {
+                "type": "string",
+                "required": True
             }
         }
         mock_json_load.return_value = mock_rules
 
         # Test rule loading
-        try:
-            from src.pipeline.utils.instrument_mapping import (
-                load_json_rules_for_instrument,
-            )
-
-            rules = load_json_rules_for_instrument('test_instrument')
-
-            # The real function may return empty if no rules are found
-            assert isinstance(rules, dict)
-            # Don't assert specific content since the function may not find test files
-
-        except ImportError:
+        if instrument_mapping_module is None:
             pytest.skip("load_json_rules_for_instrument function not available")
+
+        rules = instrument_mapping_module.load_json_rules_for_instrument("test_instrument")
+
+        # The real function may return empty if no rules are found
+        assert isinstance(rules, dict)
+        # Don't assert specific content since the function may not find test files
 
     def test_rule_loading_with_nonexistent_file(self):
         """Test rule loading with nonexistent file returns empty dict."""
-        try:
-            from src.pipeline.utils.instrument_mapping import (
-                load_json_rules_for_instrument,
-            )
-
-            # Should return empty dict instead of raising exception
-            rules = load_json_rules_for_instrument('nonexistent_instrument')
-            assert isinstance(rules, dict)
-            assert len(rules) == 0  # Should be empty
-
-        except ImportError:
+        if instrument_mapping_module is None:
             pytest.skip("load_json_rules_for_instrument function not available")
+
+        # Should return empty dict instead of raising exception
+        rules = instrument_mapping_module.load_json_rules_for_instrument("nonexistent_instrument")
+        assert isinstance(rules, dict)
+        assert len(rules) == 0  # Should be empty
 
 
 class TestRoutingIntegration:
@@ -308,15 +305,13 @@ class TestRoutingIntegration:
         # Test that both routers can work with the same configuration
         packet_router = PacketRuleRouter(config)
 
-        try:
-            from src.pipeline.io.hierarchical_router import HierarchicalRuleResolver
-            hierarchical_resolver = HierarchicalRuleResolver(config)
-
-            # Both should be initialized successfully
-            assert packet_router.config == hierarchical_resolver.config
-
-        except ImportError:
+        if hierarchical_router_module is None:
             pytest.skip("HierarchicalRuleResolver not available")
+
+        hierarchical_resolver = hierarchical_router_module.HierarchicalRuleResolver(config)
+
+        # Both should be initialized successfully
+        assert packet_router.config == hierarchical_resolver.config
 
     def test_routing_with_complex_record(self):
         """Test routing with complex record containing multiple fields."""
@@ -324,17 +319,17 @@ class TestRoutingIntegration:
         router = PacketRuleRouter(config)
 
         complex_record = {
-            'ptid': 'TEST001',
-            'packet': 'I',
-            'redcap_event_name': 'udsv4_ivp_1_arm_1',
-            'a1_birthyr': '1950',
-            'a1_sex': '1',
-            'form_header_complete': '2'
+            "ptid": "TEST001",
+            "packet": "I",
+            "redcap_event_name": "udsv4_ivp_1_arm_1",
+            "a1_birthyr": "1950",
+            "a1_sex": "1",
+            "form_header_complete": "2"
         }
 
-        instrument = 'a1_participant_demographics'
+        instrument = "a1_participant_demographics"
 
-        with patch.object(router, '_load_rules', return_value={}) as mock_load:
+        with patch.object(router, "_load_rules", return_value={}) as mock_load:
             rules = router.get_rules_for_record(complex_record, instrument)
 
             mock_load.assert_called_once()
@@ -351,42 +346,42 @@ class TestRoutingErrorHandling:
 
         malformed_records = [
             {},  # Empty record - this should raise ValueError
-            {'ptid': 'TEST001'},  # Missing packet - this should raise ValueError
-            {'packet': ''},  # Empty packet - this should raise ValueError
-            {'packet': None},  # None packet - this causes AttributeError in actual implementation
+            {"ptid": "TEST001"},  # Missing packet - this should raise ValueError
+            {"packet": ""},  # Empty packet - this should raise ValueError
+            {"packet": None},  # None packet - this causes AttributeError in actual implementation
         ]
 
         for record in malformed_records:
             with pytest.raises((ValueError, AttributeError)):
-                router.get_rules_for_record(record, 'test_instrument')
+                router.get_rules_for_record(record, "test_instrument")
 
     def test_router_handles_missing_instrument(self):
         """Test router handling of missing instrument."""
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        record = {'packet': 'I', 'ptid': 'TEST001'}
+        record = {"packet": "I", "ptid": "TEST001"}
 
         # Test with empty/None instrument
-        test_instruments = ['', None]
+        test_instruments = ["", None]
 
         for instrument in test_instruments:
-            with patch.object(router, '_load_rules', side_effect=Exception("File not found")):
-                with pytest.raises(Exception):
-                    router.get_rules_for_record(record, instrument)
+            with patch.object(router, "_load_rules", side_effect=Exception("File not found")), \
+                pytest.raises(Exception, match="File not found"):
+                router.get_rules_for_record(record, instrument)
 
     def test_routing_with_file_system_errors(self):
         """Test routing behavior with file system errors."""
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        record = {'packet': 'I', 'ptid': 'TEST001'}
-        instrument = 'test_instrument'
+        record = {"packet": "I", "ptid": "TEST001"}
+        instrument = "test_instrument"
 
         # Mock file system error
-        with patch.object(router, '_load_rules', side_effect=PermissionError("Access denied")):
-            with pytest.raises(PermissionError):
-                router.get_rules_for_record(record, instrument)
+        with patch.object(router, "_load_rules", side_effect=PermissionError("Access denied")), \
+            pytest.raises(PermissionError):
+            router.get_rules_for_record(record, instrument)
 
 
 class TestRoutingPerformance:
@@ -397,11 +392,11 @@ class TestRoutingPerformance:
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        record = {'packet': 'I', 'ptid': 'TEST001'}
-        instrument = 'test_instrument'
-        mock_rules = {'test_field': {'type': 'string'}}
+        record = {"packet": "I", "ptid": "TEST001"}
+        instrument = "test_instrument"
+        mock_rules = {"test_field": {"type": "string"}}
 
-        with patch.object(router, '_load_rules', return_value=mock_rules) as mock_load:
+        with patch.object(router, "_load_rules", return_value=mock_rules) as mock_load:
             # First call should load rules
             rules1 = router.get_rules_for_record(record, instrument)
             assert mock_load.call_count == 1
@@ -417,21 +412,21 @@ class TestRoutingPerformance:
         config = QCConfig()
         router = PacketRuleRouter(config)
 
-        instrument = 'test_instrument'
-        mock_rules_i = {'field1': {'type': 'string'}}
+        instrument = "test_instrument"
+        mock_rules_i = {"field1": {"type": "string"}}
 
-        def mock_load_side_effect(*args, **kwargs):
+        def mock_load_side_effect(*_args, **_kwargs):
             # Simplified side effect based on the record packet
             return mock_rules_i  # Default return for testing
 
-        with patch.object(router, '_load_rules', side_effect=mock_load_side_effect) as mock_load:
+        with patch.object(router, "_load_rules", side_effect=mock_load_side_effect) as mock_load:
             # Load rules for packet I
             rules_i = router.get_rules_for_record(
-                {'packet': 'I', 'ptid': 'TEST001'}, instrument)
+                {"packet": "I", "ptid": "TEST001"}, instrument)
 
             # Load rules for packet F
             rules_f = router.get_rules_for_record(
-                {'packet': 'F', 'ptid': 'TEST002'}, instrument)
+                {"packet": "F", "ptid": "TEST002"}, instrument)
 
             # Should have called load twice (once for each packet type)
             assert mock_load.call_count == 2
@@ -439,5 +434,5 @@ class TestRoutingPerformance:
             assert isinstance(rules_f, dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

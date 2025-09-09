@@ -9,12 +9,11 @@ import re
 import subprocess
 import time
 from pathlib import Path
-from typing import Dict
 
 import pandas as pd
 
 
-def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, float]:
+def run_pipeline_with_timing(mode: str, detailed: bool = False) -> dict[str, float]:
     """Run the pipeline and extract timing information from logs."""
 
     # Build command
@@ -29,7 +28,7 @@ def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, flo
 
     # Run pipeline and capture output
     start_time = time.time()
-    result = subprocess.run(cmd, capture_output=True, text=True, cwd=Path.cwd())
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True, cwd=Path.cwd())
     total_wall_time = time.time() - start_time
 
     if result.returncode != 0:
@@ -37,73 +36,73 @@ def run_pipeline_with_timing(mode: str, detailed: bool = False) -> Dict[str, flo
         return {}
 
     # Parse timing information from logs
-    output_lines = result.stdout.split('\n')
+    output_lines = result.stdout.split("\n")
     timings = {
-        'total_wall_time': total_wall_time,
-        'stage_1_data_fetch': 0.0,
-        'stage_2_rules_loading': 0.0,
-        'stage_3_data_preparation': 0.0,
-        'stage_4_validation': 0.0,
-        'stage_5_report_generation': 0.0,
-        'pipeline_total': 0.0
+        "total_wall_time": total_wall_time,
+        "stage_1_data_fetch": 0.0,
+        "stage_2_rules_loading": 0.0,
+        "stage_3_data_preparation": 0.0,
+        "stage_4_validation": 0.0,
+        "stage_5_report_generation": 0.0,
+        "pipeline_total": 0.0
     }
 
     # Extract stage timings from log output
     for line in output_lines:
-        if 'Data fetch completed:' in line:
-            match = re.search(r'(\d+\.?\d*) records in (\d+\.?\d*)s', line)
+        if "Data fetch completed:" in line:
+            match = re.search(r"(\d+\.?\d*) records in (\d+\.?\d*)s", line)
             if match:
-                timings['stage_1_data_fetch'] = float(match.group(2))
+                timings["stage_1_data_fetch"] = float(match.group(2))
 
-        elif 'Rules loading completed:' in line:
-            match = re.search(r'in (\d+\.?\d*)s', line)
+        elif "Rules loading completed:" in line:
+            match = re.search(r"in (\d+\.?\d*)s", line)
             if match:
-                timings['stage_2_rules_loading'] = float(match.group(1))
+                timings["stage_2_rules_loading"] = float(match.group(1))
 
-        elif 'Data preparation completed:' in line:
-            match = re.search(r'in (\d+\.?\d*)s', line)
+        elif "Data preparation completed:" in line:
+            match = re.search(r"in (\d+\.?\d*)s", line)
             if match:
-                timings['stage_3_data_preparation'] = float(match.group(1))
+                timings["stage_3_data_preparation"] = float(match.group(1))
 
-        elif 'Validation completed:' in line:
-            match = re.search(r'in (\d+\.?\d*)s', line)
+        elif "Validation completed:" in line:
+            match = re.search(r"in (\d+\.?\d*)s", line)
             if match:
-                timings['stage_4_validation'] = float(match.group(1))
+                timings["stage_4_validation"] = float(match.group(1))
 
-        elif 'Report generation completed:' in line:
-            match = re.search(r'in (\d+\.?\d*)s', line)
+        elif "Report generation completed:" in line:
+            match = re.search(r"in (\d+\.?\d*)s", line)
             if match:
-                timings['stage_5_report_generation'] = float(match.group(1))
+                timings["stage_5_report_generation"] = float(match.group(1))
 
-        elif 'Total execution time:' in line:
-            match = re.search(r'(\d+\.?\d*)s', line)
+        elif "Total execution time:" in line:
+            match = re.search(r"(\d+\.?\d*)s", line)
             if match:
-                timings['pipeline_total'] = float(match.group(1))
+                timings["pipeline_total"] = float(match.group(1))
 
     return timings
 
 
-def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
+def analyze_detailed_reports(output_dir: Path) -> dict[str, dict]:
     """Analyze the generated reports for file sizes and row counts."""
 
     report_analysis = {}
 
     # Core reports (always generated)
     core_reports = {
-        'Errors': 'Final_Error_Dataset_*.csv',
-        'Data_Fetched': 'Data_Fetched_*.csv',
-        'JSON_Status': 'QC_Status_Report_*.json'
+        "Errors": "Final_Error_Dataset_*.csv",
+        "Data_Fetched": "Data_Fetched_*.csv",
+        "JSON_Status": "QC_Status_Report_*.json"
     }
 
     # Detailed reports (only in detailed mode)
     detailed_reports = {
-        'Validation_Logs': 'Log_EventCompletenessScreening_*.csv',
-        'Passed_Validations': 'Log_PassedValidations_*.csv',
-        'Aggregate_Errors': 'QC_Report_ErrorCount_*.csv',
-        'Status_Report': 'QC_Status_Report_*.csv',
-        'PTID_Visits': 'PTID_CompletedVisits_*.csv',
-        'Rules_Validation': 'Log_RulesValidation_*.csv',
-        'Generation_Summary': 'Generation_Summary_*.csv'
+        "Validation_Logs": "Log_EventCompletenessScreening_*.csv",
+        "Passed_Validations": "Log_PassedValidations_*.csv",
+        "Aggregate_Errors": "QC_Report_ErrorCount_*.csv",
+        "Status_Report": "QC_Status_Report_*.csv",
+        "PTID_Visits": "PTID_CompletedVisits_*.csv",
+        "Rules_Validation": "Log_RulesValidation_*.csv",
+        "Generation_Summary": "Generation_Summary_*.csv"
     }
 
     all_reports = {**core_reports, **detailed_reports}
@@ -116,7 +115,7 @@ def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
 
             # Count rows for CSV files
             row_count = 0
-            if file_path.suffix == '.csv':
+            if file_path.suffix == ".csv":
                 try:
                     df = pd.read_csv(file_path)
                     row_count = len(df)
@@ -124,16 +123,16 @@ def analyze_detailed_reports(output_dir: Path) -> Dict[str, Dict]:
                     row_count = -1
 
             report_analysis[report_name] = {
-                'file_size_mb': file_size_mb,
-                'row_count': row_count,
-                'file_path': str(file_path)
+                "file_size_mb": file_size_mb,
+                "row_count": row_count,
+                "file_path": str(file_path)
             }
 
     return report_analysis
 
 
-def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
-                              standard_reports: Dict, detailed_reports: Dict):
+def print_performance_summary(standard_timings: dict, detailed_timings: dict,
+                              standard_reports: dict, detailed_reports: dict):
     """Print a comprehensive performance analysis."""
 
     print("\n" + "=" * 80)
@@ -147,13 +146,13 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print("-" * 60)
 
     stages = [
-        ('Data Fetching', 'stage_1_data_fetch'),
-        ('Rules Loading', 'stage_2_rules_loading'),
-        ('Data Preparation', 'stage_3_data_preparation'),
-        ('Validation', 'stage_4_validation'),
-        ('Report Generation', 'stage_5_report_generation'),
-        ('Total Pipeline', 'pipeline_total'),
-        ('Wall Clock Time', 'total_wall_time')
+        ("Data Fetching", "stage_1_data_fetch"),
+        ("Rules Loading", "stage_2_rules_loading"),
+        ("Data Preparation", "stage_3_data_preparation"),
+        ("Validation", "stage_4_validation"),
+        ("Report Generation", "stage_5_report_generation"),
+        ("Total Pipeline", "pipeline_total"),
+        ("Wall Clock Time", "total_wall_time")
     ]
 
     for stage_name, key in stages:
@@ -167,7 +166,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print("-" * 60)
 
     report_gen_overhead = detailed_timings.get(
-        'stage_5_report_generation', 0) - standard_timings.get('stage_5_report_generation', 0)
+        "stage_5_report_generation", 0) - standard_timings.get("stage_5_report_generation", 0)
     print(f"Report generation overhead: {report_gen_overhead:.2f}s")
     print(f"This accounts for {(report_gen_overhead /
                                 detailed_timings.get('pipeline_total', 1)) *
@@ -179,7 +178,7 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
 
     # Core files
     print("Core Files (Standard + Detailed):")
-    core_files = ['Errors', 'Data_Fetched', 'JSON_Status']
+    core_files = ["Errors", "Data_Fetched", "JSON_Status"]
     for file_name in core_files:
         if file_name in detailed_reports:
             info = detailed_reports[file_name]
@@ -192,16 +191,16 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     # Detailed-only files
     print("\nDetailed-Only Files:")
     detailed_only = [
-        'Validation_Logs',
-        'Passed_Validations',
-        'Rules_Validation',
-        'Status_Report',
-        'PTID_Visits']
+        "Validation_Logs",
+        "Passed_Validations",
+        "Rules_Validation",
+        "Status_Report",
+        "PTID_Visits"]
     total_detailed_size = 0
     for file_name in detailed_only:
         if file_name in detailed_reports:
             info = detailed_reports[file_name]
-            total_detailed_size += info['file_size_mb']
+            total_detailed_size += info["file_size_mb"]
             print(
                 f"  {
                     file_name:<20}: {
@@ -214,8 +213,8 @@ def print_performance_summary(standard_timings: Dict, detailed_timings: Dict,
     print("\n🎯 PERFORMANCE BOTTLENECKS:")
     print("-" * 60)
 
-    if 'Rules_Validation' in detailed_reports:
-        rules_info = detailed_reports['Rules_Validation']
+    if "Rules_Validation" in detailed_reports:
+        rules_info = detailed_reports["Rules_Validation"]
         print(
             f"⚠️  Rules Validation Log: {
                 rules_info['row_count']:,} rows ({
@@ -241,7 +240,7 @@ def main():
     standard_timings = run_pipeline_with_timing("standard", detailed=False)
 
     # Find the latest standard output directory
-    output_dirs = list(Path('output').glob('QC_CompleteVisits_*'))
+    output_dirs = list(Path("output").glob("QC_CompleteVisits_*"))
     if output_dirs:
         latest_standard_dir = max(output_dirs, key=lambda x: x.stat().st_mtime)
         standard_reports = analyze_detailed_reports(latest_standard_dir)
@@ -254,7 +253,7 @@ def main():
     detailed_timings = run_pipeline_with_timing("detailed", detailed=True)
 
     # Find the latest detailed output directory
-    output_dirs = list(Path('output').glob('QC_CompleteVisits_*'))
+    output_dirs = list(Path("output").glob("QC_CompleteVisits_*"))
     if output_dirs:
         latest_detailed_dir = max(output_dirs, key=lambda x: x.stat().st_mtime)
         detailed_reports = analyze_detailed_reports(latest_detailed_dir)

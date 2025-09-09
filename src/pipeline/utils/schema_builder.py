@@ -7,7 +7,7 @@ instruments and those requiring dynamic rule selection based on a discriminant
 variable in the data.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from pipeline.config_manager import KEY_MAP, is_dynamic_rule_instrument
 
@@ -21,7 +21,7 @@ def build_cerberus_schema_for_instrument(
     instrument_name: str,
     include_temporal_rules: bool = True,
     include_compatibility_rules: bool = True
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Loads JSON rules and builds a Cerberus schema for a given instrument.
 
@@ -64,10 +64,10 @@ def build_cerberus_schema_for_instrument(
 
 
 def _build_schema_from_raw(
-    rules_dict: Dict[str, Any],
+    rules_dict: dict[str, Any],
     include_temporal_rules: bool = True,
     include_compatibility_rules: bool = True
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     """
     Transforms a dictionary of raw JSON rules into a Cerberus schema.
 
@@ -88,10 +88,10 @@ def _build_schema_from_raw(
         A dictionary formatted as a Cerberus schema.
         Example: `{ "VAR1": { "type": "integer", "min": 0 }, ... }`
     """
-    schema: Dict[str, Dict[str, Any]] = {}
+    schema: dict[str, dict[str, Any]] = {}
 
     for var, json_rules in rules_dict.items():
-        cerberus_rules: Dict[str, Any] = {}
+        cerberus_rules: dict[str, Any] = {}
         for json_key, rule_value in json_rules.items():
             # Skip temporal rules if datastore is not available
             if json_key == "temporalrules" and not include_temporal_rules:

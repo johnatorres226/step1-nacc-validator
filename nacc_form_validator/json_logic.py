@@ -29,6 +29,7 @@ import logging
 import math
 from functools import reduce
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,8 +40,7 @@ def if_(*args):
             return args[i + 1]
     if len(args) % 2:
         return args[-1]
-    else:
-        return None
+    return None
 
 
 def soft_equals(a, b):
@@ -105,8 +105,7 @@ def to_numeric(arg):
     if isinstance(arg, str):
         if "." in arg:
             return float(arg)
-        else:
-            return int(arg)
+        return int(arg)
     return arg
 
 

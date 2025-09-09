@@ -6,7 +6,7 @@ complexity and improve maintainability across the pipeline.
 """
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -22,23 +22,23 @@ class ProcessingContext:
     improving maintainability and reducing parameter complexity.
     """
     data_df: pd.DataFrame
-    instrument_list: List[str]
-    rules_cache: Dict[str, Any]
+    instrument_list: list[str]
+    rules_cache: dict[str, Any]
     primary_key_field: str
-    config: Optional[QCConfig] = None
+    config: QCConfig | None = None
 
     @property
     def is_empty(self) -> bool:
         """Check if the data DataFrame is empty."""
         return self.data_df.empty
 
-    def get_instrument_variables(self, instrument: str) -> List[str]:
+    def get_instrument_variables(self, instrument: str) -> list[str]:
         """Get variables for a specific instrument from the rules cache."""
         return list(self.rules_cache.get(instrument, {}).keys())
 
     def filter_to_instruments(
             self,
-            instruments: List[str]) -> 'ProcessingContext':
+            instruments: list[str]) -> "ProcessingContext":
         """Create a new context filtered to specific instruments."""
         return ProcessingContext(
             data_df=self.data_df,
@@ -91,8 +91,8 @@ class ValidationContext:
     """
     instrument_name: str
     primary_key_field: str
-    validation_rules: Dict[str, Any]
-    event_name: Optional[str] = None
+    validation_rules: dict[str, Any]
+    event_name: str | None = None
     include_temporal_rules: bool = False
     include_compatibility_rules: bool = True
 
@@ -102,7 +102,7 @@ class ValidationContext:
         from ..config_manager import is_dynamic_rule_instrument
         return is_dynamic_rule_instrument(self.instrument_name)
 
-    def get_discriminant_variable(self) -> Optional[str]:
+    def get_discriminant_variable(self) -> str | None:
         """Get discriminant variable for dynamic instruments."""
         if self.is_dynamic_instrument:
             from ..config_manager import get_discriminant_variable
@@ -143,14 +143,14 @@ class ReportConfiguration:
     """
     qc_run_by: str
     primary_key_field: str
-    instruments: List[str]
+    instruments: list[str]
     generate_error_report: bool = True
     generate_status_report: bool = True
     generate_aggregate_report: bool = True
     generate_json_export: bool = True
-    export_config: Optional[ExportConfiguration] = None
+    export_config: ExportConfiguration | None = None
 
-    def get_status_columns(self) -> List[str]:
+    def get_status_columns(self) -> list[str]:
         """Get standard columns for status reports."""
         return [
             self.primary_key_field,

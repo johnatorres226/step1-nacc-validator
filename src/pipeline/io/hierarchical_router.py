@@ -6,7 +6,7 @@ with dynamic instrument routing (e.g., C2/C2T variants) to provide intelligent r
 with multiple layers of routing logic.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..config_manager import (
     QCConfig,
@@ -17,6 +17,7 @@ from ..config_manager import (
 )
 from ..logging_config import get_logger
 from .packet_router import PacketRuleRouter
+
 
 logger = get_logger(__name__)
 
@@ -30,7 +31,7 @@ class HierarchicalRuleResolver:
     that handles both packet types (I, I4, F) and instrument variants (C2, C2T).
     """
 
-    def __init__(self, config: Optional[QCConfig] = None):
+    def __init__(self, config: QCConfig | None = None):
         """
         Initialize the hierarchical rule resolver.
 
@@ -43,8 +44,8 @@ class HierarchicalRuleResolver:
         self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("HierarchicalRuleResolver initialized")
 
-    def resolve_rules(self, record: Dict[str, Any],
-                      instrument_name: str) -> Dict[str, Any]:
+    def resolve_rules(self, record: dict[str, Any],
+                      instrument_name: str) -> dict[str, Any]:
         """
         Resolve rules using both packet and dynamic instrument routing.
 
@@ -61,13 +62,13 @@ class HierarchicalRuleResolver:
             Dictionary containing the resolved validation rules
         """
         # Step 1: Get packet-specific base rules
-        packet = record.get('packet', 'I').upper()
+        packet = record.get("packet", "I").upper()
 
         # Create cache key for performance optimization
-        discriminant_value = ''
+        discriminant_value = ""
         if is_dynamic_rule_instrument(instrument_name):
             discriminant_var = get_discriminant_variable(instrument_name)
-            discriminant_value = record.get(discriminant_var, '').upper()
+            discriminant_value = record.get(discriminant_var, "").upper()
 
         cache_key = f"{packet}_{instrument_name}_{discriminant_value}"
 
@@ -93,7 +94,7 @@ class HierarchicalRuleResolver:
         return resolved_rules
 
     def load_all_rules_for_instrument(
-            self, instrument_name: str) -> Dict[str, Any]:
+            self, instrument_name: str) -> dict[str, Any]:
         """
         Load all possible rule variants for an instrument during rules loading phase.
 
@@ -112,7 +113,7 @@ class HierarchicalRuleResolver:
         all_rules = {}
 
         # Load rules for all packet types
-        for packet in ['I', 'I4', 'F']:
+        for packet in ["I", "I4", "F"]:
             try:
                 base_rules = self.get_packet_rules(packet, instrument_name)
 
@@ -138,8 +139,8 @@ class HierarchicalRuleResolver:
 
         # Return the most comprehensive rule set found
         # Priority: I4 > I > F (or return the first available)
-        for packet in ['I4', 'I', 'F']:
-            if packet in all_rules and all_rules[packet]:
+        for packet in ["I4", "I", "F"]:
+            if all_rules.get(packet):
                 logger.debug(
                     f"Rules loading complete for {instrument_name}, "
                 f"using packet {packet} as template")
@@ -150,7 +151,7 @@ class HierarchicalRuleResolver:
         return {}
 
     def get_packet_rules(
-            self, packet: str, instrument_name: str) -> Dict[str, Any]:
+            self, packet: str, instrument_name: str) -> dict[str, Any]:
         """
         Get packet-specific base rules.
 
@@ -165,18 +166,18 @@ class HierarchicalRuleResolver:
             Dictionary containing packet-specific rules
         """
         # Create a dummy record with the packet value for the PacketRuleRouter
-        dummy_record = {'packet': packet}
+        dummy_record = {"packet": packet}
         return self.packet_router.get_rules_for_record(
             dummy_record, instrument_name)
 
     def _apply_dynamic_routing(
         self,
-        base_rules: Dict[str, Any],
-        record: Dict[str, Any],
+        base_rules: dict[str, Any],
+        record: dict[str, Any],
         instrument_name: str,
         packet: str,
         is_rules_loading: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Apply dynamic instrument routing to base rules.
 
@@ -191,7 +192,7 @@ class HierarchicalRuleResolver:
             Dictionary containing variant-specific rules
         """
         discriminant_var = get_discriminant_variable(instrument_name)
-        discriminant_value = record.get(discriminant_var, '').upper()
+        discriminant_value = record.get(discriminant_var, "").upper()
 
         if not discriminant_value:
             # During rules loading, use debug level to avoid false warnings
@@ -231,16 +232,15 @@ class HierarchicalRuleResolver:
                 f"in {instrument_name} (packet {packet})"
             )
             return base_rules[discriminant_value]
-        else:
-            logger.warning(
-                f"No variant rules found for {discriminant_var}={discriminant_value} "
-                f"in packet {packet} for {instrument_name}. Using base rules. "
-                f"Action: Verify rules file contains {discriminant_value} variant "
-                f"or check data export."
-            )
-            return base_rules
+        logger.warning(
+            f"No variant rules found for {discriminant_var}={discriminant_value} "
+            f"in packet {packet} for {instrument_name}. Using base rules. "
+            f"Action: Verify rules file contains {discriminant_value} variant "
+            f"or check data export."
+        )
+        return base_rules
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """
         Get cache statistics for monitoring and optimization.
 
@@ -249,9 +249,9 @@ class HierarchicalRuleResolver:
         """
         packet_cache_stats = self.packet_router.get_cache_stats()
         return {
-            'hierarchical_cache_size': len(self._resolution_cache),
-            'hierarchical_cache_keys': list(self._resolution_cache.keys()),
-            'packet_router_stats': packet_cache_stats
+            "hierarchical_cache_size": len(self._resolution_cache),
+            "hierarchical_cache_keys": list(self._resolution_cache.keys()),
+            "packet_router_stats": packet_cache_stats
         }
 
     def clear_cache(self) -> None:
@@ -296,7 +296,7 @@ class HierarchicalRuleResolver:
 
                     for variant in rule_mappings.keys():
                         dummy_record = {
-                            'packet': packet, discriminant_var: variant}
+                            "packet": packet, discriminant_var: variant}
                         self.resolve_rules(dummy_record, instrument_name)
 
             except Exception as e:

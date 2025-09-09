@@ -4,13 +4,14 @@ Validation logging functions for the QC pipeline.
 This module contains functions for building detailed validation logs, broken down from the
 monolithic build_detailed_validation_logs function into smaller, testable components.
 """
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from ..logging_config import get_logger
 from .data_processing import DataProcessingError, ValidationLogsData
+
 
 logger = get_logger(__name__)
 
@@ -20,7 +21,7 @@ logger = get_logger(__name__)
 # =============================================================================
 
 def extract_record_identifiers(
-        record: pd.Series, primary_key_field: str) -> Tuple[str, str]:
+        record: pd.Series, primary_key_field: str) -> tuple[str, str]:
     """
     Extract primary key and event name from record.
 
@@ -37,7 +38,7 @@ def extract_record_identifiers(
 
 
 def determine_completion_status(
-        record: pd.Series, instrument: str) -> Tuple[str, str, str]:
+        record: pd.Series, instrument: str) -> tuple[str, str, str]:
     """
     Determine completion status, target variable, and status description.
 
@@ -60,9 +61,8 @@ def determine_completion_status(
         pass_status = "Pass" if is_complete else "Fail"
 
         return target_variable, completeness_status, pass_status
-    else:
-        # If no completeness variable exists for this instrument
-        return "N/A", "No completeness field", "Fail"
+    # If no completeness variable exists for this instrument
+    return "N/A", "No completeness field", "Fail"
 
 
 def generate_error_message(
@@ -90,9 +90,8 @@ def generate_error_message(
 
     if completeness_status == "No completeness field":
         return "Instrument completeness variable not found in data."
-    else:
-        completion_value = record.get(instrument_complete_col)
-        return f"Instrument not marked as complete. Value is '{completion_value}'."
+    completion_value = record.get(instrument_complete_col)
+    return f"Instrument not marked as complete. Value is '{completion_value}'."
 
 
 def create_validation_log_entry(
@@ -104,7 +103,7 @@ def create_validation_log_entry(
     pass_status: str,
     error_msg: Any,
     primary_key_field: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create single validation log entry.
 
@@ -137,7 +136,7 @@ def process_single_record_log(
     record: pd.Series,
     instrument: str,
     primary_key_field: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Process a single record to create validation log entry.
 
@@ -171,7 +170,7 @@ def build_detailed_validation_logs(
     df: pd.DataFrame,
     instrument: str,
     primary_key_field: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Build detailed validation logs for instrument records.
 
@@ -212,7 +211,7 @@ def build_detailed_validation_logs(
 
 
 def build_validation_logs_summary(
-        logs: List[Dict[str, Any]]) -> ValidationLogsData:
+        logs: list[dict[str, Any]]) -> ValidationLogsData:
     """
     Build summary statistics for validation logs.
 
@@ -242,7 +241,7 @@ def build_detailed_validation_logs_vectorized(
     df: pd.DataFrame,
     instrument: str,
     primary_key_field: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Vectorized version of validation logs building for better performance.
 
@@ -294,7 +293,7 @@ def build_detailed_validation_logs_vectorized(
             result_df["error"] = "Instrument completeness variable not found in data."
 
         # Convert to list of dictionaries
-        logs = result_df.to_dict('records')
+        logs = result_df.to_dict("records")
 
         logger.debug(
             f"Generated {
@@ -316,7 +315,7 @@ def build_detailed_validation_logs_legacy(
     df: pd.DataFrame,
     instrument: str,
     primary_key_field: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     DEPRECATED: Use build_detailed_validation_logs() instead.
 

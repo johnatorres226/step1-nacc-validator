@@ -7,7 +7,7 @@ functionality that are fundamental to the application's output pipeline.
 
 import json
 import tempfile
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -27,8 +27,8 @@ class TestOutputDirectoryCreation:
         with tempfile.TemporaryDirectory() as temp_dir:
             config.output_path = temp_dir
 
-            # Create a timestamped directory
-            current_time = datetime.now()
+            # Create a timestamped directory (tz-aware)
+            current_time = datetime.now(UTC).astimezone()
             date_tag = current_time.strftime("%d%b%Y").upper()
             time_tag = current_time.strftime("%H%M%S")
 
@@ -66,22 +66,22 @@ class TestReportGeneration:
         # Sample validation data
         test_data = [
             {
-                'ptid': 'TEST001',
-                'instrument_name': 'a1_participant_demographics',
-                'validation_status': 'PASSED',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'packet': 'I'
+                "ptid": "TEST001",
+                "instrument_name": "a1_participant_demographics",
+                "validation_status": "PASSED",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "packet": "I"
             },
             {
-                'ptid': 'TEST002',
-                'instrument_name': 'a1_participant_demographics',
-                'validation_status': 'FAILED',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'packet': 'I'
+                "ptid": "TEST002",
+                "instrument_name": "a1_participant_demographics",
+                "validation_status": "FAILED",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "packet": "I"
             }
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -96,7 +96,7 @@ class TestReportGeneration:
             loaded_df = pd.read_csv(temp_path)
             assert len(loaded_df) == 2
             assert list(loaded_df.columns) == list(df.columns)
-            assert loaded_df.iloc[0]['ptid'] == 'TEST001'
+            assert loaded_df.iloc[0]["ptid"] == "TEST001"
 
         finally:
             if Path(temp_path).exists():
@@ -105,42 +105,42 @@ class TestReportGeneration:
     def test_json_report_generation(self):
         """Test generation of JSON reports."""
         test_data = {
-            'summary': {
-                'total_records': 100,
-                'passed_records': 95,
-                'failed_records': 5,
-                'execution_time': 10.5
+            "summary": {
+                "total_records": 100,
+                "passed_records": 95,
+                "failed_records": 5,
+                "execution_time": 10.5
             },
-            'details': [
+            "details": [
                 {
-                    'ptid': 'TEST001',
-                    'status': 'PASSED'
+                    "ptid": "TEST001",
+                    "status": "PASSED"
                 },
                 {
-                    'ptid': 'TEST002',
-                    'status': 'FAILED',
-                    'errors': ['Invalid age value']
+                    "ptid": "TEST002",
+                    "status": "FAILED",
+                    "errors": ["Invalid age value"]
                 }
             ]
         }
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
-            # Write test data to JSON
-            with open(temp_path, 'w') as f:
+            # Write test data to JSON using Path.open()
+            with Path(temp_path).open("w") as f:
                 json.dump(test_data, f, indent=2)
 
             # Verify file was created and contains data
             assert Path(temp_path).exists()
 
             # Read back and verify content
-            with open(temp_path, 'r') as f:
+            with Path(temp_path).open() as f:
                 loaded_data = json.load(f)
 
-            assert loaded_data['summary']['total_records'] == 100
-            assert len(loaded_data['details']) == 2
+            assert loaded_data["summary"]["total_records"] == 100
+            assert len(loaded_data["details"]) == 2
 
         finally:
             if Path(temp_path).exists():
@@ -149,8 +149,8 @@ class TestReportGeneration:
     def test_multiple_report_format_generation(self):
         """Test generation of multiple report formats."""
         test_data = pd.DataFrame([
-            {'ptid': 'TEST001', 'status': 'PASSED'},
-            {'ptid': 'TEST002', 'status': 'FAILED'}
+            {"ptid": "TEST001", "status": "PASSED"},
+            {"ptid": "TEST002", "status": "FAILED"}
         ])
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -161,7 +161,7 @@ class TestReportGeneration:
             test_data.to_csv(csv_path, index=False)
 
             # Generate JSON
-            test_data.to_json(json_path, orient='records', indent=2)
+            test_data.to_json(json_path, orient="records", indent=2)
 
             # Verify both files exist
             assert csv_path.exists()
@@ -171,7 +171,7 @@ class TestReportGeneration:
             csv_data = pd.read_csv(csv_path)
             assert len(csv_data) == 2
 
-            with open(json_path, 'r') as f:
+            with Path(json_path).open() as f:
                 json_data = json.load(f)
             assert len(json_data) == 2
 
@@ -183,37 +183,37 @@ class TestValidationReportGeneration:
         """Test generation of error reports."""
         error_data = [
             {
-                'ptid': 'TEST001',
-                'instrument_name': 'a1_participant_demographics',
-                'variable': 'a1_birthyr',
-                'error_message': 'Invalid birth year',
-                'current_value': '2050',
-                'packet': 'I',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1'
+                "ptid": "TEST001",
+                "instrument_name": "a1_participant_demographics",
+                "variable": "a1_birthyr",
+                "error_message": "Invalid birth year",
+                "current_value": "2050",
+                "packet": "I",
+                "redcap_event_name": "udsv4_ivp_1_arm_1"
             },
             {
-                'ptid': 'TEST002',
-                'instrument_name': 'b1_vital_signs_and_anthropometrics',
-                'variable': 'b1_height',
-                'error_message': 'Height out of range',
-                'current_value': '300',
-                'packet': 'I',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1'
+                "ptid": "TEST002",
+                "instrument_name": "b1_vital_signs_and_anthropometrics",
+                "variable": "b1_height",
+                "error_message": "Height out of range",
+                "current_value": "300",
+                "packet": "I",
+                "redcap_event_name": "udsv4_ivp_1_arm_1"
             }
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
-            df = pd.DataFrame(error_data)
-            df.to_csv(temp_path, index=False)
+            error_df = pd.DataFrame(error_data)
+            error_df.to_csv(temp_path, index=False)
 
             # Verify error report structure
             loaded_df = pd.read_csv(temp_path)
-            assert 'ptid' in loaded_df.columns
-            assert 'error_message' in loaded_df.columns
-            assert 'current_value' in loaded_df.columns
+            assert "ptid" in loaded_df.columns
+            assert "error_message" in loaded_df.columns
+            assert "current_value" in loaded_df.columns
             assert len(loaded_df) == 2
 
         finally:
@@ -224,29 +224,29 @@ class TestValidationReportGeneration:
         """Test generation of passed records reports."""
         passed_data = [
             {
-                'ptid': 'TEST001',
-                'variable': 'a1_birthyr',
-                'current_value': '1950',
-                'json_rule': '{"type": "integer", "min": 1900, "max": 2023}',
-                'rule_file': 'a1_rules.json',
-                'packet': 'I',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'instrument_name': 'a1_participant_demographics'
+                "ptid": "TEST001",
+                "variable": "a1_birthyr",
+                "current_value": "1950",
+                "json_rule": '{"type": "integer", "min": 1900, "max": 2023}',
+                "rule_file": "a1_rules.json",
+                "packet": "I",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "instrument_name": "a1_participant_demographics"
             }
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
-            df = pd.DataFrame(passed_data)
-            df.to_csv(temp_path, index=False)
+            passed_df = pd.DataFrame(passed_data)
+            passed_df.to_csv(temp_path, index=False)
 
             # Verify passed records report structure
             loaded_df = pd.read_csv(temp_path)
-            assert 'ptid' in loaded_df.columns
-            assert 'json_rule' in loaded_df.columns
-            assert 'rule_file' in loaded_df.columns
+            assert "ptid" in loaded_df.columns
+            assert "json_rule" in loaded_df.columns
+            assert "rule_file" in loaded_df.columns
             assert len(loaded_df) == 1
 
         finally:
@@ -257,34 +257,34 @@ class TestValidationReportGeneration:
         """Test generation of validation log reports."""
         log_data = [
             {
-                'ptid': 'TEST001',
-                'instrument_name': 'a1_participant_demographics',
-                'validation_status': 'PASSED',
-                'error_count': 0,
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'packet': 'I'
+                "ptid": "TEST001",
+                "instrument_name": "a1_participant_demographics",
+                "validation_status": "PASSED",
+                "error_count": 0,
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "packet": "I"
             },
             {
-                'ptid': 'TEST002',
-                'instrument_name': 'a1_participant_demographics',
-                'validation_status': 'FAILED',
-                'error_count': 2,
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'packet': 'I'
+                "ptid": "TEST002",
+                "instrument_name": "a1_participant_demographics",
+                "validation_status": "FAILED",
+                "error_count": 2,
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "packet": "I"
             }
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
-            df = pd.DataFrame(log_data)
-            df.to_csv(temp_path, index=False)
+            log_df = pd.DataFrame(log_data)
+            log_df.to_csv(temp_path, index=False)
 
             # Verify log report structure
             loaded_df = pd.read_csv(temp_path)
-            assert 'validation_status' in loaded_df.columns
-            assert 'error_count' in loaded_df.columns
+            assert "validation_status" in loaded_df.columns
+            assert "error_count" in loaded_df.columns
             assert len(loaded_df) == 2
 
         finally:
@@ -298,11 +298,11 @@ class TestDataSaving:
     def test_dataframe_to_csv_saving(self):
         """Test saving DataFrame to CSV file."""
         test_df = pd.DataFrame([
-            {'id': 1, 'name': 'Test1', 'value': 100},
-            {'id': 2, 'name': 'Test2', 'value': 200}
+            {"id": 1, "name": "Test1", "value": 100},
+            {"id": 2, "name": "Test2", "value": 200}
         ])
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -325,15 +325,15 @@ class TestDataSaving:
         large_data = []
         for i in range(1000):
             large_data.append({
-                'ptid': f'TEST{i:04d}',
-                'value1': i,
-                'value2': i * 2,
-                'status': 'PASSED' if i % 2 == 0 else 'FAILED'
+                "ptid": f"TEST{i:04d}",
+                "value1": i,
+                "value2": i * 2,
+                "status": "PASSED" if i % 2 == 0 else "FAILED"
             })
 
         large_df = pd.DataFrame(large_data)
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -353,29 +353,29 @@ class TestDataSaving:
     def test_file_saving_with_special_characters(self):
         """Test saving files with special characters in data."""
         special_data = pd.DataFrame([
-            {'text': 'Normal text'},
-            {'text': 'Text with "quotes"'},
-            {'text': 'Text with, commas'},
-            {'text': 'Text with\nnewlines'},
-            {'text': 'Text with émojis 🎉'}
+            {"text": "Normal text"},
+            {"text": 'Text with "quotes"'},
+            {"text": "Text with, commas"},
+            {"text": "Text with\nnewlines"},
+            {"text": "Text with émojis 🎉"}
         ])
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
             # Save DataFrame with special characters
-            special_data.to_csv(temp_path, index=False, encoding='utf-8')
+            special_data.to_csv(temp_path, index=False, encoding="utf-8")
 
             # Verify file exists and content is preserved
             assert Path(temp_path).exists()
 
-            loaded_df = pd.read_csv(temp_path, encoding='utf-8')
+            loaded_df = pd.read_csv(temp_path, encoding="utf-8")
             assert len(loaded_df) == 5
             # Check that the special character text exists (allow for potential
             # encoding variations)
-            text_values = loaded_df['text'].tolist()
-            emoji_found = any('émojis' in str(val) and '🎉' in str(val)
+            text_values = loaded_df["text"].tolist()
+            emoji_found = any("émojis" in str(val) and "🎉" in str(val)
                               for val in text_values)
             assert emoji_found, f"Expected emoji text not found in {text_values}"
 
@@ -396,64 +396,64 @@ class TestReportSummaryGeneration:
         execution_time = 12.5
 
         summary = {
-            'total_records_processed': total_records,
-            'passed_validations': passed_records,
-            'failed_validations': failed_records,
-            'success_rate': (passed_records / total_records) * 100,
-            'execution_time_seconds': execution_time,
-            'timestamp': datetime.now().isoformat()
+            "total_records_processed": total_records,
+            "passed_validations": passed_records,
+            "failed_validations": failed_records,
+            "success_rate": (passed_records / total_records) * 100,
+            "execution_time_seconds": execution_time,
+            "timestamp": datetime.now(UTC).isoformat()
         }
 
         # Verify summary structure
-        assert summary['total_records_processed'] == 100
-        assert summary['success_rate'] == 85.0
-        assert 'timestamp' in summary
+        assert summary["total_records_processed"] == 100
+        assert summary["success_rate"] == 85.0
+        assert "timestamp" in summary
 
     def test_instrument_breakdown_summary(self):
         """Test generation of instrument breakdown summary."""
         instrument_results = {
-            'a1_participant_demographics': {'passed': 45, 'failed': 5},
-            'b1_vital_signs_and_anthropometrics': {'passed': 40, 'failed': 10}
+            "a1_participant_demographics": {"passed": 45, "failed": 5},
+            "b1_vital_signs_and_anthropometrics": {"passed": 40, "failed": 10}
         }
 
         # Generate breakdown
         breakdown = {}
         for instrument, results in instrument_results.items():
-            total = results['passed'] + results['failed']
+            total = results["passed"] + results["failed"]
             breakdown[instrument] = {
-                'total_records': total,
-                'passed_count': results['passed'],
-                'failed_count': results['failed'],
-                'success_rate': (results['passed'] / total) * 100 if total > 0 else 0
+                "total_records": total,
+                "passed_count": results["passed"],
+                "failed_count": results["failed"],
+                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0
             }
 
         # Verify breakdown
-        assert breakdown['a1_participant_demographics']['success_rate'] == 90.0
-        assert breakdown['b1_vital_signs_and_anthropometrics']['success_rate'] == 80.0
+        assert breakdown["a1_participant_demographics"]["success_rate"] == 90.0
+        assert breakdown["b1_vital_signs_and_anthropometrics"]["success_rate"] == 80.0
 
     def test_packet_breakdown_summary(self):
         """Test generation of packet breakdown summary."""
         packet_results = {
-            'I': {'passed': 30, 'failed': 5},
-            'I4': {'passed': 25, 'failed': 3},
-            'F': {'passed': 30, 'failed': 7}
+            "I": {"passed": 30, "failed": 5},
+            "I4": {"passed": 25, "failed": 3},
+            "F": {"passed": 30, "failed": 7}
         }
 
         # Generate packet summary
         packet_summary = {}
         for packet, results in packet_results.items():
-            total = results['passed'] + results['failed']
+            total = results["passed"] + results["failed"]
             packet_summary[packet] = {
-                'total_records': total,
-                'success_rate': (results['passed'] / total) * 100 if total > 0 else 0
+                "total_records": total,
+                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0
             }
 
         # Verify packet summary (using approximate comparison for floating point)
         assert abs(
-            packet_summary['I']['success_rate'] -
+            packet_summary["I"]["success_rate"] -
             85.7) < 0.1  # Approximately 85.7%
-        assert packet_summary['I4']['success_rate'] >= 89.0
-        assert packet_summary['F']['success_rate'] >= 80.0
+        assert packet_summary["I4"]["success_rate"] >= 89.0
+        assert packet_summary["F"]["success_rate"] >= 80.0
 
 
 class TestOutputFileManagement:
@@ -477,7 +477,7 @@ class TestOutputFileManagement:
             assert base_name in name
             assert date_tag in name
             assert time_tag in name
-            assert name.endswith(('.csv', '.json'))
+            assert name.endswith((".csv", ".json"))
 
     def test_output_directory_organization(self):
         """Test that output directory is properly organized."""
@@ -507,25 +507,25 @@ class TestOutputFileManagement:
 
     def test_file_overwrite_handling(self):
         """Test handling of file overwrites."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
             # Initial data
-            initial_data = pd.DataFrame([{'id': 1, 'value': 'initial'}])
+            initial_data = pd.DataFrame([{"id": 1, "value": "initial"}])
             initial_data.to_csv(temp_path, index=False)
 
             # Verify initial content
             loaded_initial = pd.read_csv(temp_path)
-            assert loaded_initial.iloc[0]['value'] == 'initial'
+            assert loaded_initial.iloc[0]["value"] == "initial"
 
             # Overwrite with new data
-            new_data = pd.DataFrame([{'id': 2, 'value': 'updated'}])
+            new_data = pd.DataFrame([{"id": 2, "value": "updated"}])
             new_data.to_csv(temp_path, index=False)
 
             # Verify overwrite
             loaded_new = pd.read_csv(temp_path)
-            assert loaded_new.iloc[0]['value'] == 'updated'
+            assert loaded_new.iloc[0]["value"] == "updated"
             assert len(loaded_new) == 1
 
         finally:
@@ -540,7 +540,7 @@ class TestOutputRobustness:
         """Test output generation with empty data."""
         empty_df = pd.DataFrame()
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
 
         try:
@@ -550,7 +550,7 @@ class TestOutputRobustness:
             assert Path(temp_path).exists()
 
             # Verify empty file has headers only if columns defined
-            with open(temp_path, 'r') as f:
+            with Path(temp_path).open() as f:
                 content = f.read()
 
             # Empty DataFrame with no columns should create empty file
@@ -565,7 +565,7 @@ class TestOutputRobustness:
         # Create a directory path that would cause permission issues
         restricted_path = "/root/restricted_directory/output.csv"
 
-        test_df = pd.DataFrame([{'test': 'data'}])
+        test_df = pd.DataFrame([{"test": "data"}])
 
         # Should raise appropriate exception for permission errors
         with pytest.raises((PermissionError, FileNotFoundError, OSError)):
@@ -573,7 +573,7 @@ class TestOutputRobustness:
 
     def test_output_with_invalid_characters_in_path(self):
         """Test output with invalid characters in file paths."""
-        test_df = pd.DataFrame([{'test': 'data'}])
+        test_df = pd.DataFrame([{"test": "data"}])
 
         # Test with various invalid path characters
         invalid_paths = [
@@ -587,5 +587,5 @@ class TestOutputRobustness:
                 test_df.to_csv(invalid_path, index=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

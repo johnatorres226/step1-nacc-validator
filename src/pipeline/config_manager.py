@@ -7,12 +7,13 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, fields
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from dotenv import load_dotenv
 
 # Late imports to avoid circular dependencies
 from .logging_config import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -31,14 +32,14 @@ dotenv_path = project_root / ".env"
 load_dotenv(dotenv_path)
 
 # Environment variable
-adrc_api_key = os.getenv('REDCAP_API_TOKEN')
-adrc_redcap_url = os.getenv('REDCAP_API_URL')
-project_id = os.getenv('PROJECT_ID')
+adrc_api_key = os.getenv("REDCAP_API_TOKEN")
+adrc_redcap_url = os.getenv("REDCAP_API_URL")
+project_id = os.getenv("PROJECT_ID")
 
 # Paths
-output_path = os.getenv('OUTPUT_PATH')
-status_path = os.getenv('STATUS_PATH')
-upload_ready_path = os.getenv('UPLOAD_READY_PATH')
+output_path = os.getenv("OUTPUT_PATH")
+status_path = os.getenv("STATUS_PATH")
+upload_ready_path = os.getenv("UPLOAD_READY_PATH")
 
 
 # =============================================================================
@@ -129,7 +130,7 @@ complete_instruments_vars = [f"{inst}_complete" for inst in instruments]
 complete_events_with_incomplete_qc_filter_logic = (
     "(" +
     " and ".join(f"[{inst}]=2" for inst in complete_instruments_vars) +
-    ") and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
+    ') and ([qc_status_complete] = 0 or [qc_status_complete] = "")'
 )
 qc_status_form = ["quality_control_check"]
 instrument_filter = instruments + qc_status_form
@@ -204,23 +205,15 @@ DYNAMIC_RULE_INSTRUMENTS = {
     },
 
     # --- UPDATE_MARKER Future Discriminant Variables ---
-    # Example for future C2/C2T instruments is as follows:
-
-    # "follow_up_c2c2t_neuropsychological_battery_scores": {
-    #     "discriminant_variable": "fvp_loc_c2_or_c2t",
-    #     "rule_mappings": {
-    #         "C2": "fvp_c2_rules.json",
-    #         "C2T": "fvp_c2t_rules.json"
-    #     }
-    # }
+    # (Add future instrument mappings here as needed)
 }
 
 # List of all discriminant variables used across the system
 # This helps with data fetching and filtering
-DISCRIMINANT_VARIABLES = list(set([
+DISCRIMINANT_VARIABLES = list({
     config["discriminant_variable"]
     for config in DYNAMIC_RULE_INSTRUMENTS.values()
-]))
+})
 
 # Helper function to get all instruments that use dynamic rule selection
 
@@ -268,14 +261,14 @@ class ConfigValidator(ABC):
     """Abstract base class for configuration validators."""
 
     @abstractmethod
-    def validate(self, config: 'QCConfig') -> List[str]:
+    def validate(self, config: "QCConfig") -> list[str]:
         """Validate configuration and return list of errors."""
 
 
 class RequiredFieldsValidator(ConfigValidator):
     """Validates that all required fields are present and valid."""
 
-    def validate(self, config: 'QCConfig') -> List[str]:
+    def validate(self, config: "QCConfig") -> list[str]:
         """Validate required fields and return list of errors."""
         errors = []
 
@@ -287,9 +280,9 @@ class RequiredFieldsValidator(ConfigValidator):
 
         # Require ALL packet rule paths (no fallbacks)
         required_packet_paths = {
-            'JSON_RULES_PATH_I': config.json_rules_path_i,
-            'JSON_RULES_PATH_I4': config.json_rules_path_i4,
-            'JSON_RULES_PATH_F': config.json_rules_path_f
+            "JSON_RULES_PATH_I": config.json_rules_path_i,
+            "JSON_RULES_PATH_I4": config.json_rules_path_i4,
+            "JSON_RULES_PATH_F": config.json_rules_path_f
         }
 
         for env_var, path in required_packet_paths.items():
@@ -303,15 +296,15 @@ class RequiredFieldsValidator(ConfigValidator):
 class PathValidator(ConfigValidator):
     """Validates and creates necessary paths."""
 
-    def validate(self, config: 'QCConfig') -> List[str]:
+    def validate(self, config: "QCConfig") -> list[str]:
         """Validate paths and return list of errors."""
         errors = []
 
         # Validate packet-specific rules paths (required for production)
         packet_paths = {
-            'JSON_RULES_PATH_I': config.json_rules_path_i,
-            'JSON_RULES_PATH_I4': config.json_rules_path_i4,
-            'JSON_RULES_PATH_F': config.json_rules_path_f
+            "JSON_RULES_PATH_I": config.json_rules_path_i,
+            "JSON_RULES_PATH_I4": config.json_rules_path_i4,
+            "JSON_RULES_PATH_F": config.json_rules_path_f
         }
 
         for env_var, path in packet_paths.items():
@@ -343,7 +336,7 @@ class PathValidator(ConfigValidator):
 class PerformanceValidator(ConfigValidator):
     """Validates performance-related settings."""
 
-    def validate(self, config: 'QCConfig') -> List[str]:
+    def validate(self, config: "QCConfig") -> list[str]:
         """Validate performance settings and return list of errors."""
         errors = []
 
@@ -361,7 +354,7 @@ class PerformanceValidator(ConfigValidator):
 class CustomValidator(ConfigValidator):
     """Validates custom business logic and constraints."""
 
-    def validate(self, config: 'QCConfig') -> List[str]:
+    def validate(self, config: "QCConfig") -> list[str]:
         """Validate custom constraints and return list of errors."""
         errors = []
 
@@ -393,58 +386,58 @@ class QCConfig:
     """
 
     # --- Core REDCap API Configuration ---
-    api_token: Optional[str] = field(
-        default_factory=lambda: os.getenv('REDCAP_API_TOKEN') or None)
-    redcap_api_token: Optional[str] = field(default_factory=lambda: os.getenv(
-        'REDCAP_API_TOKEN') or None)  # Alias for backward compatibility
-    api_url: Optional[str] = field(
-        default_factory=lambda: os.getenv('REDCAP_API_URL') or None)
-    redcap_api_url: Optional[str] = field(default_factory=lambda: os.getenv(
-        'REDCAP_API_URL') or None)  # Alias for backward compatibility
-    project_id: Optional[str] = field(
-        default_factory=lambda: os.getenv('PROJECT_ID'))
+    api_token: str | None = field(
+        default_factory=lambda: os.getenv("REDCAP_API_TOKEN") or None)
+    redcap_api_token: str | None = field(default_factory=lambda: os.getenv(
+        "REDCAP_API_TOKEN") or None)  # Alias for backward compatibility
+    api_url: str | None = field(
+        default_factory=lambda: os.getenv("REDCAP_API_URL") or None)
+    redcap_api_url: str | None = field(default_factory=lambda: os.getenv(
+        "REDCAP_API_URL") or None)  # Alias for backward compatibility
+    project_id: str | None = field(
+        default_factory=lambda: os.getenv("PROJECT_ID"))
 
     # --- Path Configuration ---
     output_path: str = field(
         default_factory=lambda: os.getenv(
-            'OUTPUT_PATH', str(
+            "OUTPUT_PATH", str(
                 project_root / "output")))
-    log_path: Optional[str] = field(
-        default_factory=lambda: os.getenv('LOG_PATH'))
-    status_path: Optional[str] = field(
-        default_factory=lambda: os.getenv('STATUS_PATH'))
-    upload_ready_path: Optional[str] = field(
-        default_factory=lambda: os.getenv('UPLOAD_READY_PATH'))
+    log_path: str | None = field(
+        default_factory=lambda: os.getenv("LOG_PATH"))
+    status_path: str | None = field(
+        default_factory=lambda: os.getenv("STATUS_PATH"))
+    upload_ready_path: str | None = field(
+        default_factory=lambda: os.getenv("UPLOAD_READY_PATH"))
 
     # --- Packet-based Rule Paths (Required) ---
     json_rules_path_i: str = field(
         default_factory=lambda: os.getenv(
-            'JSON_RULES_PATH_I', ''))
+            "JSON_RULES_PATH_I", ""))
     json_rules_path_i4: str = field(
         default_factory=lambda: os.getenv(
-            'JSON_RULES_PATH_I4', ''))
+            "JSON_RULES_PATH_I4", ""))
     json_rules_path_f: str = field(
         default_factory=lambda: os.getenv(
-            'JSON_RULES_PATH_F', ''))
+            "JSON_RULES_PATH_F", ""))
 
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
 
     # --- Special Column Configuration ---
-    special_col_discriminat_var: List[str] = field(default_factory=lambda: list(set(
+    special_col_discriminat_var: list[str] = field(default_factory=lambda: list({
         config["discriminant_variable"]
         for config in DYNAMIC_RULE_INSTRUMENTS.values()
-    )))
+    }))
 
     # --- QC Pipeline Behavior ---
     # 'complete_visits', 'all_visits', 'ivp_only', 'fvp_only'
-    mode: str = 'complete_visits'
+    mode: str = "complete_visits"
     test_mode: bool = False  # Use test database instead of production database
     log_level: str = field(
         default_factory=lambda: os.getenv(
-            'LOG_LEVEL', 'INFO'))
-    user_initials: Optional[str] = None
-    ptid_list: Optional[List[str]] = None
+            "LOG_LEVEL", "INFO"))
+    user_initials: str | None = None
+    ptid_list: list[str] | None = None
     include_qced: bool = False
     # Generate detailed outputs (Validation_Logs, Completed_Visits, Reports,
     # Generation_Summary)
@@ -456,42 +449,45 @@ class QCConfig:
     max_workers: int = field(
         default_factory=lambda: int(
             os.getenv(
-                'MAX_WORKERS', '4')))
+                "MAX_WORKERS", "4")))
     timeout: int = field(
         default_factory=lambda: int(
             os.getenv(
-                'TIMEOUT',
-                '300')))
+                "TIMEOUT",
+                "300")))
     retry_attempts: int = field(
         default_factory=lambda: int(
             os.getenv(
-                'RETRY_ATTEMPTS',
-                '3')))
+                "RETRY_ATTEMPTS",
+                "3")))
 
     # --- Report Generation ---
     generate_html_report: bool = field(
         default_factory=lambda: os.getenv(
-            'GENERATE_HTML_REPORT',
-            'true').lower() == 'true')
+            "GENERATE_HTML_REPORT",
+            "true").lower() == "true")
 
     # --- Instrument & Event Configuration ---
-    instruments: List[str] = field(default_factory=lambda: instruments)
-    instrument_json_mapping: Dict[str, List[str]] = field(
+    instruments: list[str] = field(default_factory=lambda: instruments)
+    instrument_json_mapping: dict[str, list[str]] = field(
         default_factory=lambda: instrument_json_mapping)
-    events: List[str] = field(default_factory=lambda: uds_events)
+    events: list[str] = field(default_factory=lambda: uds_events)
 
     def __post_init__(self):
         """Post-initialization validation and path resolution."""
-        # Sync alias fields for backward compatibility
-        if self.api_token and not self.redcap_api_token:
-            self.redcap_api_token = self.api_token
-        elif self.redcap_api_token and not self.api_token:
+        # Sync alias fields for backward compatibility.
+        # Prefer explicit `redcap_api_*` values when provided (tests instantiate
+        # QCConfig using the alias names). This ensures explicit constructor
+        # args override environment-derived defaults.
+        if self.redcap_api_token:
             self.api_token = self.redcap_api_token
+        elif self.api_token:
+            self.redcap_api_token = self.api_token
 
-        if self.api_url and not self.redcap_api_url:
-            self.redcap_api_url = self.api_url
-        elif self.redcap_api_url and not self.api_url:
+        if self.redcap_api_url:
             self.api_url = self.redcap_api_url
+        elif self.api_url:
+            self.redcap_api_url = self.api_url
 
         # Resolve paths to be absolute
         if self.output_path:
@@ -522,38 +518,37 @@ class QCConfig:
         # Only validate during normal operation, not during testing
         # Tests can call validate() method explicitly
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the configuration to a dictionary."""
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
-    def to_file(self, file_path: Union[str, Path]):
+    def to_file(self, file_path: str | Path):
         """Saves configuration to a JSON file."""
-        with open(file_path, "w") as f:
-            json.dump(self.to_dict(), f, indent=4)
+        Path(file_path).open("w", encoding="utf-8").write(json.dumps(self.to_dict(), indent=4))
 
     @classmethod
-    def from_file(cls, file_path: Union[str, Path]) -> "QCConfig":
+    def from_file(cls, file_path: str | Path) -> "QCConfig":
         """Loads configuration from a JSON file."""
-        if not Path(file_path).exists():
+        p = Path(file_path)
+        if not p.exists():
             return cls()  # Return default config if file not found
-        with open(file_path, "r") as f:
-            data = json.load(f)
+        data = json.loads(p.open(encoding="utf-8").read())
         return cls(**data)
 
-    def get_instruments(self) -> List[str]:
+    def get_instruments(self) -> list[str]:
         """Returns the list of UDS visit instruments."""
         return self.instruments
 
-    def get_instrument_json_mapping(self) -> Dict[str, List[str]]:
+    def get_instrument_json_mapping(self) -> dict[str, list[str]]:
         """Returns the mapping of instruments to JSON rule files."""
         return self.instrument_json_mapping
 
     def get_rules_path_for_packet(self, packet: str) -> str:
         """Get the required rules path for a packet type."""
         packet_paths = {
-            'I': self.json_rules_path_i,
-            'I4': self.json_rules_path_i4,
-            'F': self.json_rules_path_f
+            "I": self.json_rules_path_i,
+            "I4": self.json_rules_path_i4,
+            "F": self.json_rules_path_f
         }
         path = packet_paths.get(packet.upper())
         if not path:
@@ -564,7 +559,7 @@ class QCConfig:
             )
         return path
 
-    def validate(self) -> List[str]:
+    def validate(self) -> list[str]:
         """
         Validates the configuration and returns a list of errors.
         An empty list indicates a valid configuration.
@@ -590,7 +585,7 @@ class QCConfig:
 
 
 # Singleton instance of the configuration
-_config_instance: Optional[QCConfig] = None
+_config_instance: QCConfig | None = None
 
 
 def load_config_from_env() -> QCConfig:
@@ -623,41 +618,41 @@ def get_config(force_reload: bool = False,
     return _config_instance
 
 
-def get_instruments() -> List[str]:
+def get_instruments() -> list[str]:
     """Returns the list of UDS visit instruments."""
     return get_config().get_instruments()
 
 
-def get_instrument_json_mapping() -> Dict[str, List[str]]:
+def get_instrument_json_mapping() -> dict[str, list[str]]:
     """Returns the mapping of instruments to JSON rule files."""
     return get_config().get_instrument_json_mapping()
 
 
-def get_output_path() -> Optional[Path]:
+def get_output_path() -> Path | None:
     """Returns the path to the output directory."""
     path = get_config().output_path
     return Path(path) if path else None
 
 
-def get_status_path() -> Optional[Path]:
+def get_status_path() -> Path | None:
     """Returns the path to the status file."""
     path = get_config().status_path
     return Path(path) if path else None
 
 
-def get_core_columns() -> List[str]:
+def get_core_columns() -> list[str]:
     """Returns the core REDCap columns."""
     config = get_config()
     return [config.primary_key_field, "redcap_event_name", "packet"]
 
 
-def get_completion_columns() -> List[str]:
+def get_completion_columns() -> list[str]:
     """Returns the completion columns for all instruments."""
     config = get_config()
     return [f"{inst}_complete" for inst in config.get_instruments()]
 
 
-def get_special_columns() -> List[str]:
+def get_special_columns() -> list[str]:
     """Returns the special columns defined in configuration."""
     return get_config().special_col_discriminat_var
 
@@ -698,7 +693,7 @@ class CerberusCompatibilityAdapter:
         }
 
     def extract_cerberus_rules(
-            self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
+            self, json_rules: dict[str, Any]) -> dict[str, Any]:
         """
         Extract only the rules that are supported by standard Cerberus.
 
@@ -718,7 +713,7 @@ class CerberusCompatibilityAdapter:
         return cerberus_rules
 
     def extract_custom_rules(
-            self, json_rules: Dict[str, Any]) -> Dict[str, Any]:
+            self, json_rules: dict[str, Any]) -> dict[str, Any]:
         """
         Extract custom rules that need special handling.
 
@@ -754,7 +749,7 @@ class ModernSchemaBuilder:
         self.compatibility_adapter = CerberusCompatibilityAdapter()
 
     def build_schema_for_instrument(
-            self, instrument_name: str) -> Dict[str, Any]:
+            self, instrument_name: str) -> dict[str, Any]:
         """
         Build a proper schema structure for an instrument.
 
@@ -763,10 +758,9 @@ class ModernSchemaBuilder:
         """
         if is_dynamic_rule_instrument(instrument_name):
             return self._build_dynamic_schema(instrument_name)
-        else:
-            return self._build_standard_schema(instrument_name)
+        return self._build_standard_schema(instrument_name)
 
-    def _build_standard_schema(self, instrument_name: str) -> Dict[str, Any]:
+    def _build_standard_schema(self, instrument_name: str) -> dict[str, Any]:
         """Build schema for standard instruments."""
         # Import here to avoid circular dependencies
         from .utils.instrument_mapping import load_json_rules_for_instrument
@@ -792,7 +786,7 @@ class ModernSchemaBuilder:
             "custom_rules": custom_rules
         }
 
-    def _build_dynamic_schema(self, instrument_name: str) -> Dict[str, Any]:
+    def _build_dynamic_schema(self, instrument_name: str) -> dict[str, Any]:
         """Build schema for dynamic rule instruments."""
         # Import here to avoid circular dependencies
         from .utils.instrument_mapping import load_dynamic_rules_for_instrument
@@ -837,10 +831,10 @@ class CompatibilityValidator:
     """
 
     def validate_compatibility_rules(self,
-                                     record: Dict[str,
+                                     record: dict[str,
                                                   Any],
-                                     compatibility_rules: List[Dict[str,
-                                                                    Any]]) -> List[Dict[str,
+                                     compatibility_rules: list[dict[str,
+                                                                    Any]]) -> list[dict[str,
                                                                                         Any]]:
         """
         Validate compatibility rules for a record.
@@ -863,17 +857,17 @@ class CompatibilityValidator:
             except Exception as e:
                 logger.error(
                     f"Error validating compatibility rule {rule_index}: {
-                        str(e)}")
+                        e!s}")
                 errors.append({
                     "rule_index": rule_index,
-                    "error": f"System error in compatibility validation: {str(e)}"
+                    "error": f"System error in compatibility validation: {e!s}"
                 })
 
         return errors
 
     def _validate_single_compatibility_rule(
-            self, record: Dict[str, Any], rule: Dict[str, Any], rule_index: int
-    ) -> Optional[Dict[str, Any]]:
+            self, record: dict[str, Any], rule: dict[str, Any], rule_index: int
+    ) -> dict[str, Any] | None:
         """Validate a single compatibility rule."""
         # Import here to avoid circular dependencies
         from nacc_form_validator.json_logic import jsonLogic

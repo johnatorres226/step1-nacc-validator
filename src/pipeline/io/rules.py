@@ -6,13 +6,14 @@ and handling both standard and dynamic instruments.
 """
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ..config_manager import (
     get_config,
     instrument_json_mapping,
 )
 from ..logging_config import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -29,7 +30,7 @@ class RulesLoadingError(Exception):
 # BROKEN DOWN RULE LOADING FUNCTIONS
 # =============================================================================
 
-def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
+def resolve_rule_file_paths(instrument_name: str) -> list[Path]:
     """
     Resolve file paths for an instrument's rule files.
 
@@ -48,13 +49,13 @@ def resolve_rule_file_paths(instrument_name: str) -> List[Path]:
     # Get the list of JSON files for the instrument
     rule_files = instrument_json_mapping.get(instrument_name, [])
     if not rule_files:
-        raise RulesLoadingError(
-            f"No JSON rule files configured for instrument: {instrument_name}")
+        _msg = f"No JSON rule files configured for instrument: {instrument_name}"
+        raise RulesLoadingError(_msg)
 
     return [json_rules_path / file_name for file_name in rule_files]
 
 
-def load_json_file(file_path: Path) -> Dict[str, Any]:
+def load_json_file(file_path: Path) -> dict[str, Any]:
     """
     Load and parse a single JSON file with proper error handling.
 
@@ -69,19 +70,23 @@ def load_json_file(file_path: Path) -> Dict[str, Any]:
     """
     try:
         if not file_path.exists():
-            raise RulesLoadingError(f"Rule file not found: {file_path}")
+            _msg = f"Rule file not found: {file_path}"
+            raise RulesLoadingError(_msg)
 
-        with open(file_path, 'r') as f:
+        # Use Path.open with explicit encoding for cross-platform consistency
+        with Path(file_path).open("r", encoding="utf-8") as f:
             return json.load(f)
 
     except json.JSONDecodeError as e:
-        raise RulesLoadingError(f"Invalid JSON in {file_path}: {e}") from e
-    except IOError as e:
-        raise RulesLoadingError(f"Cannot read file {file_path}: {e}") from e
+        _msg = "Invalid JSON in %s: %s" % (file_path, e)
+        raise RulesLoadingError(_msg) from e
+    except OSError as e:
+        _msg = "Cannot read file %s: %s" % (file_path, e)
+        raise RulesLoadingError(_msg) from e
 
 
 def merge_rule_dictionaries(
-        rule_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        rule_dicts: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Merge multiple rule dictionaries into one.
 
@@ -97,7 +102,7 @@ def merge_rule_dictionaries(
     return combined_rules
 
 
-def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
+def load_json_rules_for_instrument(instrument_name: str) -> dict[str, Any]:
     """
     Loads all JSON validation rules for a given instrument.
 
@@ -123,19 +128,17 @@ def load_json_rules_for_instrument(instrument_name: str) -> Dict[str, Any]:
                 rules = load_json_file(file_path)
                 rule_dicts.append(rules)
             except RulesLoadingError as e:
-                logger.warning(f"Skipping rule file {file_path}: {e}")
+                logger.warning("Skipping rule file %s: %s", file_path, e)
                 continue
 
         if not rule_dicts:
-            logger.warning(
-                f"No valid rule files loaded for instrument: {instrument_name}")
+            logger.warning("No valid rule files loaded for instrument: %s", instrument_name)
             return {}
 
         return merge_rule_dictionaries(rule_dicts)
 
     except RulesLoadingError as e:
-        logger.error(
-            f"Failed to load rules for instrument {instrument_name}: {e}")
+        logger.exception("Failed to load rules for instrument %s: %s", instrument_name, e)
         return {}
 
 
@@ -147,9 +150,9 @@ class RulesCache:
     """Manages caching of instrument rules."""
 
     def __init__(self):
-        self._cache: Dict[str, Dict[str, Any]] = {}
+        self._cache: dict[str, dict[str, Any]] = {}
 
-    def get_rules(self, instrument: str) -> Dict[str, Any]:
+    def get_rules(self, instrument: str) -> dict[str, Any]:
         """
         Get rules for instrument, loading if not cached.
 
@@ -164,7 +167,7 @@ class RulesCache:
                 instrument)
         return self._cache[instrument]
 
-    def load_multiple(self, instruments: List[str]) -> None:
+    def load_multiple(self, instruments: list[str]) -> None:
         """
         Load rules for multiple instruments into cache.
 
@@ -178,7 +181,7 @@ class RulesCache:
         """Clear the rules cache."""
         self._cache.clear()
 
-    def get_cache_dict(self) -> Dict[str, Dict[str, Any]]:
+    def get_cache_dict(self) -> dict[str, dict[str, Any]]:
         """
         Get the underlying cache dictionary.
 
@@ -189,7 +192,7 @@ class RulesCache:
 
 
 def load_rules_for_instruments(
-        instrument_list: List[str]) -> Dict[str, Dict[str, Any]]:
+        instrument_list: list[str]) -> dict[str, dict[str, Any]]:
     """
     Load rules for multiple instruments using cache.
 
@@ -210,7 +213,7 @@ def load_rules_for_instruments(
 
 # Keep the original function for backward compatibility during transition
 def load_json_rules_for_instrument_legacy(
-        instrument_name: str) -> Dict[str, Any]:
+        instrument_name: str) -> dict[str, Any]:
     """
     DEPRECATED: Use load_json_rules_for_instrument() instead.
 

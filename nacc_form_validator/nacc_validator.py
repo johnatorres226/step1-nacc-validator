@@ -11,8 +11,9 @@ Original source: https://github.com/naccdata/nacc-form-validator
 import copy
 import logging
 import math
+from collections.abc import Mapping
 from datetime import datetime as dt
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any
 
 from cerberus.validator import Validator
 from dateutil import parser
@@ -22,6 +23,7 @@ from .datastore import Datastore
 from .errors import CustomErrorHandler, ErrorDefs
 from .json_logic import jsonLogic
 from .keys import SchemaDefs
+
 
 log = logging.getLogger(__name__)
 
@@ -42,27 +44,27 @@ class NACCValidator(Validator):
         super().__init__(schema=schema, *args, **kwargs)
 
         # Data type map for each field
-        self.__dtypes: Dict[str, str] = self.__populate_data_types() or {}
+        self.__dtypes: dict[str, str] = self.__populate_data_types() or {}
 
         # Datastore instance
-        self.__datastore: Optional[Datastore] = None
+        self.__datastore: Datastore | None = None
 
         # Primary key field of the project
-        self.__pk_field: Optional[str] = None
+        self.__pk_field: str | None = None
 
         # Cache of previous records that has been retrieved
-        self.__prev_records: Dict[str, Mapping] = {}
+        self.__prev_records: dict[str, Mapping] = {}
 
         # List of system errors occured by field
-        self.__sys_errors: Dict[str, List[str]] = {}
+        self.__sys_errors: dict[str, list[str]] = {}
 
     @property
-    def dtypes(self) -> Dict[str, str]:
+    def dtypes(self) -> dict[str, str]:
         """Returns the field->datatype mapping for the fields defined in the
         validation schema."""
         return self.__dtypes
 
-    def __populate_data_types(self) -> Optional[Dict[str, str]]:
+    def __populate_data_types(self) -> dict[str, str] | None:
         """Convert cerberus data types to python data types. Populates a
         field->data type mapping for each field in the schema.
 
@@ -98,7 +100,7 @@ class NACCValidator(Validator):
         return data_types
 
     @property
-    def primary_key(self) -> Optional[str]:
+    def primary_key(self) -> str | None:
         """Returns the primary key field name or None."""
         return self.__pk_field
 
@@ -113,12 +115,12 @@ class NACCValidator(Validator):
         self.__pk_field = pk_field
 
     @property
-    def datastore(self) -> Optional[Datastore]:
+    def datastore(self) -> Datastore | None:
         """Returns the datastore object or None."""
         return self.__datastore
 
     @datastore.setter
-    def datastore(self, datastore: Optional[Datastore]):
+    def datastore(self, datastore: Datastore | None):
         """Set the Datastore instance.
 
         Args:
@@ -128,7 +130,7 @@ class NACCValidator(Validator):
         self.__datastore = datastore
 
     @property
-    def sys_errors(self) -> Dict[str, List[str]]:
+    def sys_errors(self) -> dict[str, list[str]]:
         """Returns the list of system errors occurred during validation.
 
         This is different from the validation errors and can be empty.
@@ -159,7 +161,7 @@ class NACCValidator(Validator):
 
         self.__prev_records.clear()
 
-    def get_error_messages(self) -> Dict[int, str]:
+    def get_error_messages(self) -> dict[int, str]:
         """Returns the list of error messages by error code.
 
         Check ~cerberus.errors.BasicErrorHandler for more info.
@@ -169,7 +171,7 @@ class NACCValidator(Validator):
         """
         return self.error_handler.messages
 
-    def cast_record(self, record: Dict[str, str]) -> Dict[str, object]:
+    def cast_record(self, record: dict[str, str]) -> dict[str, object]:
         """Cast the fields in the record to appropriate data types.
 
         Args:
@@ -224,8 +226,8 @@ class NACCValidator(Validator):
     def __get_previous_record(
         self,
         field: str,
-        ignore_empty_fields: Optional[List[str]] = None
-    ) -> Optional[Dict[str, Mapping]]:
+        ignore_empty_fields: list[str] | None = None
+    ) -> dict[str, Mapping] | None:
         """Get the previous record from the Datastore; if not skipping empty
         records, stores it in the prev_records cache.
 
@@ -274,7 +276,7 @@ class NACCValidator(Validator):
 
     def __get_value_for_key(self,
                             key: str,
-                            return_self: bool = True) -> Optional[Any]:
+                            return_self: bool = True) -> Any | None:
         """Find the value for the specified key.
 
         Args:
@@ -337,7 +339,7 @@ class NACCValidator(Validator):
         """
         super()._validate_nullable(nullable, field, value)
         if value is None:
-            super()._drop_remaining_rules('compare_age')
+            super()._drop_remaining_rules("compare_age")
 
     def _validate_max(self, max_value: object, field: str, value: object):
         """Override max rule to support validations wrt current date/year.
@@ -490,9 +492,9 @@ class NACCValidator(Validator):
 
     def _check_subschema_valid(
             self,
-            all_conditions: Dict[str, object],
+            all_conditions: dict[str, object],
             operator: str,
-            record: Dict[str, Any] = None) -> Tuple[bool, object]:
+            record: dict[str, Any] = None) -> tuple[bool, object]:
         """Creates a temporary validator to check a set of conditions.
 
         Args:
@@ -517,19 +519,18 @@ class NACCValidator(Validator):
             # If field is null or missing, check if we're validating against allowed
             # values
             if field_value is None and isinstance(
-                    conds, dict) and 'allowed' in conds:
+                    conds, dict) and "allowed" in conds:
                 # If the field is null/missing and we're checking for allowed values,
                 # this condition should be considered false (not met)
                 if operator == "OR":
                     # For OR operations, this condition fails but we continue to check
                     # others
                     continue
-                else:
-                    # For AND operations, this condition fails so the whole
-                    # check fails
-                    valid = False
-                    # Don't add errors for null/missing fields in conditions
-                    break
+                # For AND operations, this condition fails so the whole
+                # check fails
+                valid = False
+                # Don't add errors for null/missing fields in conditions
+                break
 
             subschema = {field: conds}
 
@@ -564,7 +565,7 @@ class NACCValidator(Validator):
         return valid, errors
 
     # pylint: disable=(too-many-locals, unused-argument)
-    def _validate_compatibility(self, constraints: List[Mapping], field: str,
+    def _validate_compatibility(self, constraints: list[Mapping], field: str,
                                 value: object):
         """Validate the List of compatibility checks specified for a field.
 
@@ -671,7 +672,7 @@ class NACCValidator(Validator):
                                     if_conds, else_conds)
 
     # pylint: disable=(too-many-locals)
-    def _validate_temporalrules(self, temporalrules: List[Mapping], field: str,
+    def _validate_temporalrules(self, temporalrules: list[Mapping], field: str,
                                 value: object):
         """Validate the List of longitudial checks specified for a field.
 
@@ -809,7 +810,7 @@ class NACCValidator(Validator):
                     self._error(field, error_def, rule_no, str(error),
                                 prev_conds, curr_conds)
 
-    def _validate_logic(self, logic: Dict[str, Any], field: str,
+    def _validate_logic(self, logic: dict[str, Any], field: str,
                         value: object):
         """Validate a mathematical formula/expression.
 
@@ -841,7 +842,7 @@ class NACCValidator(Validator):
         except ValueError as error:
             self._error(field, ErrorDefs.FORMULA, str(error))
 
-    def _validate_function(self, function: Dict[str, Any], field: str,
+    def _validate_function(self, function: dict[str, Any], field: str,
                            value: object):
         """Validate using a custom defined function.
 
@@ -863,8 +864,8 @@ class NACCValidator(Validator):
             }
         """
 
-        function_name = '_' + \
-            function.get(SchemaDefs.FUNCTION_NAME, 'undefined')
+        function_name = "_" + \
+            function.get(SchemaDefs.FUNCTION_NAME, "undefined")
         func = getattr(self, function_name, None)
         if func and callable(func):
             kwargs = function.get(SchemaDefs.FUNCTION_ARGS, {})
@@ -874,7 +875,7 @@ class NACCValidator(Validator):
             self.__add_system_error(field, err_msg)
             raise ValidationException(err_msg)
 
-    def _validate_compute_gds(self, keys: List[str], field: str,
+    def _validate_compute_gds(self, keys: list[str], field: str,
                               value: object):
         """Validate Geriatric Depression Scale (GDS) calculation.
 
@@ -933,7 +934,7 @@ class NACCValidator(Validator):
             self._error(field, ErrorDefs.CHECK_GDS_5, 4)
             return
 
-    def _validate_compare_with(self, comparison: Dict[str, Any], field: str,
+    def _validate_compare_with(self, comparison: dict[str, Any], field: str,
                                value: object):
         """Apply the specified comparison.
 
@@ -994,13 +995,13 @@ class NACCValidator(Validator):
         prev_record = comparison.get(SchemaDefs.PREV_RECORD, False)
         ignore_empty = comparison.get(SchemaDefs.IGNORE_EMPTY, False)
 
-        base_str = f'{base} (previous record)' if prev_record else base
-        comparison_str = f'{field} {comparator} {base_str}'
+        base_str = f"{base} (previous record)" if prev_record else base
+        comparison_str = f"{field} {comparator} {base_str}"
         if adjustment and operator:
-            if operator == 'abs':
-                comparison_str = f'abs({field} - {base_str}) {comparator} {adjustment}'
+            if operator == "abs":
+                comparison_str = f"abs({field} - {base_str}) {comparator} {adjustment}"
             else:
-                comparison_str += f' {operator} {adjustment}'
+                comparison_str += f" {operator} {adjustment}"
 
         if prev_record:
             ignore_empty_fields = [base] if ignore_empty else None
@@ -1043,7 +1044,7 @@ class NACCValidator(Validator):
         except (TypeError, ValueError):
             self._error(field, ErrorDefs.COMPARE_WITH, comparison_str)
 
-    def _check_with_rxnorm(self, field: str, value: Optional[int]):
+    def _check_with_rxnorm(self, field: str, value: int | None):
         """Check whether the specified value is a valid RXCUI
         https://www.nlm.nih.gov/research/umls/rxnorm/overview.html
         https://mor.nlm.nih.gov/RxNav/
@@ -1068,7 +1069,7 @@ class NACCValidator(Validator):
         if not self.datastore.is_valid_rxcui(value):
             self._error(field, ErrorDefs.RXNORM, value)
 
-    def _validate_compare_age(self, comparison: Dict[str, Any], field: str,
+    def _validate_compare_age(self, comparison: dict[str, Any], field: str,
                               value: object):
         """Validate a comparison between the field and a list of compare_to
         values.
@@ -1196,9 +1197,9 @@ class NACCValidator(Validator):
                          field: str,
                          value: int,
                          mode: str,
-                         scoring_key: Dict[str, Any],
-                         logic: Dict[str, Any],
-                         calc_var_name: str = '__total_sum') -> None:
+                         scoring_key: dict[str, Any],
+                         logic: dict[str, Any],
+                         calc_var_name: str = "__total_sum") -> None:
         """Sums all the variables that are correct or incorrect depending on
         the mode based on scoring_key. Stores the result a special variable
         defined by calc_var_name (defaults to __total_sum, note double
@@ -1241,22 +1242,22 @@ class NACCValidator(Validator):
                 return
 
             correct = self.document[key] == correct_value
-            if (correct and mode == 'correct') or \
-               (not correct and mode == 'incorrect'):
+            if (correct and mode == "correct") or \
+               (not correct and mode == "incorrect"):
                 total_sum += 1
 
-        condition = {field: {'nullable': True, 'logic': logic}}
+        condition = {field: {"nullable": True, "logic": logic}}
 
         if calc_var_name in self.document:
             raise ValueError(
-                f"{calc_var_name} already exists in record, cannot use " +
+                f"{calc_var_name} already exists in record, cannot use "
                 "as calc_var_name")
 
         record = copy.deepcopy(self.document)
         record[calc_var_name] = total_sum
 
         valid, errors = self._check_subschema_valid(all_conditions=condition,
-                                                    operator='AND',
+                                                    operator="AND",
                                                     record=record)
 
         # Logic formula failed, report errors

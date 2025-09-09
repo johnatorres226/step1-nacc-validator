@@ -6,12 +6,13 @@ that were previously in helpers.py, but now broken down into smaller, single-pur
 functions following SOLID principles.
 """
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
 from ..config_manager import get_config, is_dynamic_rule_instrument
 from ..logging_config import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -37,7 +38,7 @@ class ValidationError(Exception):
 class CompleteVisitsData:
     """Data model for complete visits processing results."""
     summary_dataframe: pd.DataFrame
-    complete_visits_tuples: List[Tuple[str, str]]
+    complete_visits_tuples: list[tuple[str, str]]
     total_visits_processed: int
     complete_visits_count: int
 
@@ -45,7 +46,7 @@ class CompleteVisitsData:
 @dataclass
 class ValidationLogsData:
     """Data model for validation logs."""
-    log_entries: List[Dict[str, Any]]
+    log_entries: list[dict[str, Any]]
     total_records_processed: int
     pass_count: int
     fail_count: int
@@ -68,7 +69,7 @@ def is_dynamic_instrument(instrument_name: str) -> bool:
     return is_dynamic_rule_instrument(instrument_name)
 
 
-def extract_variables_from_rules(rules: Dict[str, Any]) -> List[str]:
+def extract_variables_from_rules(rules: dict[str, Any]) -> list[str]:
     """
     Extract variable names from rule dictionary.
 
@@ -82,7 +83,7 @@ def extract_variables_from_rules(rules: Dict[str, Any]) -> List[str]:
 
 
 def extract_variables_from_dynamic_instrument(
-        instrument_name: str) -> List[str]:
+        instrument_name: str) -> list[str]:
     """
     Extract variables from dynamic instrument processor.
 
@@ -100,7 +101,7 @@ def extract_variables_from_dynamic_instrument(
 
 
 def get_variables_for_instrument(
-        instrument_name: str, rules_cache: Dict[str, Any]) -> List[str]:
+        instrument_name: str, rules_cache: dict[str, Any]) -> list[str]:
     """
     Orchestrate variable extraction based on instrument type.
 
@@ -113,9 +114,8 @@ def get_variables_for_instrument(
     """
     if is_dynamic_instrument(instrument_name):
         return extract_variables_from_dynamic_instrument(instrument_name)
-    else:
-        rules = rules_cache.get(instrument_name, {})
-        return extract_variables_from_rules(rules)
+    rules = rules_cache.get(instrument_name, {})
+    return extract_variables_from_rules(rules)
 
 
 # =============================================================================
@@ -123,7 +123,7 @@ def get_variables_for_instrument(
 # =============================================================================
 
 def detect_column_type(
-        field_name: str, rules: Dict[str, Any]) -> Optional[str]:
+        field_name: str, rules: dict[str, Any]) -> str | None:
     """
     Detect the expected type for a column from rules.
 
@@ -190,7 +190,7 @@ def cast_to_datetime_type(series: pd.Series) -> pd.Series:
 
 
 def preprocess_cast_types(
-        df: pd.DataFrame, rules: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
+        df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """
     Orchestrate type casting for all columns in dataframe.
 
@@ -229,9 +229,9 @@ def preprocess_cast_types(
 # =============================================================================
 
 def create_variable_to_instrument_map(
-    instrument_list: List[str],
-    rules_cache: Dict[str, Any]
-) -> Dict[str, str]:
+    instrument_list: list[str],
+    rules_cache: dict[str, Any]
+) -> dict[str, str]:
     """
     Create mapping from variables to their instruments.
 
@@ -253,9 +253,9 @@ def create_variable_to_instrument_map(
 
 
 def create_instrument_to_variables_map(
-    instrument_list: List[str],
-    rules_cache: Dict[str, Any]
-) -> Dict[str, List[str]]:
+    instrument_list: list[str],
+    rules_cache: dict[str, Any]
+) -> dict[str, list[str]]:
     """
     Create mapping from instruments to their variables.
 
@@ -284,9 +284,9 @@ def create_instrument_to_variables_map(
 
 
 def build_variable_maps(
-    instrument_list: List[str],
-    rules_cache: Dict[str, Any]
-) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    instrument_list: list[str],
+    rules_cache: dict[str, Any]
+) -> tuple[dict[str, str], dict[str, list[str]]]:
     """
     Build both variable mapping types.
 
@@ -318,8 +318,8 @@ def build_variable_maps(
 
 def create_processing_context(
     data_df: pd.DataFrame,
-    instrument_list: List[str],
-    rules_cache: Dict[str, Any],
+    instrument_list: list[str],
+    rules_cache: dict[str, Any],
     primary_key_field: str
 ):
     """
@@ -364,11 +364,11 @@ def prepare_instrument_cache_strategy(context):
 
 def prepare_instrument_data_cache(
     data_df: pd.DataFrame,
-    instrument_list: List[str],
-    instrument_variable_map: Dict[str, List[str]],
-    rules_cache: Dict[str, Any],
+    instrument_list: list[str],
+    instrument_variable_map: dict[str, list[str]],
+    rules_cache: dict[str, Any],
     primary_key_field: str,
-) -> Dict[str, pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
     """
     Prepare cached dataframes for all instruments.
 
@@ -402,7 +402,7 @@ def prepare_instrument_data_cache(
 # =============================================================================
 
 def _preprocess_cast_types(
-        df: pd.DataFrame, rules: Dict[str, Dict[str, Any]]) -> pd.DataFrame:
+        df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """
     DEPRECATED: Use preprocess_cast_types() instead.
 

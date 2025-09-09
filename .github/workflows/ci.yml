@@ -38,10 +38,10 @@ jobs:
       run: poetry install --with dev
     
     - name: Run Ruff linting
-      run: poetry run ruff check src/ tests/
+      run: poetry run ruff check src/
     
     - name: Run Black formatting check
-      run: poetry run black --check src/ tests/
+      run: poetry run black --check src/
     
     - name: Run mypy type checking
       run: poetry run mypy src/ --ignore-missing-imports

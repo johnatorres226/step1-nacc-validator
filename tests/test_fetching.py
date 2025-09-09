@@ -65,13 +65,13 @@ class TestETLResult:
 
     def test_etl_result_creation(self):
         """Test ETL result creation."""
-        test_data = pd.DataFrame({'test': [1, 2, 3]})
+        test_data = pd.DataFrame({"test": [1, 2, 3]})
 
         result = ETLResult(
             data=test_data,
             records_processed=3,
             execution_time=1.5,
-            saved_files=[Path('test.csv')]
+            saved_files=[Path("test.csv")]
         )
 
         assert not result.is_empty
@@ -98,15 +98,15 @@ class TestDataContract:
 
     def test_data_contract_required_fields(self):
         """Test that data contract defines required fields."""
-        assert hasattr(DataContract, 'REQUIRED_FIELDS')
+        assert hasattr(DataContract, "REQUIRED_FIELDS")
         assert isinstance(DataContract.REQUIRED_FIELDS, list)
-        assert 'ptid' in DataContract.REQUIRED_FIELDS
-        assert 'redcap_event_name' in DataContract.REQUIRED_FIELDS
+        assert "ptid" in DataContract.REQUIRED_FIELDS
+        assert "redcap_event_name" in DataContract.REQUIRED_FIELDS
 
     def test_data_contract_validation_method_exists(self):
         """Test that data contract has validation capabilities."""
         # Check if validation methods exist on DataContract
-        assert hasattr(DataContract, 'REQUIRED_FIELDS')
+        assert hasattr(DataContract, "REQUIRED_FIELDS")
 
 
 class TestRedcapETLPipeline:
@@ -128,35 +128,35 @@ class TestRedcapETLPipeline:
 
         # Test private method for component initialization
         with tempfile.TemporaryDirectory() as temp_dir:
-            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")
+            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")  # noqa: SLF001
 
             assert pipeline.context is not None
             assert isinstance(pipeline.context, ETLContext)
 
-    @patch('src.pipeline.core.fetcher.requests.post')
-    def test_api_payload_building(self, mock_post):
+    @patch("src.pipeline.core.fetcher.requests.post")
+    def test_api_payload_building(self, _mock_post):
         """Test API payload building functionality."""
         # Create config with explicit token to avoid environment issues
         with patch.dict(os.environ, {}, clear=True):  # Clear environment
             config = QCConfig(
-                api_token='test_token',
-                redcap_api_token='test_token',
-                redcap_api_url='https://test.redcap.url'
+                api_token="test_token",
+                redcap_api_token="test_token",
+                redcap_api_url="https://test.redcap.url"
             )
             pipeline = RedcapETLPipeline(config)
 
-            instruments = ['a1_participant_demographics']
-            filter_logic = 'test_filter'
+            instruments = ["a1_participant_demographics"]
+            filter_logic = "test_filter"
 
-            payload = pipeline._build_api_payload(instruments, filter_logic)
+            payload = pipeline._build_api_payload(instruments, filter_logic)  # noqa: SLF001
 
             assert isinstance(payload, dict)
-            assert 'token' in payload
-            assert 'content' in payload
-            assert 'forms' in payload  # Changed from 'instrument' to 'forms'
-            assert payload['token'] == 'test_token'
-            assert payload['content'] == 'record'
-            assert filter_logic in payload.get('filterLogic', '')
+            assert "token" in payload
+            assert "content" in payload
+            assert "forms" in payload  # Changed from 'instrument' to 'forms'
+            assert payload["token"] == "test_token"
+            assert payload["content"] == "record"
+            assert filter_logic in payload.get("filterLogic", "")
 
 
 class TestDataFetching:
@@ -167,62 +167,62 @@ class TestDataFetching:
         # Mock API response
         mock_response_data = [
             {
-                'ptid': 'TEST001',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'a1_birthyr': '1950',
-                'packet': 'I'
+                "ptid": "TEST001",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": "1950",
+                "packet": "I"
             },
             {
-                'ptid': 'TEST002',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'a1_birthyr': '1960',
-                'packet': 'I4'
+                "ptid": "TEST002",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": "1960",
+                "packet": "I4"
             }
         ]
 
         # Create config with explicit URLs to avoid environment variables
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token='test_token',
-                redcap_api_url='https://test.redcap.url'
+                redcap_api_token="test_token",
+                redcap_api_url="https://test.redcap.url"
             )
 
         # Mock both possible URLs (test URL and any environment URL)
-        requests_mock.post('https://test.redcap.url', json=mock_response_data)
+        requests_mock.post("https://test.redcap.url", json=mock_response_data)
         requests_mock.post(
-            'https://hsc-ctsc-rc-api.health.unm.edu/api/',
+            "https://hsc-ctsc-rc-api.health.unm.edu/api/",
             json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
 
         # Initialize components before fetching
         with tempfile.TemporaryDirectory() as temp_dir:
-            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")
+            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")  # noqa: SLF001
 
             # Test data fetching
-            data = pipeline._fetch_data()
+            data = pipeline._fetch_data()  # noqa: SLF001
 
             assert isinstance(data, list)
             assert len(data) == 2
-            assert data[0]['ptid'] == 'TEST001'
-            assert data[1]['ptid'] == 'TEST002'
+            assert data[0]["ptid"] == "TEST001"
+            assert data[1]["ptid"] == "TEST002"
 
     def test_empty_data_fetch(self, requests_mock):
         """Test handling of empty data response."""
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token='test_token',
-                redcap_api_url='https://test.redcap.url'
+                redcap_api_token="test_token",
+                redcap_api_url="https://test.redcap.url"
             )
 
         # Mock both possible URLs
-        requests_mock.post('https://test.redcap.url', json=[])
-        requests_mock.post('https://hsc-ctsc-rc-api.health.unm.edu/api/', json=[])
+        requests_mock.post("https://test.redcap.url", json=[])
+        requests_mock.post("https://hsc-ctsc-rc-api.health.unm.edu/api/", json=[])
 
         pipeline = RedcapETLPipeline(config)
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")
+            pipeline._initialize_components(temp_dir, "01JAN2025", "120000")  # noqa: SLF001
 
             data = pipeline._fetch_data()
 
@@ -232,11 +232,11 @@ class TestDataFetching:
     def test_api_error_handling(self, requests_mock):
         """Test handling of API errors."""
         config = QCConfig(
-            redcap_api_token='invalid_token',
-            redcap_api_url='https://test.redcap.url'
+            redcap_api_token="invalid_token",
+            redcap_api_url="https://test.redcap.url"
         )
 
-        requests_mock.post('https://test.redcap.url', status_code=403, text='Forbidden')
+        requests_mock.post("https://test.redcap.url", status_code=403, text="Forbidden")
 
         pipeline = RedcapETLPipeline(config)
 
@@ -244,22 +244,22 @@ class TestDataFetching:
             pipeline._initialize_components(temp_dir, "01JAN2025", "120000")
 
             # Should handle API errors gracefully
-            with pytest.raises(Exception):  # Might raise requests.HTTPError or custom exception
-                pipeline._fetch_data()
+            with pytest.raises(Exception, match="Forbidden"):  # Might raise requests.HTTPError or custom exception
+                pipeline._fetch_data()  # noqa: SLF001
 
 
 class TestETLPipelineRun:
     """Test the complete ETL pipeline run functionality."""
 
-    @patch('src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data')
+    @patch("src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data")
     def test_pipeline_run_success(self, mock_fetch):
         """Test successful pipeline execution."""
         # Mock fetched data
         mock_fetch.return_value = [
             {
-                'ptid': 'TEST001',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'a1_birthyr': '1950'
+                "ptid": "TEST001",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": "1950"
             }
         ]
 
@@ -273,7 +273,7 @@ class TestETLPipelineRun:
             assert not result.is_empty
             assert result.records_processed > 0
 
-    @patch('src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data')
+    @patch("src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data")
     def test_pipeline_run_with_empty_data(self, mock_fetch):
         """Test pipeline execution with empty data."""
         mock_fetch.return_value = []
@@ -296,9 +296,9 @@ class TestDataValidation:
         """Test data validation against contract requirements."""
         # Test valid data
         valid_record = {
-            'ptid': 'TEST001',
-            'redcap_event_name': 'udsv4_ivp_1_arm_1',
-            'a1_birthyr': '1950'
+            "ptid": "TEST001",
+            "redcap_event_name": "udsv4_ivp_1_arm_1",
+            "a1_birthyr": "1950"
         }
 
         # Check that required fields are present
@@ -308,7 +308,7 @@ class TestDataValidation:
     def test_data_contract_validation_missing_fields(self):
         """Test validation with missing required fields."""
         invalid_record = {
-            'a1_birthyr': '1950'  # Missing ptid and redcap_event_name
+            "a1_birthyr": "1950"  # Missing ptid and redcap_event_name
         }
 
         # Check that required fields are missing
@@ -329,7 +329,7 @@ class TestETLPipelineRobustness:
 
         assert pipeline.config == config
 
-    @patch('src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data')
+    @patch("src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data")
     def test_pipeline_handles_fetch_failure(self, mock_fetch):
         """Test pipeline handling of fetch failures."""
         mock_fetch.side_effect = Exception("API Error")
@@ -339,7 +339,7 @@ class TestETLPipelineRobustness:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # Should either handle the error gracefully or raise appropriate exception
-            with pytest.raises(Exception):
+            with pytest.raises(Exception, match="API Error"):
                 pipeline.run(output_path=temp_dir)
 
     def test_pipeline_with_invalid_output_path(self):
@@ -351,7 +351,7 @@ class TestETLPipelineRobustness:
         invalid_path = "/this/path/does/not/exist"
 
         # Mock _fetch_data to return empty data
-        with patch('src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data', return_value=[]):
+        with patch("src.pipeline.core.fetcher.RedcapETLPipeline._fetch_data", return_value=[]):
             result = pipeline.run(output_path=invalid_path)
             # Should return empty result gracefully
             assert isinstance(result, ETLResult)
@@ -361,33 +361,33 @@ class TestETLPipelineRobustness:
 class TestETLPipelineIntegration:
     """Test ETL pipeline integration scenarios."""
 
-    @patch('src.pipeline.core.data_processing.get_variables_for_instrument')
+    @patch("src.pipeline.core.data_processing.get_variables_for_instrument")
     def test_end_to_end_pipeline_simulation(self, mock_get_vars, requests_mock):
         """Test end-to-end pipeline simulation."""
         # Mock get_variables_for_instrument
-        mock_get_vars.return_value = ['ptid', 'redcap_event_name', 'a1_birthyr']
+        mock_get_vars.return_value = ["ptid", "redcap_event_name", "a1_birthyr"]
 
         # Mock API response
         mock_response_data = [
             {
-                'ptid': 'TEST001',
-                'redcap_event_name': 'udsv4_ivp_1_arm_1',
-                'a1_birthyr': '1950',
-                'packet': 'I'
+                "ptid": "TEST001",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": "1950",
+                "packet": "I"
             }
         ]
 
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token='test_token',
-                redcap_api_url='https://test.redcap.url',
-                instruments=['a1_participant_demographics']
+                redcap_api_token="test_token",
+                redcap_api_url="https://test.redcap.url",
+                instruments=["a1_participant_demographics"]
             )
 
         # Mock both URLs
-        requests_mock.post('https://test.redcap.url', json=mock_response_data)
+        requests_mock.post("https://test.redcap.url", json=mock_response_data)
         requests_mock.post(
-            'https://hsc-ctsc-rc-api.health.unm.edu/api/',
+            "https://hsc-ctsc-rc-api.health.unm.edu/api/",
             json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
@@ -401,5 +401,5 @@ class TestETLPipelineIntegration:
             assert result.execution_time > 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pytest.main([__file__])

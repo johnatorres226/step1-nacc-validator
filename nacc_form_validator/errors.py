@@ -7,7 +7,7 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Original source: https://github.com/naccdata/nacc-form-validator
 """
 
-from typing import Mapping
+from collections.abc import Mapping
 
 from cerberus.errors import (
     BasicErrorHandler,
@@ -17,6 +17,7 @@ from cerberus.errors import (
 )
 
 from .keys import SchemaDefs
+
 
 # pylint: disable=(too-few-public-methods)
 
@@ -105,33 +106,33 @@ class CustomErrorHandler(BasicErrorHandler):
             0x1009:
             "{1} for if {2} else {3} - compatibility rule no: {0}",
             0x2000:
-            "{1} for if {2} in previous visit then {3} " +
+            "{1} for if {2} in previous visit then {3} "
             "in current visit - temporal rule no: {0}",
             0x2001:
             "primary key variable {0} not set in current visit data",
             0x2002:
-            "failed to retrieve the previous visit, cannot proceed with " +
+            "failed to retrieve the previous visit, cannot proceed with "
             "validation",
             0x2003:
             "error in formula evaluation - {0}",
             0x2004:
-            "If GDS not attempted (nogds=1), total GDS score should be 88 " +
+            "If GDS not attempted (nogds=1), total GDS score should be 88 "
             "- GDS rule no: {0}",
             0x2005:
-            "If GDS not attempted (nogds=1), there cannot be >=12 " +
+            "If GDS not attempted (nogds=1), there cannot be >=12 "
             "questions with valid scores - GDS rule no: {0}",
             0x2006:
             "incorrect GDS score {1}, expected value {2} - GDS rule no: {0}",
             0x2007:
-            "incorrect prorated GDS score {1}, expected value {2} - GDS " +
+            "incorrect prorated GDS score {1}, expected value {2} - GDS "
             "rule no: {0}",
             0x2008:
-            "If GDS attempted (nogds = 0 or blank), at least 12 questions " +
+            "If GDS attempted (nogds = 0 or blank), at least 12 questions "
             "need to have valid scores - GDS rule no: {0}",
             0x2009:
             "input value doesn't satisfy the condition {0}",
             0x3000:
-            "failed to retrieve record for previous visit, cannot proceed " +
+            "failed to retrieve record for previous visit, cannot proceed "
             "with validation {0}",
             0x3001:
             "Drug ID {0} is not a valid RXCUI",
@@ -142,7 +143,7 @@ class CustomErrorHandler(BasicErrorHandler):
             0x3004:
             "Error in comparing {0} to age at {1} ({2}): {3}",
             0x3005:
-            "{1} for if {3} in current visit then {2} " +
+            "{1} for if {3} in current visit then {2} "
             "in previous visit - temporal rule no: {0}",
             0x3006:
             "Provided ADCID {0} does not match your center's ADCID",
@@ -151,7 +152,7 @@ class CustomErrorHandler(BasicErrorHandler):
             0x3008:
             "Provided value {0} does not match the expected score",
             0x3009:
-            "Cannot compute birth date, one or more components empty or " +
+            "Cannot compute birth date, one or more components empty or "
             "malformed",
         }
 

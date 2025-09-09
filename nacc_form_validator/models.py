@@ -8,7 +8,6 @@ Original source: https://github.com/naccdata/nacc-form-validator
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 from cerberus.errors import DocumentErrorTree
 
@@ -31,5 +30,5 @@ class ValidationResult:
 
     passed: bool
     sys_failure: bool
-    errors: Dict[str, List[str]]
-    error_tree: Optional[DocumentErrorTree]
+    errors: dict[str, list[str]]
+    error_tree: DocumentErrorTree | None

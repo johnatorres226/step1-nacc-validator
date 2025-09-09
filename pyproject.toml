@@ -58,6 +58,10 @@ Repository = "https://github.com/johnatorres226/step1-nacc-validator"
 udsv4-qc = "cli.cli:cli"
 
 [tool.poetry]
+name = "udsv4-redcap-qc-validator"
+version = "0.1.0"
+description = "REDCap Data QC Validator for UDSv4 using NACC From Validator Tools"
+license = "MLP 2.0"
 packages = [
     { include = "pipeline", from = "src" },
     { include = "cli", from = "src" },
@@ -75,6 +79,7 @@ pre-commit = "^3.0.0"
 wheel = "^0.40.0"
 build = "^0.10.0"
 twine = "^4.0.0"
+requests-mock = "^1.12.1"
 
 [build-system]
 requires = ["poetry-core"]

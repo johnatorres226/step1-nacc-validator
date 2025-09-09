@@ -26,18 +26,16 @@ PIPELINE UTILITIES:
 - `get_pipeline_status_summary()` - Status summary extraction
 """
 import json
-import time
-from contextlib import contextmanager
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
-
-import pandas as pd
-
-if TYPE_CHECKING:
-    pass
 
 # Set up logging
 import logging
+import time
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any
+
+import pandas as pd
 
 from nacc_form_validator.quality_check import QualityCheck
 from pipeline.config_manager import (
@@ -56,6 +54,7 @@ from pipeline.io.hierarchical_router import HierarchicalRuleResolver
 from pipeline.io.packet_router import PacketRuleRouter
 from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -64,16 +63,16 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 @contextmanager
-def operation_context(operation_name: str, details: str = ""):
+def operation_context(operation_name: str, details: str = "") -> Generator[None]:
     """Context manager for tracking CLI operations."""
-    logger.info(f"{operation_name.title()}: {details}")
+    logger.info("%s: %s", operation_name.title(), details)
     start_time = time.time()
     try:
         yield
         duration = time.time() - start_time
-        logger.info(f"{operation_name.title()} complete ({duration:.1f}s)")
-    except Exception as e:
-        logger.error(f"{operation_name.title()} failed: {e}")
+        logger.info("%s complete (%.1f s)", operation_name.title(), duration)
+    except Exception:
+        logger.exception("%s failed", operation_name.title())
         raise
 
 
@@ -97,21 +96,19 @@ def run_improved_report_pipeline(config: QCConfig) -> PipelineExecutionResult:
     try:
         with operation_context("pipeline_execute", "Running QC pipeline stages"):
             orchestrator = PipelineOrchestrator(config)
-            result = orchestrator.run_pipeline()
+            return orchestrator.run_pipeline()
 
-        return result
-
-    except Exception as e:
-        logger.error(f"Pipeline execution failed: {e}", exc_info=True)
+    except Exception:
+        logger.exception("Pipeline execution failed")
         raise
 
 
 def process_instruments_etl(
     config: QCConfig,
-    output_path: Optional[Union[str, Path]] = None,
-    date_tag: Optional[str] = None,
-    time_tag: Optional[str] = None,
-) -> Tuple[
+    output_path: str | Path | None = None,
+    date_tag: str | None = None,
+    time_tag: str | None = None,
+) -> tuple[
     pd.DataFrame, pd.DataFrame, pd.DataFrame,
     pd.DataFrame, pd.DataFrame, pd.DataFrame
 ]:
@@ -144,9 +141,8 @@ def process_instruments_etl(
         result = orchestrator.run_pipeline(output_path, date_tag, time_tag)
 
         if not result.success:
-            raise RuntimeError(
-                f"Pipeline execution failed: {
-                    result.pipeline_error}")
+            _msg = "Pipeline execution failed: %s"
+            raise RuntimeError(_msg % result.pipeline_error)
 
         # Extract data for legacy interface
         complete_visits_df = pd.DataFrame()
@@ -162,8 +158,8 @@ def process_instruments_etl(
             result.validation.validation_logs_df,
         )
 
-    except Exception as e:
-        logger.error(f"ETL processing failed: {e}", exc_info=True)
+    except Exception:
+        logger.exception("ETL processing failed")
         raise
 
 
@@ -171,7 +167,7 @@ def process_instruments_etl(
 # LEGACY PIPELINE INTERFACE
 # =============================================================================
 
-def run_report_pipeline(config: QCConfig):
+def run_report_pipeline(config: QCConfig) -> None:
     """
     Main entry point for the QC report pipeline.
 
@@ -188,38 +184,34 @@ def run_report_pipeline(config: QCConfig):
             result = run_improved_report_pipeline(config)
 
             if not result.success:
-                raise RuntimeError(
-                    f"Pipeline execution failed: {
-                        result.pipeline_error}")
+                _err_msg = f"Pipeline execution failed: {result.pipeline_error}"
+                raise RuntimeError(_err_msg)
 
         # Log success with metrics in production format
-        logger.info(
-            f"Data retrieved: {
-                result.data_fetch.records_processed:,} records")
+        records_processed = f"{result.data_fetch.records_processed:,}"
+        logger.info("Data retrieved: %s records", records_processed)
 
         # Log rules loading information
         rules_count = len(result.rules_loading.instruments_processed)
-        logger.info(f"Rules loaded: {rules_count} rule sets for 3 packets")
+        logger.info("Rules loaded: %d rule sets for 3 packets", rules_count)
 
         # Log validation completion
-        logger.info(
-            f"Validation complete: {
-                result.data_fetch.records_processed:,} records processed")
+        logger.info("Validation complete: %s records processed", records_processed)
 
         # Extract output directory information
         output_name = result.output_directory.name
-        logger.info(f"Reports saved to: output/{output_name}/")
+        logger.info("Reports saved to: output/%s/", output_name)
 
-    except Exception as e:
-        logger.error(f"Pipeline execution failed: {e}")
+    except Exception:
+        logger.exception("Pipeline execution failed")
         raise
 
 
 def _collect_processed_records_info(
     all_records_df: pd.DataFrame,
-    validation_errors: List[Dict[str, Any]],
+    validation_errors: list[dict[str, Any]],
     config: QCConfig
-) -> Tuple[int, int, Dict[str, int]]:
+) -> tuple[int, int, dict[str, int]]:
     """
     Collect summary information about processed records.
 
@@ -242,8 +234,8 @@ def _collect_processed_records_info(
 
     # Count records by instrument
     instrument_counts = {}
-    if 'instrument_name' in all_records_df.columns:
-        instrument_counts = all_records_df['instrument_name'].value_counts(
+    if "instrument_name" in all_records_df.columns:
+        instrument_counts = all_records_df["instrument_name"].value_counts(
         ).to_dict()
 
     return total_records, error_records, instrument_counts
@@ -272,8 +264,8 @@ class _SchemaAndRulesCache:
         self,
         instrument_name: str,
         variant: str = "",
-        fallback_func=None
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        fallback_func: Callable[..., tuple[dict[str, Any], dict[str, Any]]] | None = None,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         """
         Get cached schema and rules, or compute and cache them.
 
@@ -299,7 +291,8 @@ class _SchemaAndRulesCache:
                             load_dynamic_rules_for_instrument,
                         )
                         dynamic_rules = load_dynamic_rules_for_instrument(
-                            instrument_name)
+                            instrument_name
+                        )
                         rules = dynamic_rules.get(variant, {})
                     else:
                         from pipeline.utils.instrument_mapping import (
@@ -314,9 +307,8 @@ class _SchemaAndRulesCache:
                         include_temporal_rules=False
                     )
                     self._cache[cache_key] = (schema, rules)
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to load rules for {instrument_name}: {e}")
+                except Exception as e:  # noqa: BLE001 - intentional broad catch for rule loading
+                    logger.warning("Failed to load rules for %s: %s", instrument_name, e)
                     self._cache[cache_key] = ({}, {})
 
         return self._cache[cache_key]
@@ -334,10 +326,10 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
     def validate_data_optimized(
         self,
         data: pd.DataFrame,
-        validation_rules: Dict[str, Dict[str, Any]],
+        validation_rules: dict[str, dict[str, Any]],
         instrument_name: str,
         primary_key_field: str,
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
         """
         Optimized validation using cached schemas and rules.
 
@@ -354,7 +346,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         logs = []
         passed_records = []
 
-        for index, record in data.iterrows():
+        for _index, record in data.iterrows():
             record_dict = record.to_dict()
 
             # Get schema and rules from cache - handle dynamic instruments
@@ -363,7 +355,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                 # For dynamic instruments, we need to get the discriminant variable
                 # value
                 discriminant_var = get_discriminant_variable(instrument_name)
-                discriminant_value = record_dict.get(discriminant_var, '')
+                discriminant_value = record_dict.get(discriminant_var, "")
 
                 # Get the cached schema structure (which contains variants)
                 schema_variants, rules = self._get_cached_schema_and_rules(
@@ -379,13 +371,14 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     if available_variants:
                         schema = schema_variants[available_variants[0]]
                         logger.warning(
-                            f"Discriminant value '{discriminant_value}' not found for "
-                            f"{instrument_name}, using {available_variants[0]}"
+                            "Discriminant value '%s' not found for %s, using %s",
+                            discriminant_value,
+                            instrument_name,
+                            available_variants[0],
                         )
                     else:
                         schema = {}
-                        logger.error(
-                            f"No schema variants available for {instrument_name}")
+                        logger.error("No schema variants available for %s", instrument_name)
             else:
                 # For standard instruments, get schema directly
                 schema, rules = self._get_cached_schema_and_rules(
@@ -402,7 +395,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
             validation_result = qc.validate_record(record_dict)
 
             # Process results
-            pk_value = record_dict.get(primary_key_field, 'unknown')
+            pk_value = record_dict.get(primary_key_field, "unknown")
 
             # Check if validation failed or had system errors
             if not validation_result.passed or validation_result.sys_failure:
@@ -410,32 +403,32 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                 record_errors = validation_result.errors
 
                 # Get packet value for tracking
-                packet_value = record_dict.get('packet', 'unknown')
+                packet_value = record_dict.get("packet", "unknown")
 
                 # Process each field that has errors
                 for field_name, field_errors in record_errors.items():
                     for error_message in field_errors:
                         errors.append({
                             primary_key_field: pk_value,
-                            'instrument_name': instrument_name,
-                            'variable': field_name,
-                            'error_message': error_message,
-                            'current_value': record_dict.get(field_name, ''),
-                            'packet': packet_value,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            "instrument_name": instrument_name,
+                            "variable": field_name,
+                            "error_message": error_message,
+                            "current_value": record_dict.get(field_name, ""),
+                            "packet": packet_value,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'FAILED',
-                    'packet': packet_value,
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    "instrument_name": instrument_name,
+                    "validation_status": "FAILED",
+                    "packet": packet_value,
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
                 })
             else:
                 # Record passed validation - capture detailed information for each
                 # validated field
-                packet_value = record_dict.get('packet', 'unknown')
+                packet_value = record_dict.get("packet", "unknown")
                 rule_file = f"{instrument_name}_rules.json"
 
                 # Log detailed passed validations for each field that has rules
@@ -443,8 +436,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     # Skip metadata fields
                     if field_name in [
                         primary_key_field,
-                        'redcap_event_name',
-                            'instrument_name']:
+                        "redcap_event_name",
+                            "instrument_name"]:
                         continue
 
                     # Get the JSON rule for this field if it exists in
@@ -453,29 +446,29 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({
                             primary_key_field: pk_value,
-                            'variable': field_name,
-                            'current_value': field_value,
-                            'json_rule': json.dumps(json_rule),
-                            'rule_file': rule_file,
-                            'packet': packet_value,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                            'instrument_name': instrument_name,
+                            "variable": field_name,
+                            "current_value": field_value,
+                            "json_rule": json.dumps(json_rule),
+                            "rule_file": rule_file,
+                            "packet": packet_value,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                            "instrument_name": instrument_name,
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'packet': packet_value,
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                    "instrument_name": instrument_name,
+                    "validation_status": "PASSED",
+                    "packet": packet_value,
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
                 })
 
         return errors, logs, passed_records
 
     def _log_validation_results_optimized(
         self,
-        errors: List[Dict[str, Any]],
-        logs: List[Dict[str, Any]],
+        errors: list[dict[str, Any]],
+        logs: list[dict[str, Any]],
         instrument_name: str
     ) -> None:
         """
@@ -488,13 +481,15 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         """
         total_records = len(logs)
         error_count = len(errors)
-        success_rate = ((total_records - error_count) /
-                        total_records * 100) if total_records > 0 else 0
+        if total_records > 0:
+            success_rate = (total_records - error_count) / total_records * 100
+        else:
+            success_rate = 0
 
-        logger.info(f"Validation completed for {instrument_name}")
-        logger.info(f"  Records processed: {total_records}")
-        logger.info(f"  Errors found: {error_count}")
-        logger.info(f"  Success rate: {success_rate:.1f}%")
+        logger.info("Validation completed for %s", instrument_name)
+        logger.info("  Records processed: %d", total_records)
+        logger.info("  Errors found: %d", error_count)
+        logger.info("  Success rate: %.1f%%", success_rate)
 
 
 # Global optimized cache instance
@@ -503,10 +498,10 @@ _optimized_cache = _SchemaAndRulesOptimizedCache()
 
 def validate_data(
     data: pd.DataFrame,
-    validation_rules: Dict[str, Dict[str, Any]],
+    validation_rules: dict[str, dict[str, Any]],
     instrument_name: str,
     primary_key_field: str,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Production validation using hierarchical packet routing.
 
@@ -535,10 +530,10 @@ def validate_data(
 
 def validate_data_with_hierarchical_routing(
     data: pd.DataFrame,
-    validation_rules: Dict[str, Dict[str, Any]],
+    validation_rules: dict[str, dict[str, Any]],
     instrument_name: str,
     primary_key_field: str,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Enhanced validation with hierarchical packet + dynamic routing (Phase 2).
 
@@ -566,10 +561,12 @@ def validate_data_with_hierarchical_routing(
     passed_records = []
 
     logger.debug(
-        f"Starting hierarchical validation for {instrument_name} with {
-            len(data)} records")
+        "Starting hierarchical validation for %s with %d records",
+        instrument_name,
+        len(data),
+    )
 
-    for index, record in data.iterrows():
+    for _index, record in data.iterrows():
         record_dict = record.to_dict()
 
         try:
@@ -579,10 +576,10 @@ def validate_data_with_hierarchical_routing(
 
             if not resolved_rules:
                 logger.warning(
-                    f"No rules resolved for {instrument_name}, skipping record {
-                        record_dict.get(
-                            primary_key_field,
-                            'unknown')}")
+                    "No rules resolved for %s, skipping record %s",
+                    instrument_name,
+                    record_dict.get(primary_key_field, "unknown"),
+                )
                 continue
 
             # Build schema from resolved rules
@@ -605,24 +602,25 @@ def validate_data_with_hierarchical_routing(
             validation_result = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
-            pk_value = record_dict.get(primary_key_field, 'unknown')
-            packet_value = record_dict.get('packet', 'unknown')
+            pk_value = record_dict.get(primary_key_field, "unknown")
+            packet_value = record_dict.get("packet", "unknown")
 
             # Get the rules path for this packet (required in production)
-            if packet_value == 'unknown' or not packet_value:
-                raise ValueError(
-                    f"Record {pk_value}: Missing or invalid packet value. "
-                    f"Packet-based routing requires valid packet field "
-                    f"(I, I4, or F)"
+            if packet_value == "unknown" or not packet_value:
+                _msg = (
+                    "Record %s: Missing or invalid packet value. "
+                    "Packet-based routing requires valid packet field "
+                    "(I, I4, or F)"
                 )
+                raise ValueError(_msg % pk_value)
             rules_path = config.get_rules_path_for_packet(packet_value)
 
             # Add discriminant info for dynamic instruments
-            discriminant_info = ''
+            discriminant_info = ""
             if is_dynamic_rule_instrument(instrument_name):
                 discriminant_var = get_discriminant_variable(instrument_name)
-                discriminant_value = record_dict.get(discriminant_var, '')
-                discriminant_info = f"{discriminant_var}={discriminant_value}"
+                discriminant_value = record_dict.get(discriminant_var, "")
+                discriminant_info = "%s=%s" % (discriminant_var, discriminant_value)
 
             if not validation_result.passed or validation_result.sys_failure:
                 # Extract errors from the ValidationResult object
@@ -633,27 +631,27 @@ def validate_data_with_hierarchical_routing(
                     for error_message in field_errors:
                         errors.append({
                             primary_key_field: pk_value,
-                            'instrument_name': instrument_name,
-                            'variable': field_name,
-                            'error_message': error_message,
-                            'current_value': record_dict.get(field_name, ''),
-                            'packet': packet_value,
-                            'json_rule_path': rules_path,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                            'discriminant': discriminant_info,  # Enhanced routing info
+                            "instrument_name": instrument_name,
+                            "variable": field_name,
+                            "error_message": error_message,
+                            "current_value": record_dict.get(field_name, ""),
+                            "packet": packet_value,
+                            "json_rule_path": rules_path,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                            "discriminant": discriminant_info,  # Enhanced routing info
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'FAILED',
-                    'error_count': len([
+                    "instrument_name": instrument_name,
+                    "validation_status": "FAILED",
+                    "error_count": len([
                         err for field_errors in validation_result.errors.values()
                         for err in field_errors
                     ]),
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
-                    'discriminant': discriminant_info,
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "packet": packet_value,
+                    "discriminant": discriminant_info,
                 })
             else:
                 # Record passed validation - capture detailed information for each
@@ -665,8 +663,8 @@ def validate_data_with_hierarchical_routing(
                     # Skip metadata fields
                     if field_name in [
                         primary_key_field,
-                        'redcap_event_name',
-                            'instrument_name']:
+                        "redcap_event_name",
+                            "instrument_name"]:
                         continue
 
                     # Get the JSON rule for this field if it exists in
@@ -675,65 +673,62 @@ def validate_data_with_hierarchical_routing(
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({
                             primary_key_field: pk_value,
-                            'variable': field_name,
-                            'current_value': field_value,
-                            'json_rule': json.dumps(json_rule),
-                            'rule_file': rule_file,
-                            'packet': packet_value,
-                            'json_rule_path': rules_path,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                            'instrument_name': instrument_name,
-                            'discriminant': discriminant_info,
+                            "variable": field_name,
+                            "current_value": field_value,
+                            "json_rule": json.dumps(json_rule),
+                            "rule_file": rule_file,
+                            "packet": packet_value,
+                            "json_rule_path": rules_path,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                            "instrument_name": instrument_name,
+                            "discriminant": discriminant_info,
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'error_count': 0,
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
-                    'discriminant': discriminant_info,
+                    "instrument_name": instrument_name,
+                    "validation_status": "PASSED",
+                    "error_count": 0,
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "packet": packet_value,
+                    "discriminant": discriminant_info,
                 })
 
         except Exception as e:
-            logger.error(
-                f"Validation error for record {
-                    record_dict.get(
-                        primary_key_field,
-                        'unknown')}: {e}")
-            pk_value = record_dict.get(primary_key_field, 'unknown')
-            packet_value = record_dict.get('packet', 'unknown')
-            if packet_value == 'unknown' or not packet_value:
+            logger.exception("Validation error for record %s", record_dict.get(primary_key_field, "unknown"))
+            pk_value = record_dict.get(primary_key_field, "unknown")
+            packet_value = record_dict.get("packet", "unknown")
+            if packet_value == "unknown" or not packet_value:
                 rules_path = "unknown (missing packet)"
             else:
                 rules_path = config.get_rules_path_for_packet(packet_value)
 
-            errors.append({
-                primary_key_field: pk_value,
-                'instrument_name': instrument_name,
-                'variable': 'system_error',
-                'error_message': f"System validation error: {str(e)}",
-                'current_value': '',
-                'packet': packet_value,
-                'json_rule_path': rules_path,
-                'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                'discriminant': '',
-            })
+                errors.append({
+                    primary_key_field: pk_value,
+                    "instrument_name": instrument_name,
+                    "variable": "system_error",
+                        "error_message": "System validation error: %s" % str(e),
+                    "current_value": "",
+                    "packet": packet_value,
+                    "json_rule_path": rules_path,
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "discriminant": "",
+                })
 
     logger.debug(
-        f"Hierarchical validation completed: {
-            len(errors)} errors, {
-            len(passed_records)} passed")
+        "Hierarchical validation completed: %d errors, %d passed",
+        len(errors),
+        len(passed_records),
+    )
     return errors, logs, passed_records
 
 
 def validate_data_with_packet_routing(
     data: pd.DataFrame,
-    validation_rules: Dict[str, Dict[str, Any]],
+    validation_rules: dict[str, dict[str, Any]],
     instrument_name: str,
     primary_key_field: str,
-) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Enhanced validation with packet-based routing.
 
@@ -761,9 +756,12 @@ def validate_data_with_packet_routing(
     passed_records = []
 
     logger.debug(
-        f"Starting packet-based validation for {instrument_name} with {len(data)} records")
+        "Starting packet-based validation for %s with %d records",
+        instrument_name,
+        len(data),
+    )
 
-    for index, record in data.iterrows():
+    for _index, record in data.iterrows():
         record_dict = record.to_dict()
 
         try:
@@ -773,26 +771,28 @@ def validate_data_with_packet_routing(
 
             if not packet_rules:
                 logger.warning(
-                    f"No rules found for {instrument_name}, skipping record {
-                        record_dict.get(
-                            primary_key_field,
-                            'unknown')}")
+                    "No rules found for %s, skipping record %s",
+                    instrument_name,
+                    record_dict.get(primary_key_field, "unknown"),
+                )
                 continue
 
             # Handle dynamic routing for instruments like C2/C2T
             final_rules = packet_rules
             if is_dynamic_rule_instrument(instrument_name):
                 discriminant_var = get_discriminant_variable(instrument_name)
-                discriminant_value = record_dict.get(discriminant_var, '')
-
+                discriminant_value = record_dict.get(discriminant_var, "")
                 if discriminant_value in packet_rules:
                     final_rules = packet_rules[discriminant_value]
                     logger.debug(
-                        f"Using dynamic rules for {discriminant_var}={discriminant_value}")
+                        "Using dynamic rules for %s=%s",
+                        discriminant_var,
+                        discriminant_value,
+                    )
                 else:
                     logger.debug(
-                        f"Dynamic discriminant value '{discriminant_value}' not found, "
-                        f"using base rules"
+                        "Dynamic discriminant value '%s' not found, using base rules",
+                        discriminant_value,
                     )
 
         # Build schema from rules
@@ -802,16 +802,21 @@ def validate_data_with_packet_routing(
             try:
                 # Try to build schema from rules directly
                 schema = build_cerberus_schema_for_instrument(
-                    instrument_name, include_temporal_rules=False)
+                    instrument_name,
+                    include_temporal_rules=False,
+                )
                 # Update schema with packet-specific rules if different
                 if final_rules != packet_rules:
                     # For dynamic instruments, we need to merge the specific variant rules
                     # This is a simplified approach - in production, you'd want more
                     # sophisticated merging
                     schema.update(final_rules)
-            except Exception as e:
+            except Exception:  # noqa: BLE001
                 logger.warning(
-                    f"Failed to build schema for {instrument_name}: {e}, using rules directly")
+                    "Failed to build schema for %s: %s, using rules directly",
+                    instrument_name,
+                    "error",
+                )
                 schema = final_rules
 
             # Perform validation using existing QualityCheck engine
@@ -822,16 +827,16 @@ def validate_data_with_packet_routing(
             validation_result = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
-            pk_value = record_dict.get(primary_key_field, 'unknown')
-            packet_value = record_dict.get('packet', 'unknown')
+            pk_value = record_dict.get(primary_key_field, "unknown")
+            packet_value = record_dict.get("packet", "unknown")
 
             if not validation_result.passed or validation_result.sys_failure:
                 # Extract errors from the ValidationResult object
                 record_errors = validation_result.errors
 
                 # Get the packet-specific rules path for error tracking
-                packet_value = record_dict.get('packet', 'unknown')
-                if packet_value == 'unknown' or not packet_value:
+                packet_value = record_dict.get("packet", "unknown")
+                if packet_value == "unknown" or not packet_value:
                     rules_path = "unknown (missing packet)"
                 else:
                     rules_path = config.get_rules_path_for_packet(packet_value)
@@ -841,27 +846,27 @@ def validate_data_with_packet_routing(
                     for error_message in field_errors:
                         errors.append({
                             primary_key_field: pk_value,
-                            'instrument_name': instrument_name,
-                            'variable': field_name,
-                            'error_message': error_message,
-                            'current_value': record_dict.get(field_name, ''),
-                            'packet': packet_value,
-                            'json_rule_path': rules_path,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                            "instrument_name": instrument_name,
+                            "variable": field_name,
+                            "error_message": error_message,
+                            "current_value": record_dict.get(field_name, ""),
+                            "packet": packet_value,
+                            "json_rule_path": rules_path,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'FAILED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
+                    "instrument_name": instrument_name,
+                    "validation_status": "FAILED",
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "packet": packet_value,
                 })
             else:
                 # Record passed validation - capture detailed information for each
                 # validated field
-                packet_value = record_dict.get('packet', 'unknown')
-                if packet_value == 'unknown' or not packet_value:
+                packet_value = record_dict.get("packet", "unknown")
+                if packet_value == "unknown" or not packet_value:
                     rules_path = "unknown (missing packet)"
                 else:
                     rules_path = config.get_rules_path_for_packet(packet_value)
@@ -872,8 +877,8 @@ def validate_data_with_packet_routing(
                     # Skip metadata fields
                     if field_name in [
                         primary_key_field,
-                        'redcap_event_name',
-                            'instrument_name']:
+                        "redcap_event_name",
+                            "instrument_name"]:
                         continue
 
                     # Get the JSON rule for this field if it exists in
@@ -882,59 +887,62 @@ def validate_data_with_packet_routing(
                     if json_rule:  # Only log fields that have validation rules
                         passed_records.append({
                             primary_key_field: pk_value,
-                            'variable': field_name,
-                            'current_value': field_value,
-                            'json_rule': json.dumps(json_rule),
-                            'rule_file': rule_file,
-                            'packet': packet_value,
-                            'json_rule_path': rules_path,
-                            'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                            'instrument_name': instrument_name,
+                            "variable": field_name,
+                            "current_value": field_value,
+                            "json_rule": json.dumps(json_rule),
+                            "rule_file": rule_file,
+                            "packet": packet_value,
+                            "json_rule_path": rules_path,
+                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                            "instrument_name": instrument_name,
                         })
 
                 logs.append({
                     primary_key_field: pk_value,
-                    'instrument_name': instrument_name,
-                    'validation_status': 'PASSED',
-                    'redcap_event_name': record_dict.get('redcap_event_name', ''),
-                    'packet': packet_value,
+                    "instrument_name": instrument_name,
+                    "validation_status": "PASSED",
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "packet": packet_value,
                 })
 
         except Exception as e:
-            logger.error(
-                f"Error validating record {
-                    record_dict.get(
-                        primary_key_field,
-                        'unknown')}: {e}")
+            logger.exception(
+                "Error validating record %s",
+                record_dict.get(primary_key_field, "unknown"),
+            )
             # Add system error entry
-            packet_value = record_dict.get('packet', 'unknown')
-            if packet_value == 'unknown' or not packet_value:
+            packet_value = record_dict.get("packet", "unknown")
+            if packet_value == "unknown" or not packet_value:
                 rules_path = "unknown (missing packet)"
             else:
                 rules_path = config.get_rules_path_for_packet(packet_value)
 
             errors.append({
-                primary_key_field: record_dict.get(primary_key_field, 'unknown'),
-                'instrument_name': instrument_name,
-                'variable': 'system',
-                'error_message': f"System error during validation: {str(e)}",
-                'current_value': '',
-                'packet': packet_value,
-                'json_rule_path': rules_path,
-                'redcap_event_name': record_dict.get('redcap_event_name', ''),
+                primary_key_field: record_dict.get(primary_key_field, "unknown"),
+                "instrument_name": instrument_name,
+                "variable": "system",
+                "error_message": "System error during validation: %s" % str(e),
+                "current_value": "",
+                "packet": packet_value,
+                "json_rule_path": rules_path,
+                "redcap_event_name": record_dict.get("redcap_event_name", ""),
             })
 
-    logger.info(f"Packet-based validation complete for {instrument_name}: "
-                f"{len(passed_records)} passed, {len(errors)} errors")
+    logger.info(
+        "Packet-based validation complete for %s: %d passed, %d errors",
+        instrument_name,
+        len(passed_records),
+        len(errors),
+    )
 
     return errors, logs, passed_records
 
 
 def _get_schema_and_rules_for_record(
-    record: Dict[str, Any],
+    record: dict[str, Any],
     instrument_name: str,
-    validation_rules_cache: Dict[str, Dict[str, Any]]
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    validation_rules_cache: dict[str, dict[str, Any]]
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
     Get validation schema and rules for a specific record.
 
@@ -949,7 +957,7 @@ def _get_schema_and_rules_for_record(
     if is_dynamic_rule_instrument(instrument_name):
         # For dynamic instruments, determine the discriminant variable
         discriminant_variable = get_discriminant_variable(instrument_name)
-        discriminant_value = record.get(discriminant_variable, '')
+        discriminant_value = record.get(discriminant_variable, "")
         cache_key = f"{instrument_name}_{discriminant_value}"
     else:
         cache_key = instrument_name
@@ -965,11 +973,11 @@ def _get_schema_and_rules_for_record(
 
 
 def _log_validation_results(
-    errors: List[Dict[str, Any]],
-    pass_fail_log: List[Dict[str, Any]],
+    errors: list[dict[str, Any]],
+    pass_fail_log: list[dict[str, Any]],
     instrument_name: str,
     pk_field: str,
-    validation_rules: Dict[str, Dict[str, Any]],
+    validation_rules: dict[str, dict[str, Any]],
     rule_file: str,
     event: str = ""
 ) -> None:
@@ -989,27 +997,27 @@ def _log_validation_results(
     error_count = len(errors)
     success_count = total_records - error_count
 
-    logger.info(f"Validation results for {instrument_name} (event: {event})")
-    logger.info(f"  Total records: {total_records}")
-    logger.info(f"  Successful validations: {success_count}")
-    logger.info(f"  Failed validations: {error_count}")
-    logger.info(f"  Rule file: {rule_file}")
+    logger.info("Validation results for %s (event: %s)", instrument_name, event)
+    logger.info("  Total records: %d", total_records)
+    logger.info("  Successful validations: %d", success_count)
+    logger.info("  Failed validations: %d", error_count)
+    logger.info("  Rule file: %s", rule_file)
 
     if error_count > 0:
         # Log sample errors
         sample_errors = errors[:5]  # Show first 5 errors
         logger.info("  Sample errors:")
         for error in sample_errors:
-            pk_val = error.get(pk_field, 'unknown')
-            var = error.get('variable', 'unknown')
-            message = error.get('error_message', 'unknown')
-            logger.info(f"    {pk_val}: {var} - {message}")
+            pk_val = error.get(pk_field, "unknown")
+            var = error.get("variable", "unknown")
+            message = error.get("error_message", "unknown")
+            logger.info("    %s: %s - %s", pk_val, var, message)
 
         # Add detailed error information to errors list
         for error in errors:
-            pk_val = error.get(pk_field, 'unknown')
-            var = error.get('variable', 'unknown')
-            current_val = error.get('current_value', '')
+            pk_val = error.get(pk_field, "unknown")
+            var = error.get("variable", "unknown")
+            current_val = error.get("current_value", "")
 
             # Extract rule information
             var_rules = validation_rules.get(var, {})
@@ -1047,7 +1055,7 @@ def create_pipeline_orchestrator(config: QCConfig) -> PipelineOrchestrator:
 
 def run_pipeline_stage_by_stage(
         config: QCConfig,
-        stop_after_stage: Optional[str] = None) -> PipelineExecutionResult:
+        stop_after_stage: str | None = None) -> PipelineExecutionResult:
     """
     Run pipeline with option to stop after a specific stage (useful for debugging).
 
@@ -1067,8 +1075,9 @@ def run_pipeline_stage_by_stage(
 
     # Implement partial execution for debugging
     # This would require modifications to the orchestrator
-    logger.info(f"Running pipeline until stage: {stop_after_stage}")
-    raise NotImplementedError("Partial pipeline execution not yet implemented")
+    logger.info("Running pipeline until stage: %s", stop_after_stage)
+    msg = "Partial pipeline execution not yet implemented"
+    raise NotImplementedError(msg)
 
 
 # =============================================================================
@@ -1103,15 +1112,15 @@ def validate_pipeline_config(config: QCConfig) -> bool:
         output_path = Path(config.output_path)
         try:
             output_path.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            logger.error(f"Cannot create output directory {output_path}: {e}")
+        except Exception:
+            logger.exception("Cannot create output directory %s", output_path)
             return False
 
         logger.info("Pipeline configuration validation passed")
         return True
 
-    except Exception as e:
-        logger.error(f"Configuration validation failed: {e}")
+    except Exception:
+        logger.exception("Configuration validation failed")
         return False
 
 
