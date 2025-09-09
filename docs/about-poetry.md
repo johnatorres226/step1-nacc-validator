@@ -16,6 +16,7 @@ This document outlines the comprehensive migration strategy for transitioning th
 8. [Implementation Steps](#implementation-steps)
 9. [Testing and Validation](#testing-and-validation)
 10. [Benefits and Advantages](#benefits-and-advantages)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -690,3 +691,58 @@ The migration to Poetry will significantly enhance the UDSv4 REDCap QC Validator
 The migration process is designed to be **non-disruptive** with **backward compatibility** maintained throughout the transition. The existing CLI functionality will remain unchanged while benefiting from Poetry's enhanced environment management.
 
 This setup plan provides a comprehensive roadmap for successful Poetry adoption, ensuring the project becomes more maintainable, reproducible, and accessible to developers across different platforms and environments.
+
+---
+
+## Troubleshooting
+
+### "poetry: The term 'poetry' is not recognized" Error
+
+#### Symptoms
+- Running `poetry` in the terminal results in an error stating that the command is not recognized.
+- Commands like `poetry run udsv4-qc --help` fail with a similar error.
+
+#### Cause
+- Poetry is installed, but its executable (`poetry.exe` on Windows) is not on the system PATH.
+- This often happens when Poetry is installed via `pip` or in a user-local Python environment, and the Scripts directory is not added to PATH.
+
+#### Resolution
+The best solution is to uninstall Poetry and reinstall it using the official installer, which ensures the executable is placed in a standard location and added to your PATH automatically.
+
+**Uninstall Poetry (PowerShell, Windows):**
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python - --uninstall
+```
+
+**Reinstall Poetry (PowerShell, Windows):**
+```powershell
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+```
+
+After reinstalling, restart your terminal and verify the installation:
+```powershell
+poetry --version
+```
+
+#### Note on Initial Poetry Installation and PATH
+
+When installing Poetry for the first time, ensure that the Poetry executable is available in your terminal by adding it to your system PATH. If the installer does not do this automatically, you can add it manually in PowerShell:
+
+```powershell
+$poetryPath = Join-Path $env:APPDATA 'pypoetry\venv\Scripts'
+[Environment]::SetEnvironmentVariable(
+   'Path',
+   [Environment]::GetEnvironmentVariable('Path','User') + ';' + $poetryPath,
+   'User'
+)
+```
+
+After running this command, restart your terminal to use the `poetry` command globally.
+
+#### Prevention
+- Use the official Poetry installer (https://install.python-poetry.org) to ensure the executable is placed in a standard location.
+- Configure Poetry to create virtual environments inside the project directory:
+  ```bash
+  poetry config virtualenvs.in-project true
+  ```
+- Verify that the Python Scripts directory is added to your PATH after installation.

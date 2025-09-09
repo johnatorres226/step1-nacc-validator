@@ -4,7 +4,38 @@ A comprehensive Quality Control (QC) validation system for NACC UDSv4 (Uniform D
 
 > **✨ New: Poetry Integration** - This project now uses Poetry for modern dependency management, cross-platform compatibility, and reproducible builds. Existing users can migrate by following the [Poetry installation instructions](#-installation-with-poetry-recommended) below.
 
-## 📖 What This Project Does
+## 📑 Table of Contents
+
+- [What This Project Does](#-what-this-project-does)
+- [Technologies and Dependencies](#-technologies-and-dependencies)
+  - [Core Technologies](#core-technologies)
+  - [Development Tools](#development-tools)
+  - [Validation Engine](#validation-engine)
+  - [Architecture Components](#architecture-components)
+- [Documentation](#-documentation)
+- [License](#-license)
+- [Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation with Poetry (Recommended)](#-installation-with-poetry-recommended)
+  - [Alternative Installation (Legacy)](#-alternative-installation-legacy)
+  - [Main Commands](#-main-commands)
+- [Building and Development](#-building-and-development)
+- [System Requirements](#-system-requirements)
+- [Cross-Platform Compatibility](#-cross-platform-compatibility)
+  - [Windows](#windows)
+  - [Linux/Unix](#linuxunix)
+  - [macOS](#macos)
+- [Security Considerations](#-security-considerations)
+- [Contributing](#-contributing)
+  - [Development Setup](#development-setup)
+  - [Development Workflow](#development-workflow)
+  - [Testing Guidelines](#testing-guidelines)
+  - [Code Quality Standards](#code-quality-standards)
+  - [Adding Dependencies](#adding-dependencies)
+- [Third-Party Code Disclosure](#-third-party-code-disclosure)
+
+
+## �📖 What This Project Does
 
 The UDSv4 REDCap QC Validator is designed to:
 
@@ -18,6 +49,7 @@ The UDSv4 REDCap QC Validator is designed to:
 ## 🛠 Technologies and Dependencies
 
 ### Core Technologies
+
 - **Python 3.11+**: Primary programming language (Poetry managed)
 - **Poetry**: Modern dependency management and packaging tool
 - **REDCap API**: For secure data extraction from REDCap databases
@@ -27,19 +59,22 @@ The UDSv4 REDCap QC Validator is designed to:
 - **Rich**: Enhanced console output and formatting
 
 ### Development Tools
+
 - **Poetry**: Dependency management, virtual environments, and packaging
 - **pytest**: Testing framework with coverage reporting
 - **Black**: Code formatting
-- **Flake8**: Code linting
+- **Ruff**: Code linting
 - **mypy**: Static type checking
 - **pre-commit**: Git hooks for code quality
 
 ### Validation Engine
+
 - **JSON Logic**: Flexible rule-based validation system
 - **Custom NACC Validators**: Specialized validation methods for neurological assessment forms
 - **Schema Validation**: Multi-stage validation pipeline with error detection and reporting
 
 ### Architecture Components
+
 - **Configuration Management**: Environment-aware settings with type safety
 - **ETL Pipeline**: Extract, Transform, Load pipeline for data processing
 - **Quality Control Engine**: Core validation engine with packet-specific rules
@@ -76,21 +111,96 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Poetry provides modern dependency management with deterministic builds and cross-platform compatibility.
 
-### Step 1: Install Poetry
+---
 
-#### Windows (PowerShell)
+### Step 1: Install Poetry  
+**Windows (PowerShell)** — run the official installer script:
+
 ```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 ```
 
-#### Linux/macOS
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
+---
+
+### Step 2: Where Poetry is Installed  
+
+- Core installation (virtual environment):  
+  `%AppData%\pypoetry\venv`
+
+- Shim executable (used on PATH):  
+  `%AppData%\Python\Scripts\poetry.exe`
+
+The shim is what allows you to type `poetry` anywhere in the terminal.
+
+---
+
+### Step 3: Verify Installation  
+
+```powershell
+poetry --version
+where.exe poetry
 ```
 
-#### Alternative: Using pip
+Or browse to the folder:
+
+```powershell
+cd $env:APPDATA\Python\Scripts
+dir poetry.exe
+```
+
+---
+
+### Step 4: Add Poetry to PATH (if not already available)
+
+**Option A — PowerShell**
+
+```powershell
+$poetryPath = Join-Path $env:APPDATA 'Python\Scripts'
+[Environment]::SetEnvironmentVariable(
+  'Path',
+  [Environment]::GetEnvironmentVariable('Path','User') + ';' + $poetryPath,
+  'User'
+)
+```
+
+- Close and reopen your terminal (or VS Code).  
+- Restart your computer if necessary.
+
+**Option B — Manual (Windows UI)**
+
+1. Press **Start** → type *Environment Variables* → open **Edit the system environment variables**  
+2. Click **Environment Variables…**  
+3. Under **User variables**, select `Path` → **Edit…**  
+4. Click **New**, then paste:  
+
+   ```
+   %AppData%\Python\Scripts
+   ```
+
+5. OK → OK to save  
+6. Close and reopen your terminal (or VS Code)
+7. May require a system restart if not udpated immediately
+
+---
+
+### Step 5: Reinstall or Uninstall if Needed  
+
+To uninstall Poetry:
+
+```powershell
+python -m poetry self uninstall
+```
+
+*(or manually delete `%AppData%\pypoetry` and `%AppData%\Python\Scripts\poetry.exe` if broken)*
+
+Reinstall with the installer script again if necessary.
+
+---
+
+### Linux / macOS  
+
 ```bash
-pip install poetry
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 ### Step 2: Clone and Setup Project
@@ -160,7 +270,7 @@ poetry run black .
 poetry run mypy src/
 
 # Linting
-poetry run flake8
+poetry run ruff
 ```
 
 ### Building the Package
@@ -226,13 +336,13 @@ If you prefer traditional pip/venv setup:
 
 3. **Create required directories:**
 
-   ```bash
+   ```powershell
    mkdir output
    ```
 
 4. **Verify installation:**
 
-   ```bash
+   ```powershell
    udsv4-qc --help
    udsv4-qc config
    ```
@@ -241,43 +351,43 @@ If you prefer traditional pip/venv setup:
 
 The system provides two primary validation modes. Use Poetry commands for the best experience:
 
-### Core Commands
+# Core Commands
 
 ```bash
 # Display configuration status and validation
 poetry run udsv4-qc config
 
 # Execute QC validation pipeline
-poetry run udsv4-qc run
+poetry run udsv4-qc --initials "YOUR_INITIALS"
 ```
 
 ### Main Validation Modes
 
 ```bash
 # Validate complete visits (all instruments completed)
-poetry run udsv4-qc run --mode complete_visits --initials "ABC"
+poetry run udsv4-qc --mode complete_visits --initials "ABC"
 
 # Validate individual completed instruments
-poetry run udsv4-qc run --mode complete_instruments --initials "ABC"
+poetry run udsv4-qc --mode complete_instruments --initials "ABC"
 
 # Custom validation with specific filters
-poetry run udsv4-qc run --mode custom --initials "ABC" --event "baseline_visit" --ptid "NACC123"
+poetry run udsv4-qc --mode custom --initials "ABC" --event "baseline_visit" --ptid "NACC123"
 ```
 
 ### Advanced Command Options
 
 ```bash
 # Generate detailed outputs with coverage reports
-poetry run udsv4-qc run --mode complete_visits --initials "ABC" --detailed-run --passed-rules
+poetry run udsv4-qc --mode complete_visits --initials "ABC" --detailed-run --passed-rules
 
 # Specify custom output directory
-poetry run udsv4-qc run --mode complete_visits --initials "ABC" --output-dir "/custom/path"
+poetry run udsv4-qc --mode complete_visits --initials "ABC" --output-dir "/custom/path"
 
 # Enable verbose logging during execution
-poetry run udsv4-qc run --mode complete_visits --initials "ABC" --log
+poetry run udsv4-qc --mode complete_visits --initials "ABC" --log
 
 # Process specific events and participants
-poetry run udsv4-qc run --mode custom --initials "ABC" --event "baseline_visit" --event "followup_visit" --ptid "NACC123" --ptid "NACC456"
+poetry run udsv4-qc --mode custom --initials "ABC" --event "baseline_visit" --event "followup_visit" --ptid "NACC123" --ptid "NACC456"
 ```
 
 ### Testing Commands
@@ -364,11 +474,14 @@ We welcome contributions! Follow these guidelines for the best development exper
 
 1. **Fork and clone the repository**
 2. **Set up development environment with Poetry:**
+
    ```bash
    poetry install --with dev
    poetry shell
    ```
+
 3. **Verify setup:**
+
    ```bash
    poetry run pytest
    poetry run black --check .
@@ -379,6 +492,7 @@ We welcome contributions! Follow these guidelines for the best development exper
 ### Development Workflow
 
 1. **Create a feature branch:**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -393,7 +507,8 @@ We welcome contributions! Follow these guidelines for the best development exper
    - Verify type checking: `poetry run mypy src/`
 
 3. **Test your changes:**
-   ```bash
+
+   ```powershell
    # Run all tests
    poetry run pytest
    
@@ -406,12 +521,13 @@ We welcome contributions! Follow these guidelines for the best development exper
    ```
 
 4. **Quality checks:**
-   ```bash
+
+   ```powershell
    # Code formatting
    poetry run black .
    
    # Linting
-   poetry run flake8
+   poetry run ruff
    
    # Type checking
    poetry run mypy src/
@@ -421,6 +537,7 @@ We welcome contributions! Follow these guidelines for the best development exper
    ```
 
 5. **Commit and push:**
+
    ```bash
    git add .
    git commit -m "feat: description of your changes"
@@ -443,7 +560,7 @@ We welcome contributions! Follow these guidelines for the best development exper
 
 - **Type Safety**: Use mypy for static type checking
 - **Code Style**: Black formatting with 88-character line length
-- **Linting**: Flake8 for code quality checks
+- **Linting**: Ruff for code quality checks
 - **Documentation**: Comprehensive docstrings and comments
 - **Testing**: Minimum 80% test coverage for new code
 
