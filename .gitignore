@@ -217,6 +217,3 @@ dmypy.json
 /output
 output/
 output
-
-# # VSCode
-.vscode/

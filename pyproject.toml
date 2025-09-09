@@ -42,7 +42,7 @@ dev = [
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
-    "flake8>=6.0.0",
+    "ruff>=0.12.0",
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "wheel>=0.40.0",
@@ -69,7 +69,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ['py312']
 include = '\.pyi?$'
 extend-exclude = '''
@@ -95,7 +95,118 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
-line_length = 88
+line_length = 100
+
+[tool.ruff]
+# Set the maximum line length to 100 (project-specific setting)
+line-length = 100
+# Target Python 3.13 (the version we're using)
+target-version = "py313"
+# Show fixes in output
+show-fixes = true
+# Respect .gitignore files
+respect-gitignore = true
+
+[tool.ruff.lint]
+# Enable comprehensive rule sets for professional-grade linting
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings  
+    "F",     # Pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "YTT",   # flake8-2020
+    "ANN",   # flake8-annotations
+    "S",     # flake8-bandit
+    "BLE",   # flake8-blind-except
+    "FBT",   # flake8-boolean-trap
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
+    "COM",   # flake8-commas
+    "C4",    # flake8-comprehensions
+    "DTZ",   # flake8-datetimez
+    "T10",   # flake8-debugger
+    "EM",    # flake8-errmsg
+    "EXE",   # flake8-executable
+    "ISC",   # flake8-implicit-str-concat
+    "ICN",   # flake8-import-conventions
+    "G",     # flake8-logging-format
+    "INP",   # flake8-no-pep420
+    "PIE",   # flake8-pie
+    "T20",   # flake8-print
+    "PYI",   # flake8-pyi
+    "PT",    # flake8-pytest-style
+    "Q",     # flake8-quotes
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "SLF",   # flake8-self
+    "SIM",   # flake8-simplify
+    "TID",   # flake8-tidy-imports
+    "TCH",   # flake8-type-checking
+    "ARG",   # flake8-unused-arguments
+    "PTH",   # flake8-use-pathlib
+    "ERA",   # eradicate
+    "PD",    # pandas-vet
+    "PGH",   # pygrep-hooks
+    "PL",    # Pylint
+    "TRY",   # tryceratops
+    "NPY",   # NumPy-specific rules
+    "RUF",   # Ruff-specific rules
+]
+
+ignore = [
+    "ANN204",   # Missing return type annotation for special method
+    "S101",     # Use of `assert` detected (needed for tests)
+    "T20",      # Avoid print statements (useful for debugging)
+    "COM812",   # Trailing comma missing (conflicts with formatter)
+    "ISC001",   # Implicitly concatenated string literals (conflicts with formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow specific violations in test files
+"tests/*" = [
+    "S101",     # Allow assert statements in tests
+    "ANN",      # Don't require type annotations in tests
+    "PLR2004",  # Magic value used in comparison
+    "S105",     # Possible hardcoded password
+    "S106",     # Possible hardcoded password
+]
+# Allow print statements in CLI modules
+"src/cli/*" = ["T20"]
+# Relax some rules for configuration files
+"**/config*.py" = [
+    "PLR0913",  # Too many arguments to function call
+    "S105",     # Possible hardcoded password
+    "S106",     # Possible hardcoded password
+]
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+ignore-fully-untyped = true
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Option", "typer.Argument"]
+
+[tool.ruff.lint.pylint]
+max-args = 8
+max-branches = 15
+max-returns = 8
+max-statements = 60
+
+[tool.ruff.lint.isort]
+force-single-line = false
+lines-after-imports = 2
+known-first-party = ["qc_pipeline", "nacc_form_validator", "cli"]
+split-on-trailing-comma = true
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Use spaces around operators  
+docstring-code-format = true
+# Skip magic trailing comma
+skip-magic-trailing-comma = false
 
 [tool.mypy]
 python_version = "3.12"

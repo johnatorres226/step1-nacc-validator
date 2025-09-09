@@ -262,7 +262,7 @@ class NACCValidator(Validator):
         else:
             prev_ins = (self.datastore.get_previous_nonempty_record(
                 self.document, ignore_empty_fields) if ignore_empty else
-                        self.datastore.get_previous_record(self.document))
+                self.datastore.get_previous_record(self.document))
 
             if prev_ins:
                 prev_ins = self.cast_record(prev_ins)
@@ -513,20 +513,24 @@ class NACCValidator(Validator):
         for field, conds in all_conditions.items():
             # Check if the field exists and is not null in the record
             field_value = record.get(field)
-            
-            # If field is null or missing, check if we're validating against allowed values
-            if field_value is None and isinstance(conds, dict) and 'allowed' in conds:
+
+            # If field is null or missing, check if we're validating against allowed
+            # values
+            if field_value is None and isinstance(
+                    conds, dict) and 'allowed' in conds:
                 # If the field is null/missing and we're checking for allowed values,
                 # this condition should be considered false (not met)
                 if operator == "OR":
-                    # For OR operations, this condition fails but we continue to check others
+                    # For OR operations, this condition fails but we continue to check
+                    # others
                     continue
                 else:
-                    # For AND operations, this condition fails so the whole check fails
+                    # For AND operations, this condition fails so the whole
+                    # check fails
                     valid = False
                     # Don't add errors for null/missing fields in conditions
                     break
-            
+
             subschema = {field: conds}
 
             temp_validator = NACCValidator(
@@ -784,7 +788,8 @@ class NACCValidator(Validator):
                 valid, errors = self._check_subschema_valid(
                     curr_conds, curr_operator)
             else:
-                # do the other way; check if condition for current visit is satisfied
+                # do the other way; check if condition for current visit is
+                # satisfied
                 error_def = ErrorDefs.TEMPORAL_SWAPPED
                 valid, _ = self._check_subschema_valid(curr_conds,
                                                        curr_operator)
@@ -1001,7 +1006,8 @@ class NACCValidator(Validator):
             ignore_empty_fields = [base] if ignore_empty else None
             record = self.__get_previous_record(
                 field=base, ignore_empty_fields=ignore_empty_fields)
-            # pass through validation if no records found and ignore_empty is True
+            # pass through validation if no records found and ignore_empty is
+            # True
             if not record and ignore_empty:
                 return
 
@@ -1133,7 +1139,8 @@ class NACCValidator(Validator):
             f'age at {field} {comparator} {", ".join(map(str, ages_to_compare))}'
 
         # calculates age at the value of this field given the
-        # birth fields and assumes the ages_to_compare values to are also numerical
+        # birth fields and assumes the ages_to_compare values to are also
+        # numerical
         birth_month = self.__get_value_for_key(
             comparison.get(SchemaDefs.BIRTH_MONTH, 1))
         birth_day = self.__get_value_for_key(

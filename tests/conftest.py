@@ -5,17 +5,19 @@ This module provides common fixtures, test utilities, and configuration
 that can be used across all test modules in the project.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+from typing import Any, Dict
 from unittest.mock import Mock, patch
+
 import pandas as pd
-from typing import Dict, Any
+import pytest
+
+from nacc_form_validator.models import ValidationResult
 
 # Import project modules
 from src.pipeline.config_manager import QCConfig
-from nacc_form_validator.models import ValidationResult
 
 
 @pytest.fixture
@@ -33,8 +35,9 @@ def sample_config(temp_directory):
         redcap_api_url='https://test.redcap.example.com',
         project_id='test_project_123',
         output_path=str(temp_directory),
-        instruments=['a1_participant_demographics', 'b1_vital_signs_and_anthropometrics']
-    )
+        instruments=[
+            'a1_participant_demographics',
+            'b1_vital_signs_and_anthropometrics'])
     return config
 
 
@@ -231,7 +234,7 @@ def mock_environment_variables():
         'JSON_RULES_PATH_I4': '/mock/rules/I4',
         'JSON_RULES_PATH_F': '/mock/rules/F'
     }
-    
+
     with patch.dict(os.environ, env_vars):
         yield env_vars
 
@@ -314,7 +317,7 @@ def sample_log_data():
 # Test utilities
 class TestUtils:
     """Utility functions for tests."""
-    
+
     @staticmethod
     def create_mock_datastore(pk_field: str = 'ptid'):
         """Create a mock datastore for testing."""
@@ -322,7 +325,7 @@ class TestUtils:
         mock_datastore.pk_field = pk_field
         mock_datastore.get_previous_record.return_value = None
         return mock_datastore
-    
+
     @staticmethod
     def create_temp_json_file(data: Dict[str, Any], temp_dir: Path) -> Path:
         """Create a temporary JSON file with test data."""
@@ -331,20 +334,23 @@ class TestUtils:
         with open(temp_file, 'w') as f:
             json.dump(data, f, indent=2)
         return temp_file
-    
+
     @staticmethod
-    def create_temp_csv_file(data: pd.DataFrame, temp_dir: Path, filename: str = "test_data.csv") -> Path:
+    def create_temp_csv_file(
+            data: pd.DataFrame,
+            temp_dir: Path,
+            filename: str = "test_data.csv") -> Path:
         """Create a temporary CSV file with test data."""
         temp_file = temp_dir / filename
         data.to_csv(temp_file, index=False)
         return temp_file
-    
+
     @staticmethod
     def assert_file_exists_and_not_empty(file_path: Path):
         """Assert that a file exists and is not empty."""
         assert file_path.exists(), f"File does not exist: {file_path}"
         assert file_path.stat().st_size > 0, f"File is empty: {file_path}"
-    
+
     @staticmethod
     def assert_csv_has_expected_columns(csv_path: Path, expected_columns: list):
         """Assert that a CSV file has the expected columns."""
@@ -387,8 +393,7 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_report_header(config):
     """Add custom header to pytest report."""
-    return [
-        "UDSv4 REDCap QC Validator - Essential Test Suite",
-        f"Testing configuration, fetching, routing, validation, and outputs",
-        f"Python version: {config.getoption('--version') if hasattr(config, 'getoption') else 'Unknown'}"
-    ]
+    version = config.getoption('--version') if hasattr(config, 'getoption') else 'Unknown'
+    return ["UDSv4 REDCap QC Validator - Essential Test Suite",
+            "Testing configuration, fetching, routing, validation, and outputs",
+            f"Python version: {version}"]
