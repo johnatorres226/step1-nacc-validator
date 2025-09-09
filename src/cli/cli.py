@@ -70,7 +70,19 @@ logger = get_logger("cli")
                     "diagnostic purposes (requires --detailed-run/-dr, "
                     "large file, slow generation)."))
 @click.pass_context
-def cli(ctx, log_level: str, mode: str, output_dir: str, events: list[str], ptid_list: list[str], include_qced: bool, user_initials: str, log: bool, detailed_run: bool, passed_rules: bool):
+def cli(
+    ctx: click.Context,
+    log_level: str,
+    mode: str,
+    output_dir: str,
+    events: list[str],
+    ptid_list: list[str],
+    include_qced: bool,
+    user_initials: str,
+    log: bool,
+    detailed_run: bool,
+    passed_rules: bool,
+) -> None:
     """UDSv4 REDCap QC Validator - A comprehensive CLI for data quality control.
 
     When invoked without a subcommand, the tool runs the QC pipeline. Use
@@ -147,7 +159,7 @@ def cli(ctx, log_level: str, mode: str, output_dir: str, events: list[str], ptid
 
         # Execute pipeline
         if log:
-            with operation_context("qc_validation", "Processing %s mode" % mode):
+            with operation_context("qc_validation", f"Processing {mode} mode"):
                 run_report_pipeline(config=base_config)
             logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
             logger.info("QC validation pipeline complete")
@@ -159,7 +171,7 @@ def cli(ctx, log_level: str, mode: str, output_dir: str, events: list[str], ptid
             logger.exception("QC validation pipeline failed")
             console.print("An error occurred. Check the logs above for details.")
         else:
-            console.print("QC validation pipeline failed: %s" % e)
+            console.print(f"QC validation pipeline failed: {e}")
         ctx.exit(1)
 
 
@@ -168,7 +180,7 @@ def cli(ctx, log_level: str, mode: str, output_dir: str, events: list[str], ptid
               help="Show detailed configuration.")
 @click.option(
     "--json-output", is_flag=True, help="Output configuration as JSON.")
-def config(detailed: bool, json_output: bool):
+def config(detailed: bool, json_output: bool) -> None:
     """Displays the current configuration status and validates settings."""
     try:
         config_instance = get_config(force_reload=True)
@@ -244,7 +256,7 @@ def config(detailed: bool, json_output: bool):
 
 
 
-def _display_run_summary(config: QCConfig):
+def _display_run_summary(config: QCConfig) -> None:
     """Displays a summary of the QC run configuration."""
     mode_title = config.mode.replace(
         "_", " ").title() if config.mode else "N/A"

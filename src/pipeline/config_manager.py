@@ -229,8 +229,10 @@ def get_discriminant_variable(instrument_name: str) -> str:
     """Returns the discriminant variable name for a given instrument."""
     config = DYNAMIC_RULE_INSTRUMENTS.get(instrument_name)
     if not config:
-        raise ValueError(
-            f"Instrument '{instrument_name}' is not configured for dynamic rule selection")
+        msg = (
+            "Instrument '%s' is not configured for dynamic rule selection" % instrument_name
+        )
+        raise ValueError(msg)
     return config["discriminant_variable"]
 
 # Helper function to get rule mappings for an instrument
@@ -240,8 +242,10 @@ def get_rule_mappings(instrument_name: str) -> dict:
     """Returns the rule mappings for a given instrument."""
     config = DYNAMIC_RULE_INSTRUMENTS.get(instrument_name)
     if not config:
-        raise ValueError(
-            f"Instrument '{instrument_name}' is not configured for dynamic rule selection")
+        msg = (
+            "Instrument '%s' is not configured for dynamic rule selection" % instrument_name
+        )
+        raise ValueError(msg)
     return config["rule_mappings"]
 
 # Helper function to check if an instrument uses dynamic rule selection
@@ -522,9 +526,12 @@ class QCConfig:
         """Converts the configuration to a dictionary."""
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
-    def to_file(self, file_path: str | Path):
+    def to_file(self, file_path: str | Path) -> None:
         """Saves configuration to a JSON file."""
-        Path(file_path).open("w", encoding="utf-8").write(json.dumps(self.to_dict(), indent=4))
+        p = Path(file_path)
+        with p.open("w", encoding="utf-8") as fh:
+            fh.write(json.dumps(self.to_dict(), indent=4))
+    return None
 
     @classmethod
     def from_file(cls, file_path: str | Path) -> "QCConfig":
@@ -532,7 +539,8 @@ class QCConfig:
         p = Path(file_path)
         if not p.exists():
             return cls()  # Return default config if file not found
-        data = json.loads(p.open(encoding="utf-8").read())
+        with p.open(encoding="utf-8") as fh:
+            data = json.loads(fh.read())
         return cls(**data)
 
     def get_instruments(self) -> list[str]:
@@ -552,11 +560,12 @@ class QCConfig:
         }
         path = packet_paths.get(packet.upper())
         if not path:
-            raise ValueError(
-                f"No rules path configured for packet '{packet}'. "
-                f"Required environment variables: JSON_RULES_PATH_I, "
-                f"JSON_RULES_PATH_I4, JSON_RULES_PATH_F"
+            msg = (
+                "No rules path configured for packet '%s'. "
+                "Required environment variables: JSON_RULES_PATH_I, "
+                "JSON_RULES_PATH_I4, JSON_RULES_PATH_F" % packet
             )
+            raise ValueError(msg)
         return path
 
     def validate(self) -> list[str]:
@@ -658,7 +667,6 @@ def get_special_columns() -> list[str]:
 
 
 # Initialize configuration on module load
-# get_config() # Removed to allow for testing without premature validation
 
 # =============================================================================
 # CERBERUS COMPATIBILITY LAYER
@@ -855,9 +863,11 @@ class CompatibilityValidator:
                 if error:
                     errors.append(error)
             except Exception as e:
-                logger.error(
-                    f"Error validating compatibility rule {rule_index}: {
-                        e!s}")
+                # Assign longer message to a variable to keep exception literal small
+                msg = (
+                    "Error validating compatibility rule %s: %s" % (rule_index, e)
+                )
+                logger.error(msg)
                 errors.append({
                     "rule_index": rule_index,
                     "error": f"System error in compatibility validation: {e!s}"

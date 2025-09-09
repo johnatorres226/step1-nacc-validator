@@ -106,8 +106,8 @@ class ReportFactory:
         """
         Generate Event Completeness Screening log report.
 
-        Format: ptid, redcap_event_name, instrument_name, target_variable, 
-        completeness_status, processing_status, pass_fail, error
+    Format: ptid, redcap_event_name, instrument_name, target_variable,
+    completeness_status, processing_status, pass_fail, error
         """
         if df_logs.empty:
             logger.info("No validation logs found - skipping logs report")
@@ -537,7 +537,7 @@ class ReportFactory:
                     export_config.date_tag}_{
                     export_config.time_tag}.json"
 
-        with open(output_path, "w") as f:
+        with Path(output_path).open("w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=2)
 
         file_size_mb = output_path.stat().st_size / (1024 * 1024)
@@ -664,8 +664,8 @@ class ReportFactory:
             export_timestamp=datetime.now()
         ))
 
-    logger.info("Generated basic JSON status report: %s", output_path.name)
-    return output_path
+        logger.info("Generated basic JSON status report: %s", output_path.name)
+        return output_path
 
     def export_all_reports(
         self,
@@ -788,10 +788,9 @@ class ReportFactory:
             logger.info("Report generation complete: %d files created", len(generated_files))
             return generated_files
 
-    def _create_generation_summary(
-            self, export_config: ExportConfiguration) -> Path:
+    def _create_generation_summary(self, export_config: ExportConfiguration) -> Path:
         """Create a summary of all generated reports."""
-    summary_df = pd.DataFrame([
+        summary_df = pd.DataFrame([
             {
                 "report_type": report.report_type,
                 "filename": report.filename,
@@ -800,15 +799,15 @@ class ReportFactory:
                 "export_timestamp": report.export_timestamp.isoformat()
             }
             for report in self._generated_reports
-    ])
+        ])
 
-    filename = f"Generation_Summary_{export_config.date_tag}_{export_config.time_tag}.csv"
-    output_path = export_config.output_dir / filename
+        filename = f"Generation_Summary_{export_config.date_tag}_{export_config.time_tag}.csv"
+        output_path = export_config.output_dir / filename
 
-    summary_df.to_csv(output_path, index=False)
-    logger.info("Created generation summary: %s", filename)
+        summary_df.to_csv(output_path, index=False)
+        logger.info("Created generation summary: %s", filename)
 
-    return output_path
+        return output_path
 
     def get_report_statistics(self) -> dict[str, Any]:
         """Get statistics about generated reports."""
