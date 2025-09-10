@@ -16,6 +16,7 @@ A comprehensive Quality Control (QC) validation system for NACC UDSv4 (Uniform D
 - [License](#-license)
 - [Quick Start](#-quick-start)
   - [Prerequisites](#prerequisites)
+  - [REDCap Requirements](#redcap-requirements)
   - [Installation with Poetry (Recommended)](#-installation-with-poetry-recommended)
   - [Alternative Installation (Legacy)](#-alternative-installation-legacy)
   - [Main Commands](#-main-commands)
@@ -106,6 +107,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Git** for cloning the repository
 - **REDCap API credentials** and access
 - **Poetry** for dependency management (installation instructions below)
+
+### REDCap Requirements
+
+This system requires specific REDCap instruments and configurations for UDSv4 events. The `redcap-tools/` directory contains essential tools that must be imported into your REDCap project:
+
+- **Quality Control Check Form** (`QualityControlCheck_2025-09-10_1403.zip`): Required instrument for QC validation workflow
+
+**Setup Instructions:**
+1. Download the tools from the `redcap-tools/` directory in this repository
+2. In your REDCap project, navigate to **Project Setup** → **Online Designer**
+3. Import both zip files as new instruments for your UDSv4 events
+4. Configure the instruments according to your project's event structure
+5. Ensure proper user permissions are set for data entry and API access
+
+> ⚠️ **Important**: These REDCap instruments are specifically designed for UDSv4 data collection and validation. This instrument/tool needs to be added to every UDSv4 Event. QC Status fields are part of the logical payload and validation process. This item is used for Step 2 of the QC Result REDCap Uploader. This item is not optional.
 
 ## 📦 Installation with Poetry (Recommended)
 
@@ -498,8 +514,7 @@ We welcome contributions! Follow these guidelines for the best development exper
    - Add comprehensive tests for new features using pytest
    - Update documentation when making changes
    - Use type hints and docstrings consistently
-   - Format code with Black: `poetry run black .`
-   - Ensure linting passes: `poetry run flake8`
+   - Format code with Ruff: `poetry run ruff .`
    - Verify type checking: `poetry run mypy src/`
 
 3. **Test your changes:**
@@ -618,6 +633,6 @@ License: Mozilla Public License Version 2.0
 For the complete license text and terms, see: <https://www.mozilla.org/en-US/MPL/2.0/>
 
 **Project Status**: Production Ready  
-**Version**: 1.0.0  
+**Version**: 0.1.0  
 **Target Environment**: Windows with cross-platform support  
 **Last Updated**: September 2, 2025
