@@ -2086,7 +2086,7 @@ version = "2.9.0.20250822"
 description = "Typing stubs for python-dateutil"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "types_python_dateutil-2.9.0.20250822-py3-none-any.whl", hash = "sha256:849d52b737e10a6dc6621d2bd7940ec7c65fcb69e6aa2882acf4e56b2b508ddc"},
     {file = "types_python_dateutil-2.9.0.20250822.tar.gz", hash = "sha256:84c92c34bd8e68b117bff742bc00b692a1e8531262d4507b33afcc9f7716cd53"},
@@ -2208,4 +2208,4 @@ dev = ["black", "build", "mypy", "pre-commit", "pytest", "pytest-cov", "ruff", "
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "123cdcff4bd934aec8712d02cb9cece9f1900544d1cd59c59e31c57e7cb7a1a5"
+content-hash = "21f7bdf9f3cf930f422ccc4dfe285a61d554fd4e9eed92d8154e30ad842d967a"
