@@ -9,7 +9,7 @@ variable in the data.
 
 from typing import Any
 
-from pipeline.config_manager import KEY_MAP, is_dynamic_rule_instrument
+from pipeline.config.config_manager import KEY_MAP, is_dynamic_rule_instrument
 
 from .instrument_mapping import (
     load_dynamic_rules_for_instrument,

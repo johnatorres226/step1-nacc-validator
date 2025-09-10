@@ -188,7 +188,7 @@ class ReportFactory:
         Format: ptid, redcap_event_name, [instrument columns with error counts], total_error_count
         """
         # Get all instruments from config
-        from ..config_manager import get_instruments
+        from ..config.config_manager import get_instruments
         instruments = get_instruments()
 
         # Get unique participants and events (remove duplicates from
@@ -270,7 +270,7 @@ class ReportFactory:
         qc_status_complete, qc_run_by, qc_last_run, qc_status,
         quality_control_check_complete
         """
-        from ..config_manager import get_instruments
+        from ..config.config_manager import get_instruments
         instruments = get_instruments()
 
         # Get unique participants and events (remove duplicates from
@@ -361,7 +361,7 @@ class ReportFactory:
 
         Format: ptid, redcap_event_name, packet, complete_instruments_count, completion_status
         """
-        from ..config_manager import get_instruments
+        from ..config.config_manager import get_instruments
         instruments = get_instruments()
 
         # Get unique participants, events, and packets (remove duplicates while
@@ -415,7 +415,7 @@ class ReportFactory:
         """
         # This would need to be populated during validation - for now create a basic structure
         # Import validation rules and create entries for all variables
-        from ..config_manager import (
+        from ..config.config_manager import (
             get_config,
             get_instruments,
         )
@@ -486,7 +486,7 @@ class ReportFactory:
         """
         import json
 
-        from ..config_manager import get_config
+        from ..config.config_manager import get_config
 
         # Read the CSV status report
         status_df = pd.read_csv(status_report_path)
@@ -512,7 +512,7 @@ class ReportFactory:
             }
 
             # Add instrument status
-            from ..config_manager import get_instruments
+            from ..config.config_manager import get_instruments
             instruments = get_instruments()
             for instrument in instruments:
                 if instrument in row:
@@ -618,7 +618,7 @@ class ReportFactory:
         """
         import json
 
-        from ..config_manager import get_config
+        from ..config.config_manager import get_config
 
         # Create basic JSON structure
         json_data = {

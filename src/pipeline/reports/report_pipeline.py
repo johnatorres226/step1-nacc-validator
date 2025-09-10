@@ -38,7 +38,7 @@ from typing import Any
 import pandas as pd
 
 from nacc_form_validator.quality_check import QualityCheck
-from pipeline.config_manager import (
+from ..config.config_manager import (
     QCConfig,
     get_config,
     get_discriminant_variable,
@@ -46,13 +46,13 @@ from pipeline.config_manager import (
 )
 
 # Import pipeline components directly
-from pipeline.core.pipeline_orchestrator import PipelineOrchestrator
-from pipeline.core.pipeline_results import PipelineExecutionResult
-from pipeline.io.hierarchical_router import HierarchicalRuleResolver
+from ..core.pipeline_orchestrator import PipelineOrchestrator
+from ..core.pipeline_results import PipelineExecutionResult
+from ..io.hierarchical_router import HierarchicalRuleResolver
 
 # Import packet router for enhanced validation
-from pipeline.io.packet_router import PacketRuleRouter
-from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
+from ..io.packet_router import PacketRuleRouter
+from ..utils.schema_builder import build_cerberus_schema_for_instrument
 
 logger = logging.getLogger(__name__)
 
@@ -286,7 +286,7 @@ class _SchemaAndRulesCache:
                 # Default fallback
                 try:
                     if is_dynamic_rule_instrument(instrument_name):
-                        from pipeline.utils.instrument_mapping import (
+                        from ..utils.instrument_mapping import (
                             load_dynamic_rules_for_instrument,
                         )
                         dynamic_rules = load_dynamic_rules_for_instrument(
@@ -294,7 +294,7 @@ class _SchemaAndRulesCache:
                         )
                         rules = dynamic_rules.get(variant, {})
                     else:
-                        from pipeline.utils.instrument_mapping import (
+                        from ..utils.instrument_mapping import (
                             load_json_rules_for_instrument,
                         )
                         rules = load_json_rules_for_instrument(instrument_name)
@@ -582,7 +582,7 @@ def validate_data_with_hierarchical_routing(
                 continue
 
             # Build schema from resolved rules
-            from pipeline.utils.schema_builder import _build_schema_from_raw
+            from ..utils.schema_builder import _build_schema_from_raw
 
             # For hierarchical routing, always use the resolved rules directly
             # The hierarchical resolver already provides flat, variant-specific
@@ -799,7 +799,7 @@ def validate_data_with_packet_routing(
                     )
 
         # Build schema from rules
-            from pipeline.utils.schema_builder import (
+            from ..utils.schema_builder import (
                 build_cerberus_schema_for_instrument,
             )
             try:

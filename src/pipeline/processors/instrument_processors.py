@@ -9,7 +9,7 @@ from typing import Any
 
 import pandas as pd
 
-from pipeline.config_manager import (
+from pipeline.config.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_discriminant_variable,
@@ -17,7 +17,7 @@ from pipeline.config_manager import (
     is_dynamic_rule_instrument,
 )
 from pipeline.io.context import ProcessingContext
-from pipeline.logging_config import get_logger
+from pipeline.logging.logging_config import get_logger
 from pipeline.utils.instrument_mapping import load_dynamic_rules_for_instrument
 
 logger = get_logger(__name__)

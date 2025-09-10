@@ -360,7 +360,7 @@ The `PipelineOrchestrator._create_output_directory()` method implements sophisti
 
 **Directory Naming Convention**:
 - **Prefix**: `QC_` indicates quality control output
-- **Mode**: Processing mode (CompleteVisits, Custom, etc.)
+- **Mode**: Processing mode (CompleteVisits, IncompleteVisits, etc.)
 - **DateTag**: Date in format `DDMMMYYYY` (e.g., 28AUG2025)
 - **TimeTag**: Time in format `HHMMSS` (e.g., 145117)
 

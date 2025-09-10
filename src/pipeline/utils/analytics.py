@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from src.pipeline.config_manager import (
+from src.pipeline.config.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_special_columns,

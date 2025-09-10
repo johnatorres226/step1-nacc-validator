@@ -1,4 +1,23 @@
-%%{init: {
+site: https://mermaid.live/
+
+%% QC Validation Engine - Process-Grouped Architecture
+%% 
+%% Core Components:
+%% - QualityCheck: Main coordinator (quality_check.py)
+%% - NACCValidator: Core validation engine (nacc_validator.py) 
+%% - CustomErrorHandler: Error message management (errors.py)
+%% - ValidationResult: Result data model (models.py)
+%% - Datastore: Previous visit data access (datastore.py)
+%% - HierarchicalRuleResolver: Schema routing integration
+%%
+%% Key Validation Methods by Process Group:
+%% GROUP 1 - Core Validation: Basic schema validation, type casting
+%% GROUP 2 - Business Rules: _validate_compatibility, _validate_temporalrules
+%% GROUP 3 - Logic & Computation: _validate_logic, _validate_compute_gds
+%% GROUP 4 - Field Validation: _validate_compare_with, _validate_filled
+%% GROUP 5 - External Validation: _validate_check_with (RXNORM)
+
+%%{init: { 
   "themeVariables": {
     "fontFamily":"Inter,Segoe UI,Arial,sans-serif",
     "fontSize":"14px",
@@ -10,97 +29,204 @@
   "flowchart": {"defaultRenderer":"elk", "curve":"catmullRom"}
 }}%%
 flowchart TD
-  %% --- INPUT & INITIALIZATION ---
-  A[Record Input]
+  %% === INPUT ===
+  A[Record Input from Router<br/>HierarchicalRuleResolver]
 
-  subgraph S1["Initialization"]
+  %% === GROUP 1: INITIALIZATION & SETUP ===
+  subgraph S1["🚀 Initialization & Setup"]
     direction TB
-    B{{Schema Available?}}
-    C[Load Packet Schema]
-    D[Initialize NACCValidator]
-    E[Create Custom Error Handler]
+    B{{Schema Available?<br/>PacketRuleRouter Integration}}
+    C[Load Packet Schema<br/>JSON Rules Loading]
+    D[Initialize QualityCheck<br/>quality_check.py.__init__]
+    E[Create NACCValidator<br/>nacc_validator.py + Cerberus]
+    F[Setup CustomErrorHandler<br/>errors.py + ErrorDefs]
+    G[Configure Datastore<br/>datastore.py - Optional]
   end
 
-  %% --- MAIN VALIDATION FLOW ---
-  subgraph S2["Validation Stages"]
+  %% === GROUP 2: CORE VALIDATION PIPELINE ===
+  subgraph S2["⚙️ Core Validation Pipeline"]
     direction TB
-    F[Begin Validation Process]
-    G[Basic Schema Validation]
-    H{{Basic Validation Passed?}}
-    I[Collect Basic Errors]
-    J[Apply Custom Validation Methods]
-    K[Compatibility Rules]
-    L{{Compatibility Check}}
-    M[Add Compatibility Errors]
-    N[Temporal Rules]
-    O{{Previous Visit Required?}}
-    P[Retrieve Previous Visit Data]
-    R{{Previous Data Found?}}
-    S[Add Temporal Error]
-    T[Apply Temporal Rules]
-    U{{Temporal Rules Pass?}}
-    V[Add Temporal Errors]
-    Q[Logic Validation]
-    W[Apply Logic Rules]
-    X{{Logic Validation Pass?}}
-    Y[Add Logic Errors]
-    Z[Computed Field Validation]
+    H[Begin Validation Process<br/>QualityCheck.validate_record]
+    I[Cast Record Types<br/>NACCValidator.cast_record]
+    J[Basic Schema Validation<br/>Cerberus Base Validation]
+    K{{Basic Validation Passed?<br/>Standard Type/Format Checks}}
+    L[Collect Basic Errors<br/>Standard Error Handling]
+    M[Apply Custom Validation Methods<br/>NACC-Specific Extensions]
   end
 
-  %% --- SPECIALIZED VALIDATIONS ---
-  subgraph S3["Specialized Checks"]
+  %% === GROUP 3: BUSINESS RULE VALIDATION ===
+  subgraph S3["📋 Business Rule Validation"]
     direction TB
-    AA[GDS Score Computation]
-    BB{{GDS Rules Pass?}}
-    CC[Add GDS Errors]
-    DD[Cross-Field Comparisons]
-    EE[Compare With Current Fields]
-    FF{{Current Comparison Pass?}}
-    GG[Add Comparison Errors]
-    HH[Compare With Previous Visit]
-    II{{Previous Comparison Pass?}}
-    JJ[Add Previous Visit Errors]
-    KK[Age Validation]
-    LL[Date Range Validation]
-    MM{{Date Ranges Valid?}}
-    NN[Add Date Errors]
-    OO[Fill Requirement Validation]
-    PP{{Fill Requirements Met?}}
-    QQ[Add Fill Errors]
+    N[Compatibility Rules<br/>_validate_compatibility]
+    O{{Compatibility Check<br/>IF-THEN-ELSE Logic Evaluation}}
+    P[Add Compatibility Errors<br/>ErrorDefs.COMPATIBILITY]
+    Q[Temporal Rules<br/>_validate_temporalrules]
+    R{{Previous Visit Required?<br/>temporalrules Schema Analysis}}
+    S[Retrieve Previous Visit Data<br/>Datastore.get_previous_record]
+    T{{Previous Data Found?<br/>Datastore Response Check}}
+    U[Add Temporal Error<br/>ErrorDefs.NO_PREV_VISIT]
+    V[Apply Temporal Rules<br/>Cross-Visit Validation Logic]
+    W{{Temporal Rules Pass?<br/>_check_subschema_valid}}
+    X[Add Temporal Errors<br/>ErrorDefs.TEMPORAL]
   end
 
-  %% --- EXTERNAL DATA CHECKS ---
-  subgraph S4["External Data Validation"]
+  %% === GROUP 4: LOGIC & COMPUTATION VALIDATION ===
+  subgraph S4["🧮 Logic & Computation Validation"]
     direction TB
-    RR[External Data Validation]
-    SS[RXNORM Drug Code Check]
-    TT{{External Validation Pass?}}
-    UU[Add External Errors]
+    Y[Logic Validation<br/>_validate_logic]
+    Z[Apply Logic Rules<br/>jsonLogic + Formula Evaluation]
+    AA{{Logic Validation Pass?<br/>JSON Formula Processing}}
+    BB[Add Logic Errors<br/>ErrorDefs.FORMULA]
+    CC[Computed Field Validation<br/>Specialized Score Validators]
+    DD[GDS Score Computation<br/>_validate_compute_gds]
+    EE{{GDS Rules Pass?<br/>Score Calculation + Prorating}}
+    FF[Add GDS Errors<br/>ErrorDefs.CHECK_GDS_*]
   end
 
-  %% --- RESULT PROCESSING ---
-  subgraph S5["Result Generation & Logging"]
+  %% === GROUP 5: FIELD COMPARISON & VALIDATION ===
+  subgraph S5["🔍 Field Comparison & Validation"]
     direction TB
-    VV[Compile Results]
-    WW{{Any Errors Collected?}}
-    XX[Create Failed ValidationResult]
-    YY[Create Passed ValidationResult]
-    ZZ[Generate Error Messages]
-    AAA[Map Error Codes to Messages]
-    BBB[Create Error Tree Structure]
-    CCC[Return ValidationResult]
-    DDD[Log Validation Outcome]
-    EEE[Update Validation Metrics]
-    FFF(((End Process)))
+    GG[Cross-Field Comparisons<br/>_validate_compare_with]
+    HH[Compare With Current Fields<br/>Mathematical Comparisons]
+    II{{Current Comparison Pass?<br/>utils.compare_values}}
+    JJ[Add Comparison Errors<br/>ErrorDefs.COMPARE_WITH]
+    KK[Compare With Previous Visit<br/>_validate_compare_with_prev]
+    LL{{Previous Comparison Pass?<br/>Cross-Visit Field Analysis}}
+    MM[Add Previous Visit Errors<br/>ErrorDefs.COMPARE_WITH_PREV]
+    NN[Age Validation<br/>_validate_compare_age]
+    OO[Date Range Validation<br/>Date/Time Boundary Checks]
+    PP{{Date Ranges Valid?<br/>Min/Max Date Validation}}
+    QQ[Add Date Errors<br/>ErrorDefs.CURR_DATE_*]
+    RR[Fill Requirement Validation<br/>_validate_filled]
+    SS{{Fill Requirements Met?<br/>Required/Empty Field Logic}}
+    TT[Add Fill Errors<br/>ErrorDefs.FILLED_*]
   end
 
-  %% --- SYSTEM FAILURE PATH ---
-  subgraph S6["System Failure Handling"]
+  %% === GROUP 6: EXTERNAL DATA VALIDATION ===
+  subgraph S6["🌐 External Data Validation"]
     direction TB
-    GGG[System Failure]
-    HHH[Create System Failure Result]
-    III[Log System Error]
+    UU[External Data Validation<br/>_validate_check_with]
+    VV[RXNORM Drug Code Check<br/>External API Integration]
+    WW{{External Validation Pass?<br/>External Service Response}}
+    XX[Add External Errors<br/>ErrorDefs.RXNORM]
   end
+
+    %% === GROUP 7: RESULT PROCESSING & OUTPUT ===
+subgraph S7["📊 Result Processing & Output"]
+  direction TB
+  YY[Compile Results<br/>Error Aggregation Engine]
+  ZZ{{Any Errors Collected?<br/>Validation Status Assessment}}
+  AAA[Create Failed ValidationResult<br/>ValidationResult: passed=false]
+  BBB[Create Passed ValidationResult<br/>ValidationResult: passed=true]
+  CCC[Generate Error Messages<br/>CustomErrorHandler._format_message]
+  DDD[Map Error Codes to Messages<br/>CustomErrorHandler.messages]
+  EEE[Create Error Tree Structure<br/>DocumentErrorTree Generation]
+  FFF[Return ValidationResult<br/>models.ValidationResult]
+  GGG[Log Validation Outcome<br/>Quality Check Logging]
+  HHH[Update Validation Metrics<br/>Performance & Stats Tracking]
+  III(((Pipeline Return<br/>End Process)))
+end
+
+    %% === GROUP 8: SYSTEM FAILURE HANDLING ===
+subgraph S8["⚠️ System Failure Handling"]
+  direction TB
+  JJJ[System Failure Detection<br/>Exception & Error Handling]
+  KKK[Create System Failure Result<br/>ValidationResult: sys_failure=true]
+  LLL[Log System Error<br/>System Error Documentation]
+end
+
+  %% === MAIN FLOW CONNECTIONS ===
+  A --> B
+  B -- "No Schema" --> C --> D
+  B -- "Schema Available" --> D
+  D --> E --> F --> G --> H --> I --> J --> K
+  K -- "Failed" --> L
+  K -- "Passed" --> M --> N --> O
+  O -- "Failed" --> P
+  O -- "Passed" --> Q --> R
+  R -- "Yes" --> S --> T
+  R -- "No" --> Y
+  T -- "Not Found" --> U
+  T -- "Found" --> V --> W
+  W -- "Failed" --> X
+  W -- "Passed" --> Y --> Z --> AA
+  AA -- "Failed" --> BB
+  AA -- "Passed" --> CC --> DD --> EE
+  EE -- "Failed" --> FF
+  EE -- "Passed" --> GG --> HH --> II
+  II -- "Failed" --> JJ
+  II -- "Passed" --> KK --> LL
+  LL -- "Failed" --> MM
+  LL -- "Passed" --> NN --> OO --> PP
+  PP -- "Failed" --> QQ
+  PP -- "Passed" --> RR --> SS
+  SS -- "Failed" --> TT
+  SS -- "Passed" --> UU --> VV --> WW
+  WW -- "Failed" --> XX
+  WW -- "Passed" --> YY
+
+  %% === ERROR AGGREGATION ===
+  L --> YY
+  P --> YY
+  U --> YY
+  X --> YY
+  BB --> YY
+  FF --> YY
+  JJ --> YY
+  MM --> YY
+  QQ --> YY
+  TT --> YY
+  XX --> YY
+
+  %% === RESULT GENERATION ===
+  YY --> ZZ
+  ZZ -- "Errors Found" --> AAA --> CCC --> DDD --> EEE --> FFF
+  ZZ -- "No Errors" --> BBB --> FFF
+  FFF --> GGG --> HHH --> III
+
+  %% === SYSTEM FAILURE PATHS ===
+  B -- "Schema Load Error" --> JJJ
+  S -- "Database Error" --> JJJ
+  Z -- "Expression Error" --> JJJ
+  DD -- "Computation Error" --> JJJ
+  VV -- "External Service Error" --> JJJ
+  H -- "ValidationException" --> JJJ
+  JJJ --> KKK --> LLL --> III
+
+  %% === STYLING ===
+  %% Subgraph styling with distinct colors for process groups
+  style S1 fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+  style S2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+  style S3 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+  style S4 fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+  style S5 fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+  style S6 fill:#e0f2f1,stroke:#00695c,stroke-width:2px
+  style S7 fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+  style S8 fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+
+  %% Node classifications
+  classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+  classDef processNode fill:#f8f9fa,stroke:#495057,stroke-width:1px,color:#000
+  classDef decisionNode fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+  classDef errorNode fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#000
+  classDef successNode fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#000
+  classDef systemFailureNode fill:#ff5252,stroke:#b71c1c,stroke-width:3px,color:#fff
+  classDef resultNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
+
+  %% Apply node classes
+  class A inputNode
+  class D,E,F,G,H,I,J,M,N,Q,Y,Z,CC,DD,GG,HH,KK,NN,OO,RR,UU,VV,YY,CCC,DDD,EEE,GGG,HHH processNode
+  class B,K,O,R,T,W,AA,EE,II,LL,PP,SS,WW,ZZ decisionNode
+  class L,P,U,X,BB,FF,JJ,MM,QQ,TT,XX,AAA errorNode
+  class BBB,FFF,III resultNode
+  class JJJ,KKK,LLL systemFailureNode
+
+subgraph S8b["⚠️ System Failure (extra)"]
+  direction TB
+  HHH[Create System Failure Result]
+  III[Log System Error]
+end
+
 
   %% --- FLOW EDGES ---
   A --> B

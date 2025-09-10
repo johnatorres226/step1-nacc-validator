@@ -10,13 +10,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from src.pipeline.config_manager import (
+from src.pipeline.config.config_manager import (
     get_config,
     get_rule_mappings,
     instrument_json_mapping,
     is_dynamic_rule_instrument,
 )
-from src.pipeline.logging_config import get_logger
+from src.pipeline.logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 

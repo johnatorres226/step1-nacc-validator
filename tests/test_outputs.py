@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 
 # Import the modules we're testing
-from src.pipeline.config_manager import QCConfig
+from src.pipeline.config.config_manager import QCConfig
 
 
 class TestOutputDirectoryCreation:

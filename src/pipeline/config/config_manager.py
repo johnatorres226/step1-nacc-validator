@@ -12,7 +12,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 # Late imports to avoid circular dependencies
-from .logging_config import get_logger
+from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -22,9 +22,9 @@ logger = get_logger(__name__)
 # =============================================================================
 
 # Get the directory where this config_manager.py file is located
-# Go up two levels to get the actual project root
+# Go up three levels to get the actual project root
 config_dir = Path(__file__).parent.resolve()
-project_root = config_dir.parent.parent
+project_root = config_dir.parent.parent.parent
 dotenv_path = project_root / ".env"
 
 # Load environment variables from .env file
@@ -441,7 +441,6 @@ class QCConfig:
             "LOG_LEVEL", "INFO"))
     user_initials: str | None = None
     ptid_list: list[str] | None = None
-    include_qced: bool = False
     # Generate detailed outputs (Validation_Logs, Completed_Visits, Reports,
     # Generation_Summary)
     detailed_run: bool = False

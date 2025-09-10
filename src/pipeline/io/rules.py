@@ -8,11 +8,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..config_manager import (
+from ..config.config_manager import (
     get_config,
     instrument_json_mapping,
 )
-from ..logging_config import get_logger
+from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 

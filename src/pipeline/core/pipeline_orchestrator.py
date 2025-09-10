@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..config_manager import QCConfig
-from ..logging_config import get_logger
+from ..config.config_manager import QCConfig
+from ..logging.logging_config import get_logger
 from .pipeline_results import (
     CompleteVisitsResult,
     DataFetchError,
@@ -395,7 +395,7 @@ class PipelineOrchestrator:
         try:
             from ..core.data_processing import preprocess_cast_types
             from ..core.validation_logging import build_detailed_validation_logs
-            from ..report_pipeline import validate_data
+            from ..reports.report_pipeline import validate_data
 
             stage_start = time.time()
 

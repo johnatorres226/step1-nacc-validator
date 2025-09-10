@@ -42,7 +42,7 @@ The UDSv4 REDCap QC Validator is designed to:
 - **Extract REDCap Data**: Securely connects to REDCap via API to retrieve UDSv4 form data
 - **Apply Quality Control Rules**: Validates data using comprehensive NACC-specific validation rules stored in JSON format
 - **Generate Detailed Reports**: Creates CSV reports, validation logs, and quality dashboards for data review
-- **Support Multiple Processing Modes**: Handles complete visits, individual instruments, and custom filtering scenarios
+- **Support Multiple Processing Modes**: Handles complete visits and incomplete visits scenarios
 - **Ensure Data Integrity**: Performs schema validation, custom field validation, and cross-field logic checks
 - **Provide Audit Trails**: Comprehensive logging and monitoring for regulatory compliance and troubleshooting
 
@@ -367,11 +367,8 @@ poetry run udsv4-qc --initials "YOUR_INITIALS"
 # Validate complete visits (all instruments completed)
 poetry run udsv4-qc --mode complete_visits --initials "ABC"
 
-# Validate individual completed instruments
-poetry run udsv4-qc --mode complete_instruments --initials "ABC"
-
-# Custom validation with specific filters
-poetry run udsv4-qc --mode custom --initials "ABC" --event "baseline_visit" --ptid "NACC123"
+# Validate incomplete visits (instruments with missing data)
+poetry run udsv4-qc --mode all_incomplete_visits --initials "ABC"
 ```
 
 ### Advanced Command Options
@@ -387,7 +384,7 @@ poetry run udsv4-qc --mode complete_visits --initials "ABC" --output-dir "/custo
 poetry run udsv4-qc --mode complete_visits --initials "ABC" --log
 
 # Process specific events and participants
-poetry run udsv4-qc --mode custom --initials "ABC" --event "baseline_visit" --event "followup_visit" --ptid "NACC123" --ptid "NACC456"
+poetry run udsv4-qc --mode complete_visits --initials "ABC" --event "baseline_visit" --event "followup_visit" --ptid "NACC123" --ptid "NACC456"
 ```
 
 ### Testing Commands
@@ -411,7 +408,7 @@ poetry run pytest -k "validation"
 
 ### Command Parameters
 
-- `--mode` - Validation mode (complete_visits, complete_instruments, custom)
+- `--mode` - Validation mode (complete_visits, all_incomplete_visits)
 - `--initials` - User initials for tracking and reporting (required)
 - `--output-dir` - Custom output directory path
 - `--event` - Specify specific REDCap events to process (can be used multiple times)
@@ -419,7 +416,6 @@ poetry run pytest -k "validation"
 - `--detailed-run` - Generate comprehensive output files including logs and reports
 - `--passed-rules` - Include detailed validation logs (requires --detailed-run)
 - `--log` - Enable verbose terminal logging during execution
-- `--include-qced` - Include records that have already been QCed (custom mode only)
 
 **For complete command reference and advanced usage, see [QUICK_START.md](QUICK_START.md)**
 

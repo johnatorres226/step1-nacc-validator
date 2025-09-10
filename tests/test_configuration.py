@@ -14,7 +14,7 @@ from unittest.mock import patch
 import pytest
 
 # Import the modules we're testing
-from src.pipeline.config_manager import QCConfig, get_config
+from src.pipeline.config.config_manager import QCConfig, get_config
 
 
 class TestQCConfigCreation:
@@ -98,10 +98,10 @@ class TestEnvironmentVariableLoading:
         # Test with fresh imports that will pick up the patched environment
         import importlib
 
-        import src.pipeline.config_manager
-        importlib.reload(src.pipeline.config_manager)
+        import src.pipeline.config.config_manager
+        importlib.reload(src.pipeline.config.config_manager)
 
-        from src.pipeline.config_manager import (
+        from src.pipeline.config.config_manager import (
             adrc_api_key,
             adrc_redcap_url,
             output_path,

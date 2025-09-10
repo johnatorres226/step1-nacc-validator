@@ -7,8 +7,8 @@ monolithic build_complete_visits_df function into smaller, testable components.
 
 import pandas as pd
 
-from ..config_manager import get_config
-from ..logging_config import get_logger
+from ..config.config_manager import get_config
+from ..logging.logging_config import get_logger
 from .data_processing import DataProcessingError
 
 logger = get_logger(__name__)

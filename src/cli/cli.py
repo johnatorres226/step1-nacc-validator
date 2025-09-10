@@ -12,12 +12,12 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from pipeline.config_manager import (
+from pipeline.config.config_manager import (
     QCConfig,
     get_config,
 )
-from pipeline.logging_config import get_logger, setup_logging
-from pipeline.report_pipeline import operation_context, run_report_pipeline
+from pipeline.logging.logging_config import get_logger, setup_logging
+from pipeline.reports.report_pipeline import operation_context, run_report_pipeline
 
 # Initialize console and logger
 console = Console()
@@ -25,7 +25,7 @@ logger = get_logger("cli")
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
-@click.version_option(version="1.0.0")
+@click.version_option(version="0.1.0")
 @click.option("--log-level",
               type=click.Choice(["DEBUG",
                                  "INFO",
@@ -38,8 +38,7 @@ logger = get_logger("cli")
 @click.option("--mode",
               "-m",
               type=click.Choice(["complete_visits",
-                                 "all_incomplete_visits",
-                                 "custom"],
+                                 "all_incomplete_visits"],
                                 case_sensitive=False),
               default="complete_visits",
               help="Select the QC validation mode. [default: complete_visits]",
@@ -55,8 +54,6 @@ logger = get_logger("cli")
               help="Specify one or more events to run.")
 @click.option("--ptid", "ptid_list", multiple=True,
               help="Specify one or more PTIDs to check.")
-@click.option("--include-qced", is_flag=True,
-              help="Include records that have already been QCed.")
 @click.option("--initials", "-i", "user_initials", required=False,
               help="User initials for reporting (3 characters max).")
 @click.option("--log", "-l", is_flag=True,
@@ -76,7 +73,6 @@ def cli(
     output_dir: str,
     events: list[str],
     ptid_list: list[str],
-    include_qced: bool,
     user_initials: str,
     log: bool,
     detailed_run: bool,
@@ -149,7 +145,6 @@ def cli(
 
         base_config.user_initials = user_initials.strip().upper()[:3]
         base_config.mode = mode
-        base_config.include_qced = include_qced
         base_config.detailed_run = detailed_run
         base_config.passed_rules = passed_rules
 
@@ -272,11 +267,6 @@ def _display_run_summary(config: QCConfig) -> None:
         f"Participants: {
             'All' if not config.ptid_list else ', '.join(
                 config.ptid_list)}")
-
-    if config.mode == "custom":
-        console.print(
-            f"Include Previously QCed: {
-                'Yes' if config.include_qced else 'No'}")
 
     console.print("")
 

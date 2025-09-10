@@ -18,13 +18,13 @@ from typing import Any
 import pandas as pd
 import requests
 
-from ..config_manager import (
+from ..config.config_manager import (
     QCConfig,
     complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
 )
 from ..io.rules import load_rules_for_instruments
-from ..logging_config import get_logger
+from ..logging.logging_config import get_logger
 from .data_processing import get_variables_for_instrument
 
 logger = get_logger(__name__)
@@ -345,14 +345,6 @@ class FilterLogicManager:
             else:
                 logger.warning("No filtering enabled. Fetching all records")
             return filter_logic
-
-        if config.mode == "custom":
-            if config.include_qced:
-                logger.info(
-                    "Custom mode: Including already QCed data - no filtering")
-                return None
-            logger.info("Custom mode: Using QC status check filter logic")
-            return qc_filterer_logic
 
         logger.info("Defaulting to QC status check filter logic")
         return qc_filterer_logic

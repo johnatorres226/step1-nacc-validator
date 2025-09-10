@@ -572,7 +572,7 @@ def mask_sensitive_config(config_dict):
 
 **Activation**:
 ```bash
-udsv4-qc run --log-level DEBUG --mode complete_visits --initials "JDT"
+udsv4-qc --log-level DEBUG --mode complete_visits --initials "JDT"
 ```
 
 #### Interactive Debugging Support

@@ -8,14 +8,14 @@ with multiple layers of routing logic.
 
 from typing import Any
 
-from ..config_manager import (
+from ..config.config_manager import (
     QCConfig,
     get_config,
     get_discriminant_variable,
     get_rule_mappings,
     is_dynamic_rule_instrument,
 )
-from ..logging_config import get_logger
+from ..logging.logging_config import get_logger
 from .packet_router import PacketRuleRouter
 
 logger = get_logger(__name__)

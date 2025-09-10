@@ -1,748 +1,743 @@
-# Poetry Setup Plan for UDSv4 REDCap QC Validator
+# Poetry Guide for UDSv4 REDCap QC Validator
 
-## Executive Summary
+## Overview
 
-This document outlines the comprehensive migration strategy for transitioning the UDSv4 REDCap QC Validator project from traditional setuptools-based dependency management to Poetry. Poetry will enhance the project's cross-platform compatibility, dependency resolution, and development workflow while maintaining backward compatibility and improving reproducibility across Windows, Linux, and Unix systems.
+This document provides a comprehensive guide to using Poetry in the UDSv4 REDCap QC Validator project. Poetry is already configured and actively used for dependency management, virtual environment handling, and development workflow automation. This guide explains how Poetry enhances the project's cross-platform compatibility, dependency resolution, and development experience.
 
 ## Table of Contents
 
-1. [Poetry Overview](#poetry-overview)
-2. [Current Project Analysis](#current-project-analysis)
-3. [Migration Strategy](#migration-strategy)
-4. [Poetry Configuration](#poetry-configuration)
-5. [CLI Adjustments](#cli-adjustments)
-6. [Cross-Platform Considerations](#cross-platform-considerations)
-7. [Development Workflow](#development-workflow)
-8. [Implementation Steps](#implementation-steps)
-9. [Testing and Validation](#testing-and-validation)
-10. [Benefits and Advantages](#benefits-and-advantages)
-11. [Troubleshooting](#troubleshooting)
+1. [What is Poetry?](#what-is-poetry)
+2. [Project Poetry Configuration](#project-poetry-configuration)
+3. [Installation and Setup](#installation-and-setup)
+4. [Daily Development Workflow](#daily-development-workflow)
+5. [Dependency Management](#dependency-management)
+6. [Environment Management](#environment-management)
+7. [CLI Integration](#cli-integration)
+8. [Cross-Platform Usage](#cross-platform-usage)
+9. [Build and Distribution](#build-and-distribution)
+10. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Poetry Overview
+## What is Poetry?
 
-### What is Poetry?
+Poetry is a modern dependency management and packaging tool for Python that provides deterministic dependency resolution, virtual environment management, and streamlined development workflows. In this project, Poetry is used to:
 
-Poetry is a modern dependency management and packaging tool for Python that provides:
-
-- **Dependency Resolution**: Deterministic dependency resolution with lock files
-- **Virtual Environment Management**: Automatic virtual environment creation and management
+- **Manage Dependencies**: All project dependencies are defined in `pyproject.toml` with automatic lock file generation
+- **Virtual Environment Management**: Automatic creation and management of isolated Python environments
 - **Build System**: Modern Python packaging using PEP 517/518 standards
+- **Development Workflow**: Streamlined commands for installation, testing, and package building
 - **Cross-Platform Support**: Native support for Windows, Linux, and Unix systems
-- **Development Workflow**: Streamlined development, testing, and publishing workflows
 
-### Key Poetry Features
+### Key Poetry Features Used in This Project
 
-1. **pyproject.toml-based configuration**: Single configuration file for all project metadata
-2. **poetry.lock file**: Ensures reproducible installations across environments
-3. **Dependency groups**: Separate development, testing, and production dependencies
-4. **Version management**: Semantic versioning with automatic version bumping
-5. **Publishing**: Direct publishing to PyPI and private repositories
-6. **Plugin system**: Extensible through plugins for enhanced functionality
+1. **Dual Configuration**: The project uses both traditional `[project]` sections and Poetry-specific `[tool.poetry]` sections for maximum compatibility
+2. **Dependency Groups**: Separate development dependencies for testing, linting, and formatting tools
+3. **CLI Integration**: The `udsv4-qc` command-line tool is configured through Poetry scripts
+4. **Lock File**: `poetry.lock` ensures reproducible installations across all environments
+5. **Modern Build System**: Uses Poetry Core as the build backend
 
-### Poetry Commands Overview
+### Essential Poetry Commands
 
-- `poetry init`: Initialize a new Poetry project
-- `poetry install`: Install dependencies from lock file
-- `poetry add`: Add new dependencies
-- `poetry remove`: Remove dependencies
-- `poetry update`: Update dependencies
-- `poetry build`: Build distributable packages
-- `poetry publish`: Publish to repositories
-- `poetry run`: Run commands in the virtual environment
-- `poetry shell`: Activate virtual environment
-- `poetry env`: Manage virtual environments
+```bash
+# Install all dependencies (including dev)
+poetry install
 
----
+# Run the CLI tool
+poetry run udsv4-qc --help
 
-## Current Project Analysis
+# Activate virtual environment
+poetry shell
 
-### Project Structure Analysis
+# Add a new dependency
+poetry add package-name
 
-The current project uses a hybrid approach with both `pyproject.toml` and `requirements.txt`:
+# Add a development dependency
+poetry add --group dev package-name
 
-```
-Current Dependencies Management:
-├── pyproject.toml (setuptools-based build system)
-├── requirements.txt (pip-based dependency listing)
-└── src/
-    ├── cli/cli.py (Click-based CLI with entry point)
-    └── pipeline/ (Core pipeline modules)
+# Update dependencies
+poetry update
+
+# Build the package
+poetry build
 ```
 
-### Existing Dependencies
+## Project Poetry Configuration
 
-**Core Dependencies:**
-- cerberus>=1.3.5 (Data validation)
-- python-dateutil>=2.9.0 (Date/time utilities)
-- json-logic (Logic operations)
-- python-dotenv (Environment variables)
-- jsonschema (JSON validation)
-- pandas (Data manipulation)
-- requests (HTTP requests)
-- click>=8.0.0 (CLI framework)
-- rich>=13.0.0 (Rich text output)
-- typer>=0.9.0 (Modern CLI framework)
+This project uses a hybrid Poetry configuration that maintains compatibility with both Poetry and standard Python packaging tools. The configuration is split between traditional project metadata and Poetry-specific settings.
 
-**Development Dependencies:**
-- pytest>=7.2.0 (Testing framework)
-- pytest-cov>=4.0.0 (Coverage reporting)
-- black>=23.0.0 (Code formatting)
-- flake8>=6.0.0 (Code linting)
-- mypy>=1.0.0 (Type checking)
+### Current Dependencies Structure
 
-### CLI Configuration Analysis
+**Core Dependencies** (defined in `[project.dependencies]`):
 
-**Current CLI Entry Point:**
-```toml
-[project.scripts]
-udsv4-qc = "cli.cli:cli"
-```
+- **Data Processing**: `pandas`, `jsonschema`, `cerberus>=1.3.5`
+- **Date/Time Handling**: `python-dateutil>=2.9.0`, `types-python-dateutil>=2.9.0.20240316`
+- **Logic Operations**: `json-logic`
+- **Configuration**: `python-dotenv`, `python-decouple`
+- **HTTP Requests**: `requests`
+- **CLI Framework**: `click>=8.0.0`, `rich>=13.0.0`, `typer>=0.9.0`
+- **Development Tools**: `ipython`, `setuptools`
 
-**CLI Structure:**
-- Main command group: `cli()`
-- Sub-commands: `config`, `run`
-- Click-based framework with Rich console output
-- Comprehensive option handling for QC operations
+**Development Dependencies** (defined in `[tool.poetry.group.dev.dependencies]`):
 
-### Current Issues with Setup
+- **Testing**: `pytest>=7.2.0`, `pytest-cov>=4.0.0`, `requests-mock>=1.12.1`
+- **Code Quality**: `ruff>=0.12.0`, `black>=23.0.0`, `mypy>=1.0.0`
+- **Development Tools**: `pre-commit>=3.0.0`, `wheel>=0.40.0`
+- **Build/Distribution**: `build>=0.10.0`, `twine>=5.0.0`
 
-1. **Dual dependency management**: Both pyproject.toml and requirements.txt
-2. **Manual virtual environment management**: No automatic environment handling
-3. **Build system complexity**: Manual setuptools configuration
-4. **Dependency conflicts**: No deterministic dependency resolution
-5. **Cross-platform issues**: Manual handling of platform-specific dependencies
+### Package Structure Configuration
 
----
-
-## Migration Strategy
-
-### Migration Approach
-
-**Phase 1: Poetry Integration**
-- Install Poetry
-- Convert existing dependencies to Poetry format
-- Generate poetry.lock file
-- Test dependency resolution
-
-**Phase 2: Configuration Migration**
-- Update pyproject.toml for Poetry compatibility
-- Remove requirements.txt dependencies
-- Configure dependency groups
-- Update build system configuration
-
-**Phase 3: CLI and Entry Point Adjustment**
-- Verify CLI entry points work with Poetry
-- Test CLI functionality in Poetry environment
-- Update development workflow documentation
-
-**Phase 4: Testing and Validation**
-- Cross-platform testing (Windows, Linux, Unix)
-- Virtual environment testing
-- Build and packaging testing
-- CLI functionality validation
-
-### Compatibility Considerations
-
-1. **Python Version**: Current requirement `>=3.12` will be maintained
-2. **Entry Points**: Existing CLI entry points will be preserved
-3. **Package Structure**: Source layout in `src/` will be maintained
-4. **Configuration Tools**: All existing tool configurations (black, mypy, pytest) will be preserved
-
----
-
-## Poetry Configuration
-
-### Updated pyproject.toml Structure
+The project is configured to include multiple packages from different locations:
 
 ```toml
 [tool.poetry]
-name = "udsv4-redcap-qc-validator"
-version = "0.1.0"
-description = "QC validator for UDSv4 REDCap data"
-license = "Mozilla Public License 2.0"
-authors = ["John Torres <sdccunm.john@gmail.com>"]
-maintainers = ["John Torres <sdccunm.john@gmail.com>"]
-readme = "README.md"
-homepage = "https://github.com/johnatorres226/step1-nacc-validator"
-repository = "https://github.com/johnatorres226/step1-nacc-validator"
-keywords = ["redcap", "qc", "validation", "udsv4", "nacc"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-]
 packages = [
     { include = "pipeline", from = "src" },
     { include = "cli", from = "src" },
     { include = "nacc_form_validator" },
 ]
-
-[tool.poetry.dependencies]
-python = ">=3.12"
-cerberus = ">=1.3.5"
-python-dateutil = ">=2.9.0"
-types-python-dateutil = ">=2.9.0.20240316"
-json-logic = "*"
-python-dotenv = "*"
-python-decouple = "*"
-jsonschema = "*"
-pandas = "*"
-requests = "*"
-setuptools = "*"
-ipython = "*"
-click = ">=8.0.0"
-rich = ">=13.0.0"
-typer = ">=0.9.0"
-
-[tool.poetry.group.dev.dependencies]
-pytest = ">=7.2.0"
-pytest-cov = ">=4.0.0"
-black = ">=23.0.0"
-flake8 = ">=6.0.0"
-mypy = ">=1.0.0"
-pre-commit = ">=3.0.0"
-wheel = ">=0.40.0"
-build = ">=0.10.0"
-twine = ">=4.0.0"
-
-[tool.poetry.scripts]
-udsv4-qc = "cli.cli:cli"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 ```
 
-### Dependency Groups Strategy
+This configuration allows Poetry to:
 
-**Production Dependencies (`[tool.poetry.dependencies]`)**:
-- Core runtime dependencies required for the application to function
+- Include the `pipeline` module from the `src/` directory
+- Include the `cli` module from the `src/` directory  
+- Include the `nacc_form_validator` module from the project root
+- Automatically handle package discovery and installation
 
-**Development Dependencies (`[tool.poetry.group.dev.dependencies]`)**:
-- Testing, linting, formatting, and development tools
-- Optional installation with `poetry install --with dev`
+## Installation and Setup
 
-**Optional Dependency Groups** (Future Consideration):
-```toml
-[tool.poetry.group.docs.dependencies]
-sphinx = "*"
-sphinx-rtd-theme = "*"
+### Prerequisites
 
-[tool.poetry.group.performance.dependencies]
-cython = "*"
-numba = "*"
-```
+- Python 3.11 or higher (as specified in `requires-python = ">=3.11"`)
+- Git (for cloning the repository)
 
----
-
-## CLI Adjustments
-
-### Entry Point Configuration
-
-**Current Entry Point:**
-```toml
-[project.scripts]
-udsv4-qc = "cli.cli:cli"
-```
-
-**Poetry Entry Point:**
-```toml
-[tool.poetry.scripts]
-udsv4-qc = "cli.cli:cli"
-```
-
-### CLI Functionality Verification
-
-The existing Click-based CLI will work seamlessly with Poetry:
-
-1. **Command Structure**: No changes required to existing commands
-2. **Import Paths**: Relative imports will continue to work
-3. **Entry Point**: Poetry scripts section maintains the same format
-4. **Virtual Environment**: Poetry automatically handles environment activation
-
-### Enhanced CLI Development
-
-Poetry enables enhanced CLI development workflows:
-
-```bash
-# Run CLI in development environment
-poetry run udsv4-qc --help
-
-# Activate shell for development
-poetry shell
-udsv4-qc config --detailed
-
-# Install in editable mode automatically
-poetry install
-```
-
----
-
-## Cross-Platform Considerations
-
-### Windows Support
-
-**Poetry Installation on Windows:**
-```powershell
-# Using PowerShell (Recommended)
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
-
-# Using pip (Alternative)
-pip install poetry
-```
-
-**Windows-Specific Benefits:**
-- Automatic virtual environment creation in user directory
-- PowerShell script generation for environment activation
-- Windows path handling in pyproject.toml
-- Native dependency resolution for Windows packages
-
-### Linux/Unix Support
-
-**Poetry Installation on Linux/Unix:**
-```bash
-# Using curl (Recommended)
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Using pip (Alternative)
-pip install poetry
-```
-
-**Linux/Unix-Specific Benefits:**
-- Automatic virtual environment creation in ~/.cache/pypoetry/
-- Shell script generation for environment activation
-- Native package compilation support
-- System package integration
-
-### Cross-Platform Dependency Management
-
-Poetry automatically handles platform-specific dependencies:
-
-```toml
-[tool.poetry.dependencies]
-# Platform-specific dependencies (if needed)
-pywin32 = {version = "*", markers = "sys_platform == 'win32'"}
-python-magic = {version = "*", markers = "sys_platform != 'win32'"}
-```
-
-### Environment Variables and Configuration
-
-Poetry respects platform-specific environment variables:
-
-```bash
-# Configure Poetry behavior
-poetry config virtualenvs.in-project true  # Create .venv in project directory
-poetry config virtualenvs.prefer-active-python true  # Use active Python
-```
-
----
-
-## Development Workflow
-
-### Daily Development Workflow
-
-**Setup (One-time):**
-```bash
-# Clone repository
-git clone <repository-url>
-cd udsv4-redcap-qc-validator
-
-# Install Poetry (if not installed)
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Install dependencies
-poetry install
-```
-
-**Development Tasks:**
-```bash
-# Activate environment
-poetry shell
-
-# Run CLI commands
-udsv4-qc config --detailed
-udsv4-qc run --initials ABC --log
-
-# Run tests
-poetry run pytest
-
-# Code formatting
-poetry run black .
-
-# Type checking
-poetry run mypy src/
-
-# Add new dependency
-poetry add requests
-
-# Add development dependency
-poetry add --group dev pytest-mock
-
-# Update dependencies
-poetry update
-
-# Build package
-poetry build
-```
-
-### Environment Management
-
-**Virtual Environment Commands:**
-```bash
-# Show environment info
-poetry env info
-
-# List environments
-poetry env list
-
-# Remove environment
-poetry env remove python
-
-# Use specific Python version
-poetry env use python3.12
-```
-
-### Dependency Management
-
-**Adding Dependencies:**
-```bash
-# Add production dependency
-poetry add pandas
-
-# Add development dependency
-poetry add --group dev black
-
-# Add with version constraints
-poetry add "click>=8.0.0,<9.0.0"
-
-# Add from git
-poetry add git+https://github.com/user/repo.git
-
-# Add local package
-poetry add ./local-package
-```
-
-**Updating Dependencies:**
-```bash
-# Update all dependencies
-poetry update
-
-# Update specific dependency
-poetry update pandas
-
-# Update development dependencies only
-poetry update --only dev
-```
-
----
-
-## Implementation Steps
-
-### Step 1: Install Poetry
+### Installing Poetry
 
 **Windows (PowerShell):**
+
 ```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 ```
 
 **Linux/Unix (Bash):**
+
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
+**Alternative (using pip):**
+
+```bash
+pip install poetry
+```
+
 **Verify Installation:**
+
 ```bash
 poetry --version
 ```
 
-### Step 2: Initialize Poetry in Project
+### Project Setup
+
+1. **Clone the Repository:**
 
 ```bash
-# Navigate to project directory
-cd "c:\Users\johtorres\Documents\Github_Repos\final-projects\(Step 1) udsv4-redcap-qc-validator"
-
-# Initialize Poetry (using existing pyproject.toml)
-poetry install --dry-run  # Test dependency resolution
+git clone https://github.com/johnatorres226/step1-nacc-validator.git
+cd step1-nacc-validator
 ```
 
-### Step 3: Update pyproject.toml
-
-1. **Backup current pyproject.toml**
-2. **Update build system section**:
-   ```toml
-   [build-system]
-   requires = ["poetry-core"]
-   build-backend = "poetry.core.masonry.api"
-   ```
-3. **Convert project section to tool.poetry**
-4. **Organize dependencies into groups**
-
-### Step 4: Generate Lock File
+2. **Install Dependencies:**
 
 ```bash
-# Generate poetry.lock file
-poetry lock
-
-# Verify lock file generation
-poetry check
-```
-
-### Step 5: Install Dependencies with Poetry
-
-```bash
-# Install all dependencies
+# Install all dependencies (production + development)
 poetry install
 
-# Install only production dependencies
+# Or install only production dependencies
 poetry install --only main
-
-# Install with development dependencies
-poetry install --with dev
 ```
 
-### Step 6: Test CLI Functionality
+3. **Verify Installation:**
 
 ```bash
-# Test CLI entry point
-poetry run udsv4-qc --help
-
-# Test CLI commands
-poetry run udsv4-qc config --detailed
-
-# Activate shell and test
-poetry shell
-udsv4-qc --version
-```
-
-### Step 7: Update Development Workflow
-
-1. **Update documentation** for Poetry usage
-2. **Create development setup scripts**
-3. **Update CI/CD configuration** (if applicable)
-4. **Train team members** on Poetry workflow
-
-### Step 8: Remove Legacy Files
-
-1. **Remove requirements.txt** (after verifying Poetry setup)
-2. **Clean up old virtual environments**
-3. **Update .gitignore** for Poetry-specific files
-
----
-
-## Testing and Validation
-
-### Pre-Migration Testing
-
-**Current System Validation:**
-```bash
-# Test current setup
-python -m pip list
-python -c "import cli.cli; print('CLI imports successfully')"
-python src/cli/cli.py --help
-```
-
-### Post-Migration Testing
-
-**Poetry Setup Validation:**
-```bash
-# Verify Poetry configuration
-poetry check
-
-# Test dependency installation
-poetry install --dry-run
-
-# Validate lock file
-poetry lock --check
-
 # Test CLI functionality
 poetry run udsv4-qc --help
+
+# Check installed packages
+poetry show
+```
+
+### Development Environment Setup
+
+For active development, you may want to configure Poetry to create virtual environments within the project directory:
+
+```bash
+# Configure Poetry to use in-project virtual environments
+poetry config virtualenvs.in-project true
+
+# Reinstall to create .venv in project directory
+poetry install
+```
+
+## Daily Development Workflow
+### Common Development Tasks
+
+**Starting Development:**
+
+```bash
+# Activate Poetry environment
+poetry shell
+
+# Or run commands directly
+poetry run udsv4-qc --help
+```
+
+**Running the CLI Tool:**
+
+```bash
+# Run QC validation with Poetry
 poetry run udsv4-qc config --detailed
-```
 
-### Cross-Platform Testing
+# Run validation with parameters
+poetry run udsv4-qc run --initials ABC --log
 
-**Windows Testing:**
-```powershell
-# Test Poetry installation
-poetry --version
-
-# Test project setup
-poetry install
-poetry run udsv4-qc --help
-
-# Test virtual environment
-poetry shell
-where python
-python --version
-```
-
-**Linux/Unix Testing:**
-```bash
-# Test Poetry installation
-poetry --version
-
-# Test project setup
-poetry install
-poetry run udsv4-qc --help
-
-# Test virtual environment
-poetry shell
-which python
-python --version
-```
-
-### Functional Testing
-
-**CLI Command Testing:**
-```bash
-# Test configuration command
-poetry run udsv4-qc config --detailed --json-output
-
-# Test run command (with appropriate parameters)
-poetry run udsv4-qc run --initials TST --log --detailed-run
-
-# Test help documentation
+# Get help for any command
 poetry run udsv4-qc --help
 poetry run udsv4-qc run --help
 ```
 
-### Performance Testing
+**Development Tools:**
 
-**Dependency Resolution:**
 ```bash
-# Time dependency installation
-time poetry install
+# Run tests
+poetry run pytest
 
-# Compare with pip installation
-time pip install -r requirements.txt
+# Run tests with coverage
+poetry run pytest --cov
+
+# Format code with Black
+poetry run black .
+
+# Lint code with Ruff
+poetry run ruff check .
+
+# Type checking with mypy
+poetry run mypy src/
+
+# Run pre-commit hooks
+poetry run pre-commit run --all-files
 ```
 
-**Build Testing:**
+**Working with Dependencies:**
+
 ```bash
-# Test package building
+# Add a new production dependency
+poetry add pandas
+
+# Add a development dependency
+poetry add --group dev pytest-mock
+
+# Update all dependencies
+poetry update
+
+# Update a specific dependency
+poetry update pandas
+
+# Remove a dependency
+poetry remove package-name
+```
+
+## Dependency Management
+
+### Understanding Dependency Configuration
+
+This project uses a dual approach to dependency management for maximum compatibility:
+
+1. **Standard Dependencies** (`[project.dependencies]`): Core runtime dependencies
+2. **Poetry Development Dependencies** (`[tool.poetry.group.dev.dependencies]`): Development tools
+
+### Adding New Dependencies
+
+**Production Dependencies:**
+
+For packages needed at runtime (like data processing libraries):
+
+```bash
+# Add to production dependencies
+poetry add requests
+poetry add "pandas>=1.5.0"
+```
+
+**Development Dependencies:**
+
+For tools used only during development (testing, linting, etc.):
+
+```bash
+# Add to development dependencies
+poetry add --group dev pytest-mock
+poetry add --group dev "black>=23.0.0"
+```
+
+### Managing Dependency Versions
+
+**Version Constraints:**
+
+```bash
+# Exact version
+poetry add "package==1.2.3"
+
+# Minimum version
+poetry add "package>=1.2.0"
+
+# Compatible version (will install latest 1.x.x)
+poetry add "package~=1.2.0"
+
+# Pessimistic version (will install latest 1.2.x)
+poetry add "package~=1.2.1"
+```
+
+**Updating Dependencies:**
+
+```bash
+# Update all dependencies to latest compatible versions
+poetry update
+
+# Update specific dependency
+poetry update pandas
+
+# Update only development dependencies
+poetry update --only dev
+```
+
+### Dependency Resolution and Lock File
+
+The `poetry.lock` file ensures that everyone working on the project gets exactly the same dependency versions:
+
+```bash
+# Install exact versions from lock file
+poetry install
+
+# Update lock file after adding dependencies
+poetry lock
+
+# Check if lock file is up to date
+poetry check
+```
+
+## Environment Management
+
+### Virtual Environment Operations
+
+**Creating and Managing Environments:**
+
+```bash
+# Show current environment information
+poetry env info
+
+# List all environments for this project
+poetry env list
+
+# Use a specific Python version
+poetry env use python3.11
+poetry env use python3.12
+
+# Remove current environment
+poetry env remove python
+```
+
+**Environment Configuration:**
+
+```bash
+# Configure Poetry to create .venv in project directory
+poetry config virtualenvs.in-project true
+
+# Configure Poetry to use system site packages
+poetry config virtualenvs.system-site-packages true
+
+# Check current configuration
+poetry config --list
+```
+
+**Activating the Environment:**
+
+```bash
+# Method 1: Use poetry shell (recommended)
+poetry shell
+
+# Method 2: Run commands directly
+poetry run python --version
+poetry run udsv4-qc --help
+
+# Method 3: Manual activation (if .venv exists in project)
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+# Linux/Unix
+source .venv/bin/activate
+```
+
+## CLI Integration
+
+The project's command-line interface is integrated with Poetry through the script configuration in `pyproject.toml`. The CLI tool (`udsv4-qc`) is available both as a Poetry-managed command and as an installed script.
+
+### CLI Configuration
+
+The CLI is configured in the project metadata:
+
+```toml
+[project.scripts]
+udsv4-qc = "cli.cli:cli"
+```
+
+This means:
+
+- **Entry Point**: The `cli` function in `cli.cli` module
+- **Command Name**: `udsv4-qc`
+- **Location**: `src/cli/cli.py`
+
+### Using the CLI with Poetry
+
+**Development Usage:**
+
+```bash
+# Run CLI through Poetry (recommended for development)
+poetry run udsv4-qc --help
+
+# Run configuration command
+poetry run udsv4-qc config --detailed
+
+# Run QC validation
+poetry run udsv4-qc run --initials ABC --log --detailed-run
+```
+
+**Installed Usage:**
+
+After running `poetry install`, the CLI is also available directly:
+
+```bash
+# If Poetry environment is activated
+poetry shell
+udsv4-qc --help
+
+# Or in an activated virtual environment
+udsv4-qc config --detailed
+```
+
+### CLI Development and Testing
+
+**Testing CLI Changes:**
+
+```bash
+# Install in development mode
+poetry install
+
+# Test CLI functionality
+poetry run udsv4-qc --help
+
+# Test with different options
+poetry run udsv4-qc config --json-output
+poetry run udsv4-qc run --initials TST --dry-run
+```
+
+## Cross-Platform Usage
+
+Poetry provides excellent cross-platform support, and this project is configured to work seamlessly on Windows, Linux, and Unix systems.
+
+### Windows-Specific Features
+
+**PowerShell Integration:**
+
+```powershell
+# Install Poetry on Windows
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
+# Setup project
+poetry install
+
+# Run CLI tool
+poetry run udsv4-qc config --detailed
+```
+
+**Windows Environment Handling:**
+
+- Poetry automatically handles Windows path separators
+- Virtual environments are created in `%APPDATA%\pypoetry\virtualenvs\` by default
+- PowerShell scripts are generated for environment activation
+
+### Linux/Unix-Specific Features
+
+**Shell Integration:**
+
+```bash
+# Install Poetry on Linux/Unix
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Setup project
+poetry install
+
+# Run CLI tool
+poetry run udsv4-qc config --detailed
+```
+
+**Unix Environment Handling:**
+
+- Virtual environments are created in `~/.cache/pypoetry/virtualenvs/` by default
+- Shell scripts are generated for environment activation
+- Native compilation support for packages with C extensions
+
+### Cross-Platform Development Tips
+
+1. **Use Poetry Commands**: Always use `poetry run` for cross-platform compatibility
+2. **Path Handling**: Poetry handles path differences automatically
+3. **Environment Variables**: Use `python-dotenv` for environment-specific configuration
+4. **File Permissions**: Poetry respects platform-specific file permissions
+
+## Build and Distribution
+
+### Building the Package
+
+Poetry provides modern Python packaging capabilities:
+
+```bash
+# Build source distribution and wheel
 poetry build
 
-# Verify build artifacts
-ls dist/
+# Build only wheel
+poetry build -f wheel
+
+# Build only source distribution  
+poetry build -f sdist
 ```
 
----
+**Build Output:**
 
-## Benefits and Advantages
+```
+dist/
+├── udsv4_redcap_qc_validator-0.1.0-py3-none-any.whl
+└── udsv4_redcap_qc_validator-0.1.0.tar.gz
+```
 
-### Immediate Benefits
+### Version Management
 
-1. **Deterministic Dependencies**: poetry.lock ensures identical dependency versions across environments
-2. **Simplified Environment Management**: Automatic virtual environment creation and activation
-3. **Enhanced Cross-Platform Support**: Native support for Windows, Linux, and Unix systems
-4. **Streamlined Development Workflow**: Single command installation and dependency management
-5. **Better Dependency Resolution**: Automatic conflict resolution and compatibility checking
+```bash
+# Show current version
+poetry version
 
-### Long-term Advantages
+# Bump patch version (0.1.0 -> 0.1.1)
+poetry version patch
 
-1. **Improved Reproducibility**: Guaranteed identical environments across development, testing, and production
-2. **Enhanced Collaboration**: Team members get identical development environments
-3. **Simplified CI/CD**: Consistent dependency installation in automated pipelines
-4. **Better Package Management**: Version constraints and dependency groups for different use cases
-5. **Modern Python Packaging**: Compliance with latest Python packaging standards (PEP 517/518)
+# Bump minor version (0.1.0 -> 0.2.0)
+poetry version minor
 
-### Development Experience Improvements
+# Bump major version (0.1.0 -> 1.0.0)
+poetry version major
 
-1. **Faster Setup**: Single `poetry install` command sets up complete development environment
-2. **Dependency Insights**: Clear dependency tree visualization with `poetry show --tree`
-3. **Version Management**: Automatic semantic versioning with `poetry version`
-4. **Publishing Workflow**: Direct publishing to PyPI with `poetry publish`
-5. **Plugin Ecosystem**: Extensible functionality through Poetry plugins
+# Set specific version
+poetry version 1.2.3
+```
 
-### Cross-Platform Benefits
+### Distribution Preparation
 
-**Windows:**
-- Native PowerShell integration
-- Automatic Windows-specific dependency handling
-- Proper handling of Windows paths and file systems
+**Checking Build Configuration:**
 
-**Linux/Unix:**
-- Native shell integration
-- System package integration
-- Proper handling of Unix permissions and paths
+```bash
+# Verify project configuration
+poetry check
 
-**macOS:**
-- Homebrew integration
-- Native macOS development support
-- Apple Silicon compatibility
+# Show what would be included in build
+poetry show --tree
 
----
+# Dry run of build process
+poetry build --dry-run
+```
 
-## Conclusion
+**Installing Built Package:**
 
-The migration to Poetry will significantly enhance the UDSv4 REDCap QC Validator project by providing:
+```bash
+# Install wheel locally for testing
+pip install dist/udsv4_redcap_qc_validator-0.1.0-py3-none-any.whl
 
-1. **Modern dependency management** with deterministic resolution
-2. **Cross-platform compatibility** for Windows, Linux, and Unix systems
-3. **Streamlined development workflow** for better team collaboration
-4. **Improved reproducibility** across different environments
-5. **Future-proof packaging** using modern Python standards
-
-The migration process is designed to be **non-disruptive** with **backward compatibility** maintained throughout the transition. The existing CLI functionality will remain unchanged while benefiting from Poetry's enhanced environment management.
-
-This setup plan provides a comprehensive roadmap for successful Poetry adoption, ensuring the project becomes more maintainable, reproducible, and accessible to developers across different platforms and environments.
-
----
+# Test installed package
+udsv4-qc --help
+```
 
 ## Troubleshooting
 
-### "poetry: The term 'poetry' is not recognized" Error
+### Common Issues and Solutions
 
-#### Symptoms
-- Running `poetry` in the terminal results in an error stating that the command is not recognized.
-- Commands like `poetry run udsv4-qc --help` fail with a similar error.
+#### "poetry: The term 'poetry' is not recognized" Error
 
-#### Cause
-- Poetry is installed, but its executable (`poetry.exe` on Windows) is not on the system PATH.
-- This often happens when Poetry is installed via `pip` or in a user-local Python environment, and the Scripts directory is not added to PATH.
+**Symptoms:**
 
-#### Resolution
-The best solution is to uninstall Poetry and reinstall it using the official installer, which ensures the executable is placed in a standard location and added to your PATH automatically.
+- Running `poetry` in the terminal results in an error stating that the command is not recognized
+- Commands like `poetry run udsv4-qc --help` fail with a similar error
+
+**Cause:**
+
+- Poetry is installed, but its executable (`poetry.exe` on Windows) is not on the system PATH
+- This often happens when Poetry is installed via `pip` or in a user-local Python environment
+
+**Resolution:**
+
+The best solution is to uninstall Poetry and reinstall it using the official installer:
 
 **Uninstall Poetry (PowerShell, Windows):**
+
 ```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python - --uninstall
 ```
 
 **Reinstall Poetry (PowerShell, Windows):**
+
 ```powershell
 (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
 ```
 
 After reinstalling, restart your terminal and verify the installation:
+
 ```powershell
 poetry --version
 ```
 
-#### Note on Initial Poetry Installation and PATH
+#### Virtual Environment Issues
 
-When installing Poetry for the first time, ensure that the Poetry executable is available in your terminal by adding it to your system PATH. If the installer does not do this automatically, you can add it manually in PowerShell:
+**Problem:** Poetry creates virtual environment in unexpected location
 
-```powershell
-$poetryPath = Join-Path $env:APPDATA 'pypoetry\venv\Scripts'
-[Environment]::SetEnvironmentVariable(
-   'Path',
-   [Environment]::GetEnvironmentVariable('Path','User') + ';' + $poetryPath,
-   'User'
-)
+**Solution:**
+
+```bash
+# Configure Poetry to create .venv in project directory
+poetry config virtualenvs.in-project true
+
+# Recreate environment
+poetry env remove python
+poetry install
 ```
 
-After running this command, restart your terminal to use the `poetry` command globally.
+**Problem:** Multiple Python versions causing conflicts
 
-#### Prevention
-- Use the official Poetry installer (https://install.python-poetry.org) to ensure the executable is placed in a standard location.
-- Configure Poetry to create virtual environments inside the project directory:
-  ```bash
-  poetry config virtualenvs.in-project true
-  ```
-- Verify that the Python Scripts directory is added to your PATH after installation.
+**Solution:**
+
+```bash
+# Use specific Python version
+poetry env use python3.11
+poetry install
+
+# Verify Python version in environment
+poetry run python --version
+```
+
+#### Dependency Resolution Issues
+
+**Problem:** Dependency conflicts during installation
+
+**Solution:**
+
+```bash
+# Clear Poetry cache
+poetry cache clear pypi --all
+
+# Update lock file
+poetry lock --no-update
+
+# Try installing with more verbose output
+poetry install -vvv
+```
+
+**Problem:** Package not found or version conflicts
+
+**Solution:**
+
+```bash
+# Check current dependency tree
+poetry show --tree
+
+# Update specific package
+poetry update package-name
+
+# Remove and re-add problematic package
+poetry remove package-name
+poetry add package-name
+```
+
+#### CLI Issues
+
+**Problem:** CLI command not working after Poetry installation
+
+**Solution:**
+
+```bash
+# Verify CLI installation
+poetry run udsv4-qc --help
+
+# Check if package is properly installed
+poetry show udsv4-redcap-qc-validator
+
+# Reinstall in development mode
+poetry install
+```
+
+**Problem:** CLI imports failing
+
+**Solution:**
+
+```bash
+# Check Python path in Poetry environment
+poetry run python -c "import sys; print(sys.path)"
+
+# Verify package installation
+poetry run python -c "import cli.cli; print('Success')"
+```
+
+### Getting Help
+
+**Poetry Documentation:**
+
+- Official Documentation: <https://python-poetry.org/docs/>
+- CLI Reference: <https://python-poetry.org/docs/cli/>
+- Configuration: <https://python-poetry.org/docs/configuration/>
+
+**Project-Specific Help:**
+
+```bash
+# Check Poetry configuration
+poetry config --list
+
+# Verify project setup
+poetry check
+
+# Show dependency information
+poetry show --tree
+
+# Get environment information
+poetry env info
+```
+
+**Debug Mode:**
+
+```bash
+# Run Poetry commands with verbose output
+poetry install -vvv
+poetry run -v udsv4-qc --help
+```
+
+---
+
+## Summary
+
+This guide provides comprehensive information about using Poetry in the UDSv4 REDCap QC Validator project. Poetry is already configured and provides:
+
+- **Streamlined dependency management** with `poetry.lock` for reproducible environments
+- **Cross-platform virtual environment handling** for Windows, Linux, and Unix
+- **Integrated CLI tool management** with the `udsv4-qc` command
+- **Modern Python packaging** using PEP 517/518 standards
+- **Development workflow automation** with testing, linting, and formatting tools
+
+**Key takeaways for daily use:**
+
+1. **Use `poetry install`** to set up the development environment
+2. **Use `poetry run udsv4-qc`** to run the CLI tool
+3. **Use `poetry add`** to add new dependencies
+4. **Use `poetry shell`** for interactive development
+5. **Use `poetry build`** when preparing for distribution
+
+Poetry enhances the development experience while maintaining compatibility with standard Python packaging tools, making this project accessible to developers regardless of their Poetry experience level.

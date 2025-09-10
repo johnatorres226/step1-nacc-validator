@@ -25,7 +25,7 @@ The routing system consists of several interconnected components:
 │                    Data Routing and Workflow System                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Processing Mode Router                                             │
-│  • Complete Visits • Complete Instruments • Custom Mode             │
+│  • Complete Visits • Incomplete Visits                             │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Packet Classification System                                       │
 │  • Initial Visit (I) • Initial Visit Form 4 (I4) • Follow-up (F)    │
@@ -148,26 +148,6 @@ for index, row in transformed_df.iterrows():
 - **Progressive QC**: Quality control during active data collection
 - **Instrument Focus**: Targeted validation of specific assessment tools
 - **Workflow Management**: Identifying which instruments need completion
-
-### Custom Mode
-
-**Status**: Under Review
-**File Location**: Configuration-driven processing with user-defined parameters
-
-#### Purpose and Scope
-
-Custom Mode provides flexible processing options with user-specified filtering criteria, selective instrument processing, and custom validation parameters.
-
-#### Planned Features
-
-- **User-Specified Filtering**: Custom REDCap filter logic
-- **Selective Processing**: Choice of specific instruments or events
-- **Flexible Validation**: Optional validation rule sets
-- **Custom Output**: User-defined output formats and locations
-
-#### Development Status
-
-Currently under review for implementation. The architecture supports custom mode through configuration parameters, but the specific implementation is being refined based on user requirements.
 
 ## Packet Classification System
 

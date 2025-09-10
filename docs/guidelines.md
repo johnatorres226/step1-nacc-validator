@@ -224,18 +224,6 @@ The output system manages all generated artifacts:
 - Targeted validation of high-priority instruments
 - Progressive quality control during ongoing data collection
 
-#### Custom Mode
-
-**Status**: Under Review
-
-**Purpose**: Provide flexible processing options with user-defined parameters.
-
-**Planned Features**:
-- User-specified filtering criteria
-- Selective instrument processing
-- Custom validation rule application
-- Flexible output formatting options
-
 ## System Integration Points
 
 ### REDCap Integration

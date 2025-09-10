@@ -17,7 +17,7 @@ import pytest
 from nacc_form_validator.models import ValidationResult
 
 # Import project modules
-from src.pipeline.config_manager import QCConfig
+from src.pipeline.config.config_manager import QCConfig
 
 
 @pytest.fixture

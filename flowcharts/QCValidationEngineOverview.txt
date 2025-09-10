@@ -1,0 +1,151 @@
+site: https://mermaid.live/
+
+%% QC Validation Engine - Comprehensive Architecture
+%% 
+%% Core Components:
+%% - QualityCheck: Main coordinator (quality_check.py)
+%% - NACCValidator: Core validation engine (nacc_validator.py) 
+%% - CustomErrorHandler: Error message management (errors.py)
+%% - ValidationResult: Result data model (models.py)
+%% - Datastore: Previous visit data access (datastore.py)
+%%
+%% Key Validation Methods:
+%% - _validate_compatibility: Business rule validation
+%% - _validate_temporalrules: Cross-visit validation
+%% - _validate_logic: JSON Logic formula evaluation
+%% - _validate_compute_gds: GDS score computation
+%% - _validate_compare_with: Field comparison validation
+%% - _validate_filled: Fill requirement validation
+%% - _validate_check_with: External data validation
+
+flowchart TD
+    %% === INPUT & INITIALIZATION ===
+    A[Record Input from Router] --> B{Schema Available?<br/>HierarchicalRuleResolver}
+    B -->|No| C[Load Packet Schema<br/>PacketRuleRouter.get_rules_for_record]
+    B -->|Yes| D[Initialize QualityCheck<br/>quality_check.py]
+    C --> D
+    
+    D --> E[Create NACCValidator<br/>nacc_validator.py]
+    E --> F[Setup CustomErrorHandler<br/>errors.py + ErrorDefs]
+    F --> G[Configure Datastore<br/>datastore.py - Optional]
+    G --> H[Begin Validation Process<br/>QualityCheck.validate_record]
+    
+    %% === CORE VALIDATION PIPELINE ===
+    H --> I[Cast Record Types<br/>NACCValidator.cast_record]
+    I --> J[Basic Schema Validation<br/>Cerberus Base Validation]
+    J --> K{Basic Validation Passed?}
+    K -->|No| L[Collect Basic Errors<br/>StandardErrorHandling]
+    K -->|Yes| M[Apply Custom Validation Methods<br/>NACC Extensions]
+    
+    %% === BUSINESS RULE VALIDATION ===
+    M --> N[Compatibility Rules<br/>_validate_compatibility]
+    N --> O{Compatibility Check<br/>IF-THEN-ELSE Logic}
+    O -->|Fail| P[Add Compatibility Errors<br/>ErrorDefs.COMPATIBILITY]
+    O -->|Pass| Q[Temporal Rules<br/>_validate_temporalrules]
+    
+    %% === TEMPORAL VALIDATION ===
+    Q --> R{Previous Visit Required?<br/>temporalrules schema check}
+    R -->|Yes| S[Retrieve Previous Visit Data<br/>Datastore.get_previous_record]
+    R -->|No| T[Logic Validation<br/>_validate_logic]
+    S --> U{Previous Data Found?<br/>Datastore response}
+    U -->|No| V[Add Temporal Error<br/>ErrorDefs.NO_PREV_VISIT]
+    U -->|Yes| W[Apply Temporal Rules<br/>Cross-Visit Validation]
+    W --> X{Temporal Rules Pass?<br/>_check_subschema_valid}
+    X -->|Fail| Y[Add Temporal Errors<br/>ErrorDefs.TEMPORAL]
+    X -->|Pass| T
+    
+    %% === LOGIC & COMPUTED VALIDATION ===
+    T --> Z[Apply Logic Rules<br/>_validate_logic + jsonLogic]
+    Z --> AA{Logic Validation Pass?<br/>JSON Formula Evaluation}
+    AA -->|Fail| BB[Add Logic Errors<br/>ErrorDefs.FORMULA]
+    AA -->|Pass| CC[Computed Field Validation<br/>Specialized Validators]
+    
+    %% === SPECIALIZED VALIDATIONS ===
+    CC --> DD[GDS Score Computation<br/>_validate_compute_gds]
+    DD --> EE{GDS Rules Pass?<br/>Score Calculation + Prorating}
+    EE -->|Fail| FF[Add GDS Errors<br/>ErrorDefs.CHECK_GDS_*]
+    EE -->|Pass| GG[Cross-Field Comparisons<br/>_validate_compare_with]
+    
+    GG --> HH[Compare With Current Fields<br/>Mathematical Comparisons]
+    HH --> II{Current Comparison Pass?<br/>utils.compare_values}
+    II -->|Fail| JJ[Add Comparison Errors<br/>ErrorDefs.COMPARE_WITH]
+    II -->|Pass| KK[Compare With Previous Visit<br/>_validate_compare_with_prev]
+    
+    KK --> LL{Previous Comparison Pass?<br/>Cross-Visit Field Comparison}
+    LL -->|Fail| MM[Add Previous Visit Errors<br/>ErrorDefs.COMPARE_WITH_PREV]
+    LL -->|Pass| NN[Age Validation<br/>_validate_compare_age]
+    
+    NN --> OO[Date Range Validation<br/>Date/Time Field Validation]
+    OO --> PP{Date Ranges Valid?<br/>Min/Max Date Checks}
+    PP -->|Fail| QQ[Add Date Errors<br/>ErrorDefs.CURR_DATE_*]
+    PP -->|Pass| RR[Fill Requirement Validation<br/>_validate_filled]
+    
+    RR --> SS{Fill Requirements Met?<br/>Required/Empty Field Logic}
+    SS -->|Fail| TT[Add Fill Errors<br/>ErrorDefs.FILLED_*]
+    SS -->|Pass| UU[External Data Validation<br/>_validate_check_with]
+    
+    UU --> VV[RXNORM Drug Code Check<br/>External API Validation]
+    VV --> WW{External Validation Pass?<br/>External Service Response}
+    WW -->|Fail| XX[Add External Errors<br/>ErrorDefs.RXNORM]
+    WW -->|Pass| YY[Compile Results<br/>Error Aggregation]
+    
+    %% === ERROR AGGREGATION ===
+    L --> YY
+    P --> YY
+    V --> YY
+    Y --> YY
+    BB --> YY
+    FF --> YY
+    JJ --> YY
+    MM --> YY
+    QQ --> YY
+    TT --> YY
+    XX --> YY
+    
+    %% === RESULT GENERATION ===
+    YY --> ZZ{Any Errors Collected?<br/>Validation Status Check}
+    ZZ -->|Yes| AAA[Create Failed ValidationResult<br/>ValidationResult&#40;passed=False&#41;]
+    ZZ -->|No| BBB[Create Passed ValidationResult<br/>ValidationResult&#40;passed=True&#41;]
+    
+    AAA --> CCC[Generate Error Messages<br/>CustomErrorHandler._format_message]
+    CCC --> DDD[Map Error Codes to Messages<br/>CustomErrorHandler.messages]
+    DDD --> EEE[Create Error Tree Structure<br/>DocumentErrorTree Generation]
+    EEE --> FFF[Return ValidationResult<br/>models.ValidationResult]
+    
+    BBB --> FFF
+    
+    %% === FINAL PROCESSING ===
+    FFF --> GGG[Log Validation Outcome<br/>Quality Check Logging]
+    GGG --> HHH[Update Validation Metrics<br/>Performance Tracking]
+    HHH --> III[End Process<br/>Return to Pipeline]
+    
+    %% === SYSTEM FAILURE PATHS ===
+    B -->|Schema Load Error| JJJ[System Failure<br/>Schema Loading Issues]
+    S -->|Database Error| JJJ
+    Z -->|Expression Error| JJJ
+    DD -->|Computation Error| JJJ
+    VV -->|External Service Error| JJJ
+    H -->|ValidationException| JJJ
+    
+    JJJ --> KKK[Create System Failure Result<br/>ValidationResult&#40;sys_failure=True&#41;]
+    KKK --> LLL[Log System Error<br/>System Error Logging]
+    LLL --> III
+    
+    %% === STYLING ===
+    classDef inputNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef processNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef decisionNode fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef errorNode fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef resultNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef systemFailure fill:#ff1744,color:#fff,stroke:#b71c1c,stroke-width:3px
+    classDef validationMethod fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef dataStore fill:#fce4ec,stroke:#ad1457,stroke-width:2px
+    
+    class A inputNode
+    class D,E,F,G,H,I,J,M,N,Q,T,Z,CC,DD,GG,HH,KK,NN,OO,RR,UU,VV,YY,CCC,DDD,EEE,GGG,HHH processNode
+    class B,K,O,R,U,X,AA,EE,II,LL,PP,SS,WW,ZZ decisionNode
+    class L,P,V,Y,BB,FF,JJ,MM,QQ,TT,XX,AAA errorNode
+    class BBB,FFF,III resultNode
+    class JJJ,KKK,LLL systemFailure
+    class C validationMethod
+    class S dataStore

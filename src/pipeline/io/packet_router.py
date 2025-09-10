@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..config_manager import QCConfig, get_config
-from ..logging_config import get_logger
+from ..config.config_manager import QCConfig, get_config
+from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -101,7 +101,7 @@ class PacketRuleRouter:
         Returns:
             Dictionary containing the loaded rules
         """
-        from ..config_manager import is_dynamic_rule_instrument
+        from ..config.config_manager import is_dynamic_rule_instrument
 
         # Handle dynamic instruments differently - they need nested structure
         if is_dynamic_rule_instrument(instrument_name):
@@ -167,7 +167,7 @@ class PacketRuleRouter:
         Returns:
             Dictionary with variant keys (C2, C2T) containing their respective rules
         """
-        from ..config_manager import get_rule_mappings
+        from ..config.config_manager import get_rule_mappings
 
         rule_mappings = get_rule_mappings(instrument_name)
         rule_map = {}

@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from ..config_manager import QCConfig
+from ..config.config_manager import QCConfig
 
 
 @dataclass
@@ -99,13 +99,13 @@ class ValidationContext:
     @property
     def is_dynamic_instrument(self) -> bool:
         """Check if this is a dynamic rule instrument."""
-        from ..config_manager import is_dynamic_rule_instrument
+        from ..config.config_manager import is_dynamic_rule_instrument
         return is_dynamic_rule_instrument(self.instrument_name)
 
     def get_discriminant_variable(self) -> str | None:
         """Get discriminant variable for dynamic instruments."""
         if self.is_dynamic_instrument:
-            from ..config_manager import get_discriminant_variable
+            from ..config.config_manager import get_discriminant_variable
             return get_discriminant_variable(self.instrument_name)
         return None
 

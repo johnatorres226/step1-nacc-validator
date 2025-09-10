@@ -1,40 +1,61 @@
 site: https://mermaid.live/
 
+%% Data Routing Flowchart - Packet-Based Allocation with C2 Considerations
+%% 
+%% Key Components:
+%% - PacketRuleRouter: Handles packet-based routing (I, I4, F)
+%% - HierarchicalRuleResolver: Combines packet + dynamic instrument routing
+%% - ConfigManager: Manages dynamic instrument configurations
+%% 
+%% Cache Keys Format: "packet_instrumentname" or "packet_instrumentname_discriminant"
+%% Discriminant Variable: loc_c2_or_c2t (for C2/C2T neuropsychological battery)
+
 flowchart TD
-    A[REDCap Data Input] --> B{Record Type Detection}
+    A[REDCap Data Input] --> B[Record Packet Extraction<br/>PacketRuleRouter.get_rules_for_record]
     
-    B --> C[Form A1]
-    B --> D[Form B1] 
-    B --> E[Form C2]
-    B --> F[Other Forms]
+    B --> B1{Packet Value Valid?}
+    B1 -->|No| B2[ValueError: Missing/Invalid Packet<br/>Valid: I, I4, F]
+    B1 -->|Yes| C{Packet Classification}
     
-    C --> C1[Load a1.json rules]
-    D --> D1[Load b1.json rules]
-    E --> E1{C2 Tool Detection}
-    F --> F1[Load respective.json rules]
+    C -->|packet = I| D[Initial Visit Rules<br/>Path: JSON_RULES_PATH_I]
+    C -->|packet = I4| E[Initial Visit Form 4 Rules<br/>Path: JSON_RULES_PATH_I4]
+    C -->|packet = F| F[Follow-up Visit Rules<br/>Path: JSON_RULES_PATH_F]
     
-    E1 --> E2[Load c2.json rules]
-    E1 --> E3[C2 Version-Specific Rules]
-    E1 --> E4[C2 Condition-Based Rules]
+    D --> D1[Load packet-specific rules<br/>Cache Key: I_instrumentname]
+    E --> E1[Load packet-specific rules<br/>Cache Key: I4_instrumentname]
+    F --> F1[Load packet-specific rules<br/>Cache Key: F_instrumentname]
     
-    C1 --> G[Apply Schema Validation]
-    D1 --> G
-    E2 --> H{Rule Found?}
-    E3 --> H
-    E4 --> H
+    D1 --> G{Instrument Type Check<br/>is_dynamic_rule_instrument}
+    E1 --> G
     F1 --> G
     
-    H -->|Yes| G
-    H -->|No| I[UNKNOWN RULE ERROR]
+    G -->|Standard Instrument| H[Direct Rule Loading<br/>instrument.json from packet path]
+    G -->|Dynamic Instrument| I[C2/C2T Detection<br/>HierarchicalRuleResolver._apply_dynamic_routing]
     
-    G --> J{Validation Pass?}
-    J -->|Yes| K[Data Accepted]
-    J -->|No| L[Validation Errors]
+    I --> I1[Extract Discriminant Variable<br/>loc_c2_or_c2t from record]
+    I1 --> I2{Discriminant Value?}
     
-    I --> M[Log Error to quality_check.log]
-    L --> N[Log Validation Issues]
+    I2 -->|C2| I3[Load C2 Variant Rules<br/>c2_rules.json]
+    I2 -->|C2T| I4[Load C2T Variant Rules<br/>c2t_rules.json]
+    I2 -->|Missing/Invalid| I5[Use Default Variant<br/>First available variant]
     
-    style I fill:#ff6b6b
-    style H fill:#ffd93d
-    style E1 fill:#6bcf7f
-    style G fill:#4ecdc4
+    I3 --> J[Rule Resolution Complete<br/>Cache Key: packet_instrument_discriminant]
+    I4 --> J
+    I5 --> J
+    H --> J
+    
+    J --> K[Apply Schema Validation<br/>Rule Application Engine]
+    K --> L{Validation Pass?}
+    
+    L -->|Yes| M[Data Accepted<br/>Record Processed]
+    L -->|No| N[Validation Errors<br/>Log to quality_check.log]
+    
+    B2 --> O[Error Handling<br/>Record Rejected]
+    
+    style B2 fill:#ff6b6b
+    style I2 fill:#ffd93d
+    style I fill:#6bcf7f
+    style J fill:#4ecdc4
+    style D fill:#e1f5fe
+    style E fill:#e8f5e8
+    style F fill:#fff3e0

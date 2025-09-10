@@ -13,7 +13,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from src.pipeline.config_manager import QCConfig
+from src.pipeline.config.config_manager import QCConfig
 
 # Import the modules we're testing
 from src.pipeline.core.fetcher import (

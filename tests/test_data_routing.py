@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.pipeline.config_manager import QCConfig
+from src.pipeline.config.config_manager import QCConfig
 
 # Import the modules we're testing
 from src.pipeline.io.packet_router import PacketRuleRouter
@@ -26,7 +26,7 @@ except Exception:
     instrument_mapping_module = None
 
 try:
-    import src.pipeline.config_manager as config_manager_module
+    import src.pipeline.config.config_manager as config_manager_module
 except Exception:
     config_manager_module = None
 
