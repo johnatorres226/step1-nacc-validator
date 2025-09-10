@@ -285,9 +285,8 @@ def build_detailed_validation_logs_vectorized(
         logs = result_df.to_dict("records")
 
         logger.debug(
-            f"Generated {len(logs)} validation log entries for instrument '{
-                instrument
-            }' (vectorized)."
+            f"Generated {len(logs)} validation log entries for instrument "
+            f"'{instrument}' (vectorized)."
         )
         return logs
 

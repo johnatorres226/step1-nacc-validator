@@ -213,9 +213,8 @@ class HierarchicalRuleResolver:
                 logger.info(f"Using default variant '{default_variant}' for {instrument_name}")
                 logger.debug(f"base_rules keys: {list(base_rules.keys())}")
                 logger.debug(
-                    f"Returning rules for variant '{default_variant}': {
-                        type(base_rules[default_variant])
-                    }"
+                    f"Returning rules for variant '{default_variant}': "
+                    f"{type(base_rules[default_variant])}"
                 )
                 return base_rules[default_variant]
             return base_rules
