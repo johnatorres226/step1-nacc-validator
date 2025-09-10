@@ -11,13 +11,13 @@ from typing import Any
 
 import pandas as pd
 
-from src.pipeline.config.config_manager import (
+from ..config.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_special_columns,
     is_dynamic_rule_instrument,
 )
-from src.pipeline.processors.instrument_processors import DynamicInstrumentProcessor
+from ..processors.instrument_processors import DynamicInstrumentProcessor
 
 logger = logging.getLogger(__name__)
 
