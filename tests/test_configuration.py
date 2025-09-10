@@ -225,7 +225,7 @@ class TestGetConfigFunction:
         assert hasattr(config, "instruments")
         assert hasattr(config, "redcap_api_token")
 
-    @patch("src.pipeline.config_manager._config_instance", None)
+    @patch("src.pipeline.config.config_manager._config_instance", None)
     def test_get_config_creates_new_instance_when_none(self):
         """Test that get_config creates a new instance when none exists."""
         config = get_config()
