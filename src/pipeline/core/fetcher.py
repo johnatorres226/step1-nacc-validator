@@ -27,7 +27,6 @@ from ..io.rules import load_rules_for_instruments
 from ..logging_config import get_logger
 from .data_processing import get_variables_for_instrument
 
-
 logger = get_logger(__name__)
 
 # =============================================================================

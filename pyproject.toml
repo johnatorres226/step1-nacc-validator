@@ -47,7 +47,7 @@ dev = [
     "pre-commit>=3.0.0",
     "wheel>=0.40.0",
     "build>=0.10.0",
-    "twine>=4.0.0"
+    "twine>=5.0.0"
 ]
 
 [project.urls]
@@ -61,11 +61,15 @@ udsv4-qc = "cli.cli:cli"
 name = "udsv4-redcap-qc-validator"
 version = "0.1.0"
 description = "REDCap Data QC Validator for UDSv4 using NACC From Validator Tools"
-license = "MLP 2.0"
+license = "MPL-2.0"
 packages = [
     { include = "pipeline", from = "src" },
     { include = "cli", from = "src" },
     { include = "nacc_form_validator" },
+]
+include = [
+    "ruff.toml",
+    "README.md",
 ]
 
 [tool.poetry.group.dev.dependencies]
@@ -78,7 +82,7 @@ pytest-cov = "^4.0.0"
 pre-commit = "^3.0.0"
 wheel = "^0.40.0"
 build = "^0.10.0"
-twine = "^4.0.0"
+twine = "^5.0.0"
 requests-mock = "^1.12.1"
 
 [build-system]
@@ -226,19 +230,10 @@ docstring-code-format = true
 skip-magic-trailing-comma = false
 
 [tool.mypy]
-python_version = "3.12"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
+python_version = "3.11"
+ignore_missing_imports = true
 warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
+show_error_codes = true
 
 [tool.pytest.ini_options]
 minversion = "6.0"

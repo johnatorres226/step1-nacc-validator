@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 # Late imports to avoid circular dependencies
 from .logging_config import get_logger
 
-
 logger = get_logger(__name__)
 
 # =============================================================================
@@ -531,7 +530,6 @@ class QCConfig:
         p = Path(file_path)
         with p.open("w", encoding="utf-8") as fh:
             fh.write(json.dumps(self.to_dict(), indent=4))
-    return None
 
     @classmethod
     def from_file(cls, file_path: str | Path) -> "QCConfig":

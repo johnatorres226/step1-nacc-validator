@@ -12,7 +12,6 @@ from typing import Any
 from ..config_manager import QCConfig, get_config
 from ..logging_config import get_logger
 
-
 logger = get_logger(__name__)
 
 

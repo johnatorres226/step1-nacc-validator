@@ -1,0 +1,7 @@
+line-length = 100
+indent-width = 4
+
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "I", "PLW0406"]

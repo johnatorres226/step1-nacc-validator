@@ -12,7 +12,6 @@ import pandas as pd
 from ..logging_config import get_logger
 from .data_processing import DataProcessingError, ValidationLogsData
 
-
 logger = get_logger(__name__)
 
 

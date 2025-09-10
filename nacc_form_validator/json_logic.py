@@ -29,7 +29,6 @@ import logging
 import math
 from functools import reduce
 
-
 logger = logging.getLogger(__name__)
 
 

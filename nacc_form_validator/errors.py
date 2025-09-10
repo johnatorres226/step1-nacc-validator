@@ -18,7 +18,6 @@ from cerberus.errors import (
 
 from .keys import SchemaDefs
 
-
 # pylint: disable=(too-few-public-methods)
 
 

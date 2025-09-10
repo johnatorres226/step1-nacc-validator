@@ -27,7 +27,6 @@ from .pipeline_results import (
     ValidationResult,
 )
 
-
 logger = get_logger(__name__)
 
 

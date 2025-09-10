@@ -11,7 +11,6 @@ from ..config_manager import get_config
 from ..logging_config import get_logger
 from .data_processing import DataProcessingError
 
-
 logger = get_logger(__name__)
 
 

@@ -20,7 +20,6 @@ from pipeline.io.context import ProcessingContext
 from pipeline.logging_config import get_logger
 from pipeline.utils.instrument_mapping import load_dynamic_rules_for_instrument
 
-
 logger = get_logger(__name__)
 
 

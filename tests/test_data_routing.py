@@ -14,7 +14,6 @@ from src.pipeline.config_manager import QCConfig
 # Import the modules we're testing
 from src.pipeline.io.packet_router import PacketRuleRouter
 
-
 # Guarded optional module imports so tests can reference them at module level
 try:
     import src.pipeline.io.hierarchical_router as hierarchical_router_module

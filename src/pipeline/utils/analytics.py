@@ -19,7 +19,6 @@ from src.pipeline.config_manager import (
 )
 from src.pipeline.processors.instrument_processors import DynamicInstrumentProcessor
 
-
 logger = logging.getLogger(__name__)
 
 

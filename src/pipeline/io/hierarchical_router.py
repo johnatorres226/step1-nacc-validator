@@ -18,7 +18,6 @@ from ..config_manager import (
 from ..logging_config import get_logger
 from .packet_router import PacketRuleRouter
 
-
 logger = get_logger(__name__)
 
 

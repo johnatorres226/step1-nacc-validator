@@ -22,7 +22,8 @@ import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Generator, ClassVar
+from typing import ClassVar, Generator
+
 import pandas as pd
 
 
@@ -151,10 +152,20 @@ class PerformanceFilter(logging.Filter):
 
     def filter(self, record):
         """Add performance metrics to the log record."""
-        record.elapsed = time.time() - self.start_time
-    # Use timezone-aware timestamp (UTC)
-    record.timestamp = datetime.now(tz=timezone.utc).isoformat()
-    return True
+        # Attach elapsed time since filter instantiation
+        try:
+            record.elapsed = time.time() - self.start_time
+        except Exception:
+            # If anything goes wrong, avoid breaking logging output
+            record.elapsed = None
+
+        # Use timezone-aware timestamp (UTC)
+        try:
+            record.timestamp = datetime.now(tz=timezone.utc).isoformat()
+        except Exception:
+            record.timestamp = None
+
+        return True
 
 
 def setup_logging(

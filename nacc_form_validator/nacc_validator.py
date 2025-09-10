@@ -24,7 +24,6 @@ from .errors import CustomErrorHandler, ErrorDefs
 from .json_logic import jsonLogic
 from .keys import SchemaDefs
 
-
 log = logging.getLogger(__name__)
 
 

@@ -16,7 +16,6 @@ import pandas as pd
 
 from .context import ExportConfiguration, ProcessingContext, ReportConfiguration
 
-
 logger = logging.getLogger(__name__)
 
 

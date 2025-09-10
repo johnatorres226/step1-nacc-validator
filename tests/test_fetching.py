@@ -244,7 +244,8 @@ class TestDataFetching:
             pipeline._initialize_components(temp_dir, "01JAN2025", "120000")
 
             # Should handle API errors gracefully
-            with pytest.raises(Exception, match="Forbidden"):  # Might raise requests.HTTPError or custom exception
+            # Might raise requests.HTTPError or custom exception
+            with pytest.raises(Exception, match="Forbidden"):
                 pipeline._fetch_data()  # noqa: SLF001
 
 

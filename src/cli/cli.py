@@ -19,7 +19,6 @@ from pipeline.config_manager import (
 from pipeline.logging_config import get_logger, setup_logging
 from pipeline.report_pipeline import operation_context, run_report_pipeline
 
-
 # Initialize console and logger
 console = Console()
 logger = get_logger("cli")

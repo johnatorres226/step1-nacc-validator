@@ -9,7 +9,6 @@ Original source: https://github.com/naccdata/nacc-form-validator
 
 from abc import ABC, abstractmethod
 
-
 # pylint: disable=(too-few-public-methods, no-self-use, unused-argument)
 
 

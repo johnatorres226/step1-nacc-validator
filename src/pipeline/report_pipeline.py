@@ -54,7 +54,6 @@ from pipeline.io.hierarchical_router import HierarchicalRuleResolver
 from pipeline.io.packet_router import PacketRuleRouter
 from pipeline.utils.schema_builder import build_cerberus_schema_for_instrument
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -695,8 +694,12 @@ def validate_data_with_hierarchical_routing(
                 })
 
         except Exception as e:
-            logger.exception("Validation error for record %s", record_dict.get(primary_key_field, "unknown"))
             pk_value = record_dict.get(primary_key_field, "unknown")
+            logger.exception(
+                "Validation error for record %s", pk_value
+            )
+            
+            packet_value = record_dict.get("packet", "unknown")
             packet_value = record_dict.get("packet", "unknown")
             if packet_value == "unknown" or not packet_value:
                 rules_path = "unknown (missing packet)"
