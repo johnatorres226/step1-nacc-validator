@@ -317,9 +317,8 @@ class PathValidator(ConfigValidator):
                 Path(config.log_path).mkdir(parents=True, exist_ok=True)
             except OSError as e:
                 errors.append(
-                    f"LOG_PATH '{
-                        config.log_path
-                    }' is not a valid directory and could not be created: {e}"
+                    f"LOG_PATH '{config.log_path}' is not a valid directory "
+                    f"and could not be created: {e}"
                 )
 
         return errors
