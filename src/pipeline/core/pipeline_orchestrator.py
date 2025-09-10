@@ -4,6 +4,7 @@ Improved pipeline orchestrator with clear stages, proper error handling, and res
 This module provides a structured approach to running the QC pipeline with explicit
 stage separation, comprehensive error handling, and proper data flow tracking.
 """
+
 import time
 from datetime import datetime
 from pathlib import Path
@@ -56,7 +57,7 @@ class PipelineOrchestrator:
         self,
         output_path: str | Path | None = None,
         date_tag: str | None = None,
-        time_tag: str | None = None
+        time_tag: str | None = None,
     ) -> PipelineExecutionResult:
         """
         Execute the complete QC pipeline with structured stages.
@@ -72,8 +73,7 @@ class PipelineOrchestrator:
         self.start_time = time.time()
 
         # Create output directory
-        output_dir = self._create_output_directory(
-            output_path, date_tag, time_tag)
+        output_dir = self._create_output_directory(output_path, date_tag, time_tag)
 
         self.logger.info("Starting QC pipeline")
         self.logger.info(
@@ -86,8 +86,7 @@ class PipelineOrchestrator:
         try:
             # Stage 1: Data Fetching
             self.logger.info("Stage 1: Data Fetching")
-            data_fetch_result = self._execute_data_fetch_stage(
-                output_dir, date_tag, time_tag)
+            data_fetch_result = self._execute_data_fetch_stage(output_dir, date_tag, time_tag)
             self.logger.info(
                 "Data fetch completed: %d records in %.2fs",
                 data_fetch_result.records_processed,
@@ -129,7 +128,8 @@ class PipelineOrchestrator:
             # Stage 5: Report Generation
             self.logger.info("Stage 5: Report Generation")
             report_result = self._execute_report_generation_stage(
-                validation_result, data_prep_result, output_dir, date_tag, time_tag)
+                validation_result, data_prep_result, output_dir, date_tag, time_tag
+            )
             self.logger.info(
                 "Report generation completed: %d files created in %.2fs",
                 report_result.total_files_created,
@@ -148,7 +148,7 @@ class PipelineOrchestrator:
                 total_execution_time=total_time,
                 output_directory=output_dir,
                 run_metadata=self._create_run_metadata(),
-                success=True
+                success=True,
             )
 
             self.logger.info("Pipeline execution completed successfully")
@@ -162,8 +162,7 @@ class PipelineOrchestrator:
             self.logger.exception("Pipeline execution failed: %s", e)
 
             # Create failed result with whatever stages completed
-            failed_result = self._create_failed_result(
-                e, total_time, output_dir)
+            failed_result = self._create_failed_result(e, total_time, output_dir)
 
             self.logger.error("Pipeline execution failed")
             self.logger.error("Error: %s", e)
@@ -172,10 +171,7 @@ class PipelineOrchestrator:
             return failed_result
 
     def _create_output_directory(
-        self,
-        output_path: str | Path | None,
-        date_tag: str | None,
-        time_tag: str | None
+        self, output_path: str | Path | None, date_tag: str | None, time_tag: str | None
     ) -> Path:
         """Create output directory with proper naming."""
         if date_tag is None or time_tag is None:
@@ -183,22 +179,17 @@ class PipelineOrchestrator:
             date_tag = date_tag or current_datetime.strftime("%d%b%Y").upper()
             time_tag = time_tag or current_datetime.strftime("%H%M%S")
 
-        run_type_str = self.config.mode.replace(
-            "_", " ").title().replace(" ", "")
+        run_type_str = self.config.mode.replace("_", " ").title().replace(" ", "")
         run_dir_name = f"QC_{run_type_str}_{date_tag}_{time_tag}"
 
-        base_path = Path(output_path) if output_path else Path(
-            self.config.output_path)
+        base_path = Path(output_path) if output_path else Path(self.config.output_path)
         output_dir = base_path / run_dir_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         return output_dir
 
     def _execute_data_fetch_stage(
-        self,
-        output_dir: Path,
-        date_tag: str | None,
-        time_tag: str | None
+        self, output_dir: Path, date_tag: str | None, time_tag: str | None
     ) -> DataFetchResult:
         """Execute the data fetching stage."""
         try:
@@ -220,10 +211,10 @@ class PipelineOrchestrator:
                 execution_time=execution_time,
                 source_info={
                     "redcap_url": getattr(self.config, "redcap_url", "N/A"),
-                    "project_id": getattr(self.config, "project_id", "N/A")
+                    "project_id": getattr(self.config, "project_id", "N/A"),
                 },
                 fetch_timestamp=datetime.now(),
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -259,12 +250,12 @@ class PipelineOrchestrator:
                     # Use the new rules loading method that handles dynamic instruments
                     # properly
                     instrument_rules = hierarchical_resolver.load_all_rules_for_instrument(
-                        instrument)
+                        instrument
+                    )
 
                     if instrument_rules:
                         rules_cache[instrument] = instrument_rules
-                        self.logger.debug(
-                            f"Loaded rules for instrument: {instrument}")
+                        self.logger.debug(f"Loaded rules for instrument: {instrument}")
                     else:
                         failed_instruments.append(instrument)
                         error_messages[instrument] = f"No rules found for instrument {instrument}"
@@ -272,12 +263,12 @@ class PipelineOrchestrator:
                 except Exception as e:
                     failed_instruments.append(instrument)
                     error_messages[instrument] = str(e)
-                    self.logger.warning(
-                        f"Failed to load rules for {instrument}: {e}")
+                    self.logger.warning(f"Failed to load rules for {instrument}: {e}")
 
             self.logger.info("Building variable mappings...")
             variable_to_instrument_map, instrument_to_variables_map = build_variable_maps(
-                self.config.instruments, rules_cache)
+                self.config.instruments, rules_cache
+            )
 
             execution_time = time.time() - stage_start
 
@@ -289,7 +280,7 @@ class PipelineOrchestrator:
                 instrument_to_variables_map=instrument_to_variables_map,
                 success=len(failed_instruments) < len(self.config.instruments),
                 failed_instruments=failed_instruments,
-                error_messages=error_messages
+                error_messages=error_messages,
             )
 
         except Exception as e:
@@ -297,9 +288,7 @@ class PipelineOrchestrator:
             raise RulesLoadingError(f"Failed to load validation rules: {e}", e)
 
     def _execute_data_preparation_stage(
-        self,
-        data_fetch_result: DataFetchResult,
-        rules_loading_result: RulesLoadingResult
+        self, data_fetch_result: DataFetchResult, rules_loading_result: RulesLoadingResult
     ) -> DataPreparationResult:
         """Execute the data preparation stage."""
         try:
@@ -317,17 +306,19 @@ class PipelineOrchestrator:
                 visits_start = time.time()
 
                 complete_visits_df, complete_visits_tuples = build_complete_visits_df(
-                    data_df, self.config.instruments)
+                    data_df, self.config.instruments
+                )
 
                 visits_time = time.time() - visits_start
 
                 complete_visits_result = CompleteVisitsResult(
                     summary_dataframe=complete_visits_df,
                     complete_visits_tuples=complete_visits_tuples,
-                    total_visits_processed=len(data_df.groupby(
-                        [self.config.primary_key_field, "redcap_event_name"])),
+                    total_visits_processed=len(
+                        data_df.groupby([self.config.primary_key_field, "redcap_event_name"])
+                    ),
                     complete_visits_count=len(complete_visits_df),
-                    processing_time=visits_time
+                    processing_time=visits_time,
                 )
 
                 # Filter data to complete visits only
@@ -338,17 +329,16 @@ class PipelineOrchestrator:
                         len(complete_visits_df),
                     )
                     # Create index for comparison
-                    data_index = data_df.set_index([
-                        self.config.primary_key_field, "redcap_event_name"
-                    ]).index
-                    complete_index = complete_visits_df.set_index([
-                        self.config.primary_key_field, "redcap_event_name"
-                    ]).index
+                    data_index = data_df.set_index(
+                        [self.config.primary_key_field, "redcap_event_name"]
+                    ).index
+                    complete_index = complete_visits_df.set_index(
+                        [self.config.primary_key_field, "redcap_event_name"]
+                    ).index
                     complete_visits_mask = data_index.isin(complete_index)
                     data_df = data_df[complete_visits_mask].copy()
                 else:
-                    self.logger.warning(
-                        "No complete visits found - no data will be processed")
+                    self.logger.warning("No complete visits found - no data will be processed")
                     data_df = pd.DataFrame()
 
             # Prepare instrument data cache
@@ -379,7 +369,7 @@ class PipelineOrchestrator:
                 complete_visits_data=complete_visits_result,
                 preparation_time=execution_time,
                 records_per_instrument=records_per_instrument,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -387,9 +377,7 @@ class PipelineOrchestrator:
             raise DataPreparationError(f"Failed to prepare data: {e}", e)
 
     def _execute_validation_stage(
-        self,
-        data_prep_result: DataPreparationResult,
-        rules_loading_result: RulesLoadingResult
+        self, data_prep_result: DataPreparationResult, rules_loading_result: RulesLoadingResult
     ) -> ValidationResult:
         """Execute the validation stage."""
         try:
@@ -409,13 +397,13 @@ class PipelineOrchestrator:
 
             # Process each instrument
             for i, instrument in enumerate(self.config.instruments, 1):
-                self.logger.info(
-                    f"Validating {instrument} ({i}/{len(self.config.instruments)})")
+                self.logger.info(f"Validating {instrument} ({i}/{len(self.config.instruments)})")
 
                 df = data_prep_result.get_instrument_data(instrument)
                 if df.empty:
                     self.logger.warning(
-                        f"No data available for instrument '{instrument}' after preparation.")
+                        f"No data available for instrument '{instrument}' after preparation."
+                    )
                     continue
 
                 instruments_processed.append(instrument)
@@ -423,18 +411,20 @@ class PipelineOrchestrator:
                 # Build detailed validation logs based on instrument
                 # completeness
                 logs_for_this = build_detailed_validation_logs(
-                    df, instrument, primary_key_field=self.config.primary_key_field)
+                    df, instrument, primary_key_field=self.config.primary_key_field
+                )
                 detailed_validation_logs.extend(logs_for_this)
 
                 # Preprocess data types
-                rules = rules_loading_result.get_rules_for_instrument(
-                    instrument)
+                rules = rules_loading_result.get_rules_for_instrument(instrument)
                 df = preprocess_cast_types(df, rules)
 
                 # Run validation
                 errors, logs, passed_records = validate_data(
-                    df, rules, instrument_name=instrument,
-                    primary_key_field=self.config.primary_key_field
+                    df,
+                    rules,
+                    instrument_name=instrument,
+                    primary_key_field=self.config.primary_key_field,
                 )
 
                 all_errors.extend(errors)
@@ -444,8 +434,7 @@ class PipelineOrchestrator:
                 # Collect records for status - create simple record info with instrument
                 # name
                 if not df.empty:
-                    record_df = df[[self.config.primary_key_field,
-                                    "redcap_event_name"]].copy()
+                    record_df = df[[self.config.primary_key_field, "redcap_event_name"]].copy()
                     record_df["instrument_name"] = instrument
                     records_for_status.append(record_df)
                 else:
@@ -454,27 +443,26 @@ class PipelineOrchestrator:
                         columns=[
                             self.config.primary_key_field,
                             "redcap_event_name",
-                            "instrument_name"])
+                            "instrument_name",
+                        ]
+                    )
                     records_for_status.append(empty_df)
 
             # Create result DataFrames
-            errors_df = pd.DataFrame(
-                all_errors) if all_errors else pd.DataFrame()
+            errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
             logs_df = pd.DataFrame(all_logs) if all_logs else pd.DataFrame()
-            passed_df = pd.DataFrame(
-                all_passed) if all_passed else pd.DataFrame()
-            validation_logs_df = pd.DataFrame(
-                detailed_validation_logs) if detailed_validation_logs else pd.DataFrame()
+            passed_df = pd.DataFrame(all_passed) if all_passed else pd.DataFrame()
+            validation_logs_df = (
+                pd.DataFrame(detailed_validation_logs)
+                if detailed_validation_logs
+                else pd.DataFrame()
+            )
 
             all_records_df = pd.DataFrame()
             if records_for_status:
-                all_records_df = pd.concat(
-                    records_for_status,
-                    ignore_index=True).drop_duplicates(
-                    subset=[
-                        self.config.primary_key_field,
-                        "redcap_event_name",
-                        "instrument_name"])
+                all_records_df = pd.concat(records_for_status, ignore_index=True).drop_duplicates(
+                    subset=[self.config.primary_key_field, "redcap_event_name", "instrument_name"]
+                )
 
             execution_time = time.time() - stage_start
 
@@ -483,10 +471,10 @@ class PipelineOrchestrator:
                 "total_errors": len(errors_df),
                 "total_records": len(all_records_df),
                 "instruments_processed": len(instruments_processed),
-                "error_rate": (
-                    len(errors_df) /
-                    len(all_records_df) *
-                    100) if len(all_records_df) > 0 else 0.0}
+                "error_rate": (len(errors_df) / len(all_records_df) * 100)
+                if len(all_records_df) > 0
+                else 0.0,
+            }
 
             return ValidationResult(
                 errors_df=errors_df,
@@ -497,7 +485,7 @@ class PipelineOrchestrator:
                 validation_time=execution_time,
                 instruments_processed=instruments_processed,
                 validation_summary=validation_summary,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -510,7 +498,7 @@ class PipelineOrchestrator:
         data_prep_result: DataPreparationResult,
         output_dir: Path,
         date_tag: str | None,
-        time_tag: str | None
+        time_tag: str | None,
     ) -> ReportGenerationResult:
         """Execute the report generation stage."""
         try:
@@ -529,28 +517,25 @@ class PipelineOrchestrator:
                 instrument_list=self.config.instruments,
                 rules_cache={},  # Not needed for export
                 primary_key_field=self.config.primary_key_field,
-                config=self.config
+                config=self.config,
             )
 
             # Create export configuration
             # Ensure we have proper date and time tags
             if date_tag is None or time_tag is None:
                 current_datetime = datetime.now()
-                date_tag = date_tag or current_datetime.strftime(
-                    "%d%b%Y").upper()
+                date_tag = date_tag or current_datetime.strftime("%d%b%Y").upper()
                 time_tag = time_tag or current_datetime.strftime("%H%M%S")
 
             export_config = ExportConfiguration(
-                output_dir=output_dir,
-                date_tag=date_tag,
-                time_tag=time_tag
+                output_dir=output_dir, date_tag=date_tag, time_tag=time_tag
             )
 
             # Create report configuration
             report_config = ReportConfiguration(
                 qc_run_by=self.config.user_initials or "N/A",
                 primary_key_field=self.config.primary_key_field,
-                instruments=self.config.instruments
+                instruments=self.config.instruments,
             )
 
             # Generate reports
@@ -569,7 +554,8 @@ class PipelineOrchestrator:
                 complete_visits_df=complete_visits_df,
                 detailed_validation_logs_df=validation_result.validation_logs_df,
                 export_config=export_config,
-                report_config=report_config)
+                report_config=report_config,
+            )
 
             execution_time = time.time() - stage_start
 
@@ -589,7 +575,7 @@ class PipelineOrchestrator:
                 generated_files=generated_files,
                 export_time=execution_time,
                 reports_created=reports_created,
-                success=True
+                success=True,
             )
 
         except Exception as e:
@@ -604,14 +590,11 @@ class PipelineOrchestrator:
             "config_mode": self.config.mode,
             "instruments_requested": self.config.instruments.copy(),
             "primary_key_field": self.config.primary_key_field,
-            "user_initials": getattr(self.config, "user_initials", "N/A")
+            "user_initials": getattr(self.config, "user_initials", "N/A"),
         }
 
     def _create_failed_result(
-        self,
-        error: Exception,
-        total_time: float,
-        output_dir: Path
+        self, error: Exception, total_time: float, output_dir: Path
     ) -> PipelineExecutionResult:
         """Create a pipeline result for failed execution."""
         # Create minimal failed results for each stage
@@ -622,7 +605,7 @@ class PipelineOrchestrator:
             source_info={},
             fetch_timestamp=datetime.now(),
             success=False,
-            error_message=str(error)
+            error_message=str(error),
         )
 
         failed_rules_loading = RulesLoadingResult(
@@ -632,7 +615,7 @@ class PipelineOrchestrator:
             variable_to_instrument_map={},
             instrument_to_variables_map={},
             success=False,
-            failed_instruments=self.config.instruments
+            failed_instruments=self.config.instruments,
         )
 
         failed_data_prep = DataPreparationResult(
@@ -641,7 +624,7 @@ class PipelineOrchestrator:
             preparation_time=0,
             records_per_instrument={},
             success=False,
-            error_message=str(error)
+            error_message=str(error),
         )
 
         failed_validation = ValidationResult(
@@ -654,7 +637,7 @@ class PipelineOrchestrator:
             instruments_processed=[],
             validation_summary={},
             success=False,
-            error_message=str(error)
+            error_message=str(error),
         )
 
         failed_report_generation = ReportGenerationResult(
@@ -663,7 +646,7 @@ class PipelineOrchestrator:
             reports_created={},
             success=False,
             failed_reports=["all"],
-            error_messages={"pipeline": str(error)}
+            error_messages={"pipeline": str(error)},
         )
 
         return PipelineExecutionResult(
@@ -676,5 +659,5 @@ class PipelineOrchestrator:
             output_directory=output_dir,
             run_metadata=self._create_run_metadata(),
             success=False,
-            pipeline_error=str(error)
+            pipeline_error=str(error),
         )

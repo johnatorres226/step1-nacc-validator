@@ -92,8 +92,7 @@ def less(a, b, *args):
 
 def less_or_equal(a, b, *args):
     """Implements the '<=' operator with JS-style type coertion."""
-    return (less(a, b) or soft_equals(a, b)) and (not args
-                                                  or less_or_equal(b, *args))
+    return (less(a, b) or soft_equals(a, b)) and (not args or less_or_equal(b, *args))
 
 
 def to_numeric(arg):
@@ -181,8 +180,7 @@ def count_exact(args):
     against the rest of the list.
     """
     if len(args) < 2:
-        raise ValueError(
-            "count_exact needs a base and at least 1 value to compare to")
+        raise ValueError("count_exact needs a base and at least 1 value to compare to")
 
     base = args[0]
     return sum([1 for x in args[1:] if x == base])

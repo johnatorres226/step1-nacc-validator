@@ -4,6 +4,7 @@ Rule loading and management for the QC pipeline.
 This module provides functions for loading JSON validation rules, managing rule caches,
 and handling both standard and dynamic instruments.
 """
+
 import json
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ logger = get_logger(__name__)
 # CORE ERRORS
 # =============================================================================
 
+
 class RulesLoadingError(Exception):
     """Error loading validation rules."""
 
@@ -28,6 +30,7 @@ class RulesLoadingError(Exception):
 # =============================================================================
 # BROKEN DOWN RULE LOADING FUNCTIONS
 # =============================================================================
+
 
 def resolve_rule_file_paths(instrument_name: str) -> list[Path]:
     """
@@ -84,8 +87,7 @@ def load_json_file(file_path: Path) -> dict[str, Any]:
         raise RulesLoadingError(_msg) from e
 
 
-def merge_rule_dictionaries(
-        rule_dicts: list[dict[str, Any]]) -> dict[str, Any]:
+def merge_rule_dictionaries(rule_dicts: list[dict[str, Any]]) -> dict[str, Any]:
     """
     Merge multiple rule dictionaries into one.
 
@@ -145,6 +147,7 @@ def load_json_rules_for_instrument(instrument_name: str) -> dict[str, Any]:
 # RULES CACHE MANAGEMENT
 # =============================================================================
 
+
 class RulesCache:
     """Manages caching of instrument rules."""
 
@@ -162,8 +165,7 @@ class RulesCache:
             Dictionary of rules for the instrument.
         """
         if instrument not in self._cache:
-            self._cache[instrument] = load_json_rules_for_instrument(
-                instrument)
+            self._cache[instrument] = load_json_rules_for_instrument(instrument)
         return self._cache[instrument]
 
     def load_multiple(self, instruments: list[str]) -> None:
@@ -190,8 +192,7 @@ class RulesCache:
         return self._cache.copy()
 
 
-def load_rules_for_instruments(
-        instrument_list: list[str]) -> dict[str, dict[str, Any]]:
+def load_rules_for_instruments(instrument_list: list[str]) -> dict[str, dict[str, Any]]:
     """
     Load rules for multiple instruments using cache.
 
@@ -210,19 +211,20 @@ def load_rules_for_instruments(
 # LEGACY COMPATIBILITY (DEPRECATED)
 # =============================================================================
 
+
 # Keep the original function for backward compatibility during transition
-def load_json_rules_for_instrument_legacy(
-        instrument_name: str) -> dict[str, Any]:
+def load_json_rules_for_instrument_legacy(instrument_name: str) -> dict[str, Any]:
     """
     DEPRECATED: Use load_json_rules_for_instrument() instead.
 
     Legacy function maintained for backward compatibility during refactoring.
     """
     import warnings
+
     warnings.warn(
         "load_json_rules_for_instrument_legacy is deprecated. "
         "Use load_json_rules_for_instrument() instead.",
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=2,
     )
     return load_json_rules_for_instrument(instrument_name)

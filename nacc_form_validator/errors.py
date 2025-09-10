@@ -84,75 +84,42 @@ class CustomErrorHandler(BasicErrorHandler):
         # Error codes are used to map b/w cerberus errors and NACC QC check
         # codes
         custom_errors = {
-            0x1000:
-            "cannot be greater than current date {0}",
-            0x1001:
-            "cannot be greater than current year {0}",
-            0x1002:
-            "max date/year comparison error - {0}",
-            0x1003:
-            "cannot be less than current date {0}",
-            0x1004:
-            "cannot be less than current year {0}",
-            0x1005:
-            "min date/year comparison error - {0}",
-            0x1006:
-            "cannot be empty",
-            0x1007:
-            "must be empty",
-            0x1008:
-            "{1} for if {2} then {3} - compatibility rule no: {0}",
-            0x1009:
-            "{1} for if {2} else {3} - compatibility rule no: {0}",
-            0x2000:
-            "{1} for if {2} in previous visit then {3} "
+            0x1000: "cannot be greater than current date {0}",
+            0x1001: "cannot be greater than current year {0}",
+            0x1002: "max date/year comparison error - {0}",
+            0x1003: "cannot be less than current date {0}",
+            0x1004: "cannot be less than current year {0}",
+            0x1005: "min date/year comparison error - {0}",
+            0x1006: "cannot be empty",
+            0x1007: "must be empty",
+            0x1008: "{1} for if {2} then {3} - compatibility rule no: {0}",
+            0x1009: "{1} for if {2} else {3} - compatibility rule no: {0}",
+            0x2000: "{1} for if {2} in previous visit then {3} "
             "in current visit - temporal rule no: {0}",
-            0x2001:
-            "primary key variable {0} not set in current visit data",
-            0x2002:
-            "failed to retrieve the previous visit, cannot proceed with "
-            "validation",
-            0x2003:
-            "error in formula evaluation - {0}",
-            0x2004:
-            "If GDS not attempted (nogds=1), total GDS score should be 88 "
+            0x2001: "primary key variable {0} not set in current visit data",
+            0x2002: "failed to retrieve the previous visit, cannot proceed with validation",
+            0x2003: "error in formula evaluation - {0}",
+            0x2004: "If GDS not attempted (nogds=1), total GDS score should be 88 "
             "- GDS rule no: {0}",
-            0x2005:
-            "If GDS not attempted (nogds=1), there cannot be >=12 "
+            0x2005: "If GDS not attempted (nogds=1), there cannot be >=12 "
             "questions with valid scores - GDS rule no: {0}",
-            0x2006:
-            "incorrect GDS score {1}, expected value {2} - GDS rule no: {0}",
-            0x2007:
-            "incorrect prorated GDS score {1}, expected value {2} - GDS "
-            "rule no: {0}",
-            0x2008:
-            "If GDS attempted (nogds = 0 or blank), at least 12 questions "
+            0x2006: "incorrect GDS score {1}, expected value {2} - GDS rule no: {0}",
+            0x2007: "incorrect prorated GDS score {1}, expected value {2} - GDS rule no: {0}",
+            0x2008: "If GDS attempted (nogds = 0 or blank), at least 12 questions "
             "need to have valid scores - GDS rule no: {0}",
-            0x2009:
-            "input value doesn't satisfy the condition {0}",
-            0x3000:
-            "failed to retrieve record for previous visit, cannot proceed "
+            0x2009: "input value doesn't satisfy the condition {0}",
+            0x3000: "failed to retrieve record for previous visit, cannot proceed "
             "with validation {0}",
-            0x3001:
-            "Drug ID {0} is not a valid RXCUI",
-            0x3002:
-            "failed to convert value {0} to a date: {1}",
-            0x3003:
-            "input value {0} doesn't satisfy the condition: {1}",
-            0x3004:
-            "Error in comparing {0} to age at {1} ({2}): {3}",
-            0x3005:
-            "{1} for if {3} in current visit then {2} "
+            0x3001: "Drug ID {0} is not a valid RXCUI",
+            0x3002: "failed to convert value {0} to a date: {1}",
+            0x3003: "input value {0} doesn't satisfy the condition: {1}",
+            0x3004: "Error in comparing {0} to age at {1} ({2}): {3}",
+            0x3005: "{1} for if {3} in current visit then {2} "
             "in previous visit - temporal rule no: {0}",
-            0x3006:
-            "Provided ADCID {0} does not match your center's ADCID",
-            0x3007:
-            "Provided ADCID {0} is not in the valid list of ADCIDs",
-            0x3008:
-            "Provided value {0} does not match the expected score",
-            0x3009:
-            "Cannot compute birth date, one or more components empty or "
-            "malformed",
+            0x3006: "Provided ADCID {0} does not match your center's ADCID",
+            0x3007: "Provided ADCID {0} is not in the valid list of ADCIDs",
+            0x3008: "Provided value {0} does not match the expected score",
+            0x3009: "Cannot compute birth date, one or more components empty or malformed",
         }
 
         self.messages.update(custom_errors)
@@ -168,8 +135,9 @@ class CustomErrorHandler(BasicErrorHandler):
         """
 
         if self._custom_schema and field in self._custom_schema:
-            error_msg = (self._custom_schema[field].get(
-                SchemaDefs.META, {}).get(SchemaDefs.ERRMSG, ""))
+            error_msg = (
+                self._custom_schema[field].get(SchemaDefs.META, {}).get(SchemaDefs.ERRMSG, "")
+            )
             if error_msg:
                 return field + ": " + error_msg
 

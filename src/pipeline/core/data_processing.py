@@ -5,6 +5,7 @@ This module contains all data preparation, transformation, and processing functi
 that were previously in helpers.py, but now broken down into smaller, single-purpose
 functions following SOLID principles.
 """
+
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,6 +20,7 @@ logger = get_logger(__name__)
 # =============================================================================
 # CORE ERRORS
 # =============================================================================
+
 
 class DataProcessingError(Exception):
     """Error during data processing step."""
@@ -36,6 +38,7 @@ class ValidationError(Exception):
 @dataclass
 class CompleteVisitsData:
     """Data model for complete visits processing results."""
+
     summary_dataframe: pd.DataFrame
     complete_visits_tuples: list[tuple[str, str]]
     total_visits_processed: int
@@ -45,6 +48,7 @@ class CompleteVisitsData:
 @dataclass
 class ValidationLogsData:
     """Data model for validation logs."""
+
     log_entries: list[dict[str, Any]]
     total_records_processed: int
     pass_count: int
@@ -54,6 +58,7 @@ class ValidationLogsData:
 # =============================================================================
 # INSTRUMENT DETECTION AND VARIABLE EXTRACTION
 # =============================================================================
+
 
 def is_dynamic_instrument(instrument_name: str) -> bool:
     """
@@ -81,8 +86,7 @@ def extract_variables_from_rules(rules: dict[str, Any]) -> list[str]:
     return list(rules.keys())
 
 
-def extract_variables_from_dynamic_instrument(
-        instrument_name: str) -> list[str]:
+def extract_variables_from_dynamic_instrument(instrument_name: str) -> list[str]:
     """
     Extract variables from dynamic instrument processor.
 
@@ -99,8 +103,7 @@ def extract_variables_from_dynamic_instrument(
     return processor.get_all_variables()
 
 
-def get_variables_for_instrument(
-        instrument_name: str, rules_cache: dict[str, Any]) -> list[str]:
+def get_variables_for_instrument(instrument_name: str, rules_cache: dict[str, Any]) -> list[str]:
     """
     Orchestrate variable extraction based on instrument type.
 
@@ -121,8 +124,8 @@ def get_variables_for_instrument(
 # TYPE CASTING FUNCTIONS
 # =============================================================================
 
-def detect_column_type(
-        field_name: str, rules: dict[str, Any]) -> str | None:
+
+def detect_column_type(field_name: str, rules: dict[str, Any]) -> str | None:
     """
     Detect the expected type for a column from rules.
 
@@ -188,8 +191,7 @@ def cast_to_datetime_type(series: pd.Series) -> pd.Series:
         return series
 
 
-def preprocess_cast_types(
-        df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
+def preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """
     Orchestrate type casting for all columns in dataframe.
 
@@ -227,9 +229,9 @@ def preprocess_cast_types(
 # VARIABLE MAPPING FUNCTIONS
 # =============================================================================
 
+
 def create_variable_to_instrument_map(
-    instrument_list: list[str],
-    rules_cache: dict[str, Any]
+    instrument_list: list[str], rules_cache: dict[str, Any]
 ) -> dict[str, str]:
     """
     Create mapping from variables to their instruments.
@@ -252,8 +254,7 @@ def create_variable_to_instrument_map(
 
 
 def create_instrument_to_variables_map(
-    instrument_list: list[str],
-    rules_cache: dict[str, Any]
+    instrument_list: list[str], rules_cache: dict[str, Any]
 ) -> dict[str, list[str]]:
     """
     Create mapping from instruments to their variables.
@@ -272,19 +273,15 @@ def create_instrument_to_variables_map(
         instrument_variable_map[instrument] = variables
 
         if variables:
-            logger.debug(
-                f"Mapped {
-                    len(variables)} variables to instrument '{instrument}'.")
+            logger.debug(f"Mapped {len(variables)} variables to instrument '{instrument}'.")
         else:
-            logger.warning(
-                f"No variables found for instrument '{instrument}'.")
+            logger.warning(f"No variables found for instrument '{instrument}'.")
 
     return instrument_variable_map
 
 
 def build_variable_maps(
-    instrument_list: list[str],
-    rules_cache: dict[str, Any]
+    instrument_list: list[str], rules_cache: dict[str, Any]
 ) -> tuple[dict[str, str], dict[str, list[str]]]:
     """
     Build both variable mapping types.
@@ -299,10 +296,8 @@ def build_variable_maps(
         - instrument_variable_map: Maps each instrument to a list of its variables.
     """
     try:
-        variable_to_instrument_map = create_variable_to_instrument_map(
-            instrument_list, rules_cache)
-        instrument_variable_map = create_instrument_to_variables_map(
-            instrument_list, rules_cache)
+        variable_to_instrument_map = create_variable_to_instrument_map(instrument_list, rules_cache)
+        instrument_variable_map = create_instrument_to_variables_map(instrument_list, rules_cache)
 
         return variable_to_instrument_map, instrument_variable_map
 
@@ -315,11 +310,12 @@ def build_variable_maps(
 # CONTEXT CREATION AND CACHE MANAGEMENT
 # =============================================================================
 
+
 def create_processing_context(
     data_df: pd.DataFrame,
     instrument_list: list[str],
     rules_cache: dict[str, Any],
-    primary_key_field: str
+    primary_key_field: str,
 ):
     """
     Create context object for data processing.
@@ -341,7 +337,7 @@ def create_processing_context(
         instrument_list=instrument_list,
         rules_cache=rules_cache,
         primary_key_field=primary_key_field,
-        config=get_config()
+        config=get_config(),
     )
 
 
@@ -386,30 +382,32 @@ def prepare_instrument_data_cache(
     """
     try:
         context = create_processing_context(
-            data_df, instrument_list, rules_cache, primary_key_field)
+            data_df, instrument_list, rules_cache, primary_key_field
+        )
         cache_strategy = prepare_instrument_cache_strategy(context)
         return cache_strategy.prepare_all()
 
     except Exception as e:
         logger.error(f"Failed to prepare instrument data cache: {e}")
-        raise DataProcessingError(
-            f"Instrument cache preparation failed: {e}") from e
+        raise DataProcessingError(f"Instrument cache preparation failed: {e}") from e
 
 
 # =============================================================================
 # LEGACY COMPATIBILITY (DEPRECATED)
 # =============================================================================
 
-def _preprocess_cast_types(
-        df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
+
+def _preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """
     DEPRECATED: Use preprocess_cast_types() instead.
 
     Legacy function maintained for backward compatibility during refactoring.
     """
     import warnings
+
     warnings.warn(
         "_preprocess_cast_types is deprecated. Use preprocess_cast_types() instead.",
         DeprecationWarning,
-        stacklevel=2)
+        stacklevel=2,
+    )
     return preprocess_cast_types(df, rules)

@@ -26,45 +26,53 @@ logger = get_logger("cli")
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
 @click.version_option(version="0.1.0")
-@click.option("--log-level",
-              type=click.Choice(["DEBUG",
-                                 "INFO",
-                                 "WARNING",
-                                 "ERROR"],
-                                case_sensitive=False),
-              default="INFO",
-              help="Set the logging level.",
-              )
-@click.option("--mode",
-              "-m",
-              type=click.Choice(["complete_visits",
-                                 "all_incomplete_visits"],
-                                case_sensitive=False),
-              default="complete_visits",
-              help="Select the QC validation mode. [default: complete_visits]",
-              )
-@click.option("--output-dir",
-              type=click.Path(file_okay=False,
-                              dir_okay=True,
-                              writable=True,
-                              resolve_path=True),
-              help="Override the default output directory.",
-              )
-@click.option("--event", "events", multiple=True,
-              help="Specify one or more events to run.")
-@click.option("--ptid", "ptid_list", multiple=True,
-              help="Specify one or more PTIDs to check.")
-@click.option("--initials", "-i", "user_initials", required=False,
-              help="User initials for reporting (3 characters max).")
-@click.option("--log", "-l", is_flag=True,
-              help="Show terminal logging during execution.")
-@click.option("--detailed-run", "-dr", is_flag=True,
-              help=("Generate detailed outputs including Validation_Logs, "
-                    "Completed_Visits, Reports, and Generation_Summary files."))
-@click.option("--passed-rules", "-ps", is_flag=True,
-              help=("Generate comprehensive Rules Validation log for "
-                    "diagnostic purposes (requires --detailed-run/-dr, "
-                    "large file, slow generation)."))
+@click.option(
+    "--log-level",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
+    default="INFO",
+    help="Set the logging level.",
+)
+@click.option(
+    "--mode",
+    "-m",
+    type=click.Choice(["complete_visits", "all_incomplete_visits"], case_sensitive=False),
+    default="complete_visits",
+    help="Select the QC validation mode. [default: complete_visits]",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
+    help="Override the default output directory.",
+)
+@click.option("--event", "events", multiple=True, help="Specify one or more events to run.")
+@click.option("--ptid", "ptid_list", multiple=True, help="Specify one or more PTIDs to check.")
+@click.option(
+    "--initials",
+    "-i",
+    "user_initials",
+    required=False,
+    help="User initials for reporting (3 characters max).",
+)
+@click.option("--log", "-l", is_flag=True, help="Show terminal logging during execution.")
+@click.option(
+    "--detailed-run",
+    "-dr",
+    is_flag=True,
+    help=(
+        "Generate detailed outputs including Validation_Logs, "
+        "Completed_Visits, Reports, and Generation_Summary files."
+    ),
+)
+@click.option(
+    "--passed-rules",
+    "-ps",
+    is_flag=True,
+    help=(
+        "Generate comprehensive Rules Validation log for "
+        "diagnostic purposes (requires --detailed-run/-dr, "
+        "large file, slow generation)."
+    ),
+)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -87,9 +95,8 @@ def cli(
     setup_logging(log_level="ERROR")
     warnings.filterwarnings(
         "ignore",
-        message=(
-            "No validation schema is defined for the arguments of rule "
-            "'compatibility'"))
+        message=("No validation schema is defined for the arguments of rule 'compatibility'"),
+    )
 
     # If a subcommand was invoked, let Click handle it
     if ctx.invoked_subcommand:
@@ -115,14 +122,14 @@ def cli(
             log_level="INFO",
             console_output=True,
             structured_logging=False,
-            performance_tracking=True
+            performance_tracking=True,
         )
     else:
         setup_logging(
             log_level="CRITICAL",
             console_output=False,
             structured_logging=False,
-            performance_tracking=False
+            performance_tracking=False,
         )
 
     try:
@@ -170,10 +177,8 @@ def cli(
 
 
 @cli.command()
-@click.option("--detailed", "-d", is_flag=True,
-              help="Show detailed configuration.")
-@click.option(
-    "--json-output", is_flag=True, help="Output configuration as JSON.")
+@click.option("--detailed", "-d", is_flag=True, help="Show detailed configuration.")
+@click.option("--json-output", is_flag=True, help="Output configuration as JSON.")
 def config(detailed: bool, json_output: bool) -> None:
     """Displays the current configuration status and validates settings."""
     try:
@@ -182,23 +187,20 @@ def config(detailed: bool, json_output: bool) -> None:
         status = {
             "valid": not errors,
             "errors": errors,
-            "redcap_configured": bool(
-                config_instance.api_token and config_instance.api_url),
+            "redcap_configured": bool(config_instance.api_token and config_instance.api_url),
             "output_path_exists": Path(config_instance.output_path).exists(),
             "packet_rules_configured": bool(
-                config_instance.json_rules_path_i and
-                config_instance.json_rules_path_i4 and
-                config_instance.json_rules_path_f),
+                config_instance.json_rules_path_i
+                and config_instance.json_rules_path_i4
+                and config_instance.json_rules_path_f
+            ),
         }
     except SystemExit:
         # This happens if get_config fails validation internally
         # In this case, we can assume the config is invalid
         status = {
             "valid": False,
-            "errors": [
-                "Critical configuration error. "
-                "Run with --detailed for more info."
-            ],
+            "errors": ["Critical configuration error. Run with --detailed for more info."],
             "redcap_configured": False,
             "output_path_exists": False,
             "packet_rules_configured": False,
@@ -211,35 +213,26 @@ def config(detailed: bool, json_output: bool) -> None:
     if status["valid"]:
         console.print("UDSv4 QC Validator Status: Ready")
     else:
-        console.print(
-            "UDSv4 QC Validator Status: Configuration issues detected")
+        console.print("UDSv4 QC Validator Status: Configuration issues detected")
 
     console.print("\nSystem Configuration:")
 
-    console.print(
-        f"Overall System: {
-            'Ready' if status['valid'] else 'Issues Found'}")
+    console.print(f"Overall System: {'Ready' if status['valid'] else 'Issues Found'}")
     if status["errors"]:
         console.print(f"  Issues: {len(status['errors'])}")
 
+    console.print(f"REDCap API: {'Connected' if status['redcap_configured'] else 'Not Configured'}")
     console.print(
-        f"REDCap API: {
-            'Connected' if status['redcap_configured'] else 'Not Configured'}")
+        f"Output Directory: {'Ready' if status['output_path_exists'] else 'Will be created'}"
+    )
     console.print(
-        f"Output Directory: {
-            'Ready' if status['output_path_exists'] else 'Will be created'}")
-    console.print(
-        f"Validation Rules: {
-            'Configured' if status['packet_rules_configured'] else 'Missing'}")
+        f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}"
+    )
 
     if detailed and "legacy_compatibility" in status:
         legacy_info = status["legacy_compatibility"]
         console.print("\nData Components:")
-        console.print(
-            f"Instruments: {
-                legacy_info.get(
-                    'instruments_count',
-                    0)}")
+        console.print(f"Instruments: {legacy_info.get('instruments_count', 0)}")
         console.print(f"Events: {legacy_info.get('events_count', 0)}")
         console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
@@ -249,24 +242,16 @@ def config(detailed: bool, json_output: bool) -> None:
             console.print(f"  - {error}")
 
 
-
 def _display_run_summary(config: QCConfig) -> None:
     """Displays a summary of the QC run configuration."""
-    mode_title = config.mode.replace(
-        "_", " ").title() if config.mode else "N/A"
+    mode_title = config.mode.replace("_", " ").title() if config.mode else "N/A"
     console.print(f"\nQC Run Configuration (Mode: {mode_title})")
 
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
     console.print(f"Output Directory: {Path(config.output_path).resolve()}")
     console.print(f"Log Level: {config.log_level}")
-    console.print(
-        f"Events: {
-            'All' if not config.events else ', '.join(
-                config.events)}")
-    console.print(
-        f"Participants: {
-            'All' if not config.ptid_list else ', '.join(
-                config.ptid_list)}")
+    console.print(f"Events: {'All' if not config.events else ', '.join(config.events)}")
+    console.print(f"Participants: {'All' if not config.ptid_list else ', '.join(config.ptid_list)}")
 
     console.print("")
 

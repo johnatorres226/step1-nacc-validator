@@ -35,9 +35,8 @@ def sample_config(temp_directory):
         redcap_api_url="https://test.redcap.example.com",
         project_id="test_project_123",
         output_path=str(temp_directory),
-        instruments=[
-            "a1_participant_demographics",
-            "b1_vital_signs_and_anthropometrics"])
+        instruments=["a1_participant_demographics", "b1_vital_signs_and_anthropometrics"],
+    )
     return config
 
 
@@ -45,29 +44,11 @@ def sample_config(temp_directory):
 def sample_validation_schema():
     """Provide a sample validation schema for testing."""
     return {
-        "ptid": {
-            "type": "string",
-            "required": True,
-            "minlength": 3,
-            "maxlength": 20
-        },
-        "redcap_event_name": {
-            "type": "string",
-            "required": True
-        },
-        "a1_birthyr": {
-            "type": "integer",
-            "min": 1900,
-            "max": 2023
-        },
-        "a1_sex": {
-            "type": "integer",
-            "allowed": [1, 2, 9]
-        },
-        "packet": {
-            "type": "string",
-            "allowed": ["I", "I4", "F"]
-        }
+        "ptid": {"type": "string", "required": True, "minlength": 3, "maxlength": 20},
+        "redcap_event_name": {"type": "string", "required": True},
+        "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
+        "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
+        "packet": {"type": "string", "allowed": ["I", "I4", "F"]},
     }
 
 
@@ -79,7 +60,7 @@ def sample_valid_record():
         "redcap_event_name": "udsv4_ivp_1_arm_1",
         "a1_birthyr": 1950,
         "a1_sex": 1,
-        "packet": "I"
+        "packet": "I",
     }
 
 
@@ -91,47 +72,44 @@ def sample_invalid_record():
         "redcap_event_name": "udsv4_ivp_1_arm_1",
         "a1_birthyr": 2050,  # Future year
         "a1_sex": 5,  # Invalid value
-        "packet": "X"  # Invalid packet
+        "packet": "X",  # Invalid packet
     }
 
 
 @pytest.fixture
 def sample_dataframe():
     """Provide a sample DataFrame for testing."""
-    return pd.DataFrame([
-        {
-            "ptid": "TEST001",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": 1950,
-            "a1_sex": 1,
-            "packet": "I"
-        },
-        {
-            "ptid": "TEST002",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": 1965,
-            "a1_sex": 2,
-            "packet": "I4"
-        },
-        {
-            "ptid": "TEST003",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": 1970,
-            "a1_sex": 1,
-            "packet": "F"
-        }
-    ])
+    return pd.DataFrame(
+        [
+            {
+                "ptid": "TEST001",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": 1950,
+                "a1_sex": 1,
+                "packet": "I",
+            },
+            {
+                "ptid": "TEST002",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": 1965,
+                "a1_sex": 2,
+                "packet": "I4",
+            },
+            {
+                "ptid": "TEST003",
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+                "a1_birthyr": 1970,
+                "a1_sex": 1,
+                "packet": "F",
+            },
+        ]
+    )
 
 
 @pytest.fixture
 def sample_validation_result_passed():
     """Provide a sample passed ValidationResult."""
-    return ValidationResult(
-        passed=True,
-        sys_failure=False,
-        errors={},
-        error_tree=None
-    )
+    return ValidationResult(passed=True, sys_failure=False, errors={}, error_tree=None)
 
 
 @pytest.fixture
@@ -140,11 +118,8 @@ def sample_validation_result_failed():
     return ValidationResult(
         passed=False,
         sys_failure=False,
-        errors={
-            "a1_birthyr": ["Value is too high"],
-            "a1_sex": ["Invalid value"]
-        },
-        error_tree=None
+        errors={"a1_birthyr": ["Value is too high"], "a1_sex": ["Invalid value"]},
+        error_tree=None,
     )
 
 
@@ -155,7 +130,7 @@ def sample_validation_result_system_error():
         passed=False,
         sys_failure=True,
         errors={"system": ["Database connection failed"]},
-        error_tree=None
+        error_tree=None,
     )
 
 
@@ -169,7 +144,7 @@ def mock_redcap_api_response():
             "a1_birthyr": "1950",
             "a1_sex": "1",
             "packet": "I",
-            "form_header_complete": "2"
+            "form_header_complete": "2",
         },
         {
             "ptid": "TEST002",
@@ -177,8 +152,8 @@ def mock_redcap_api_response():
             "a1_birthyr": "1965",
             "a1_sex": "2",
             "packet": "I4",
-            "form_header_complete": "2"
-        }
+            "form_header_complete": "2",
+        },
     ]
 
 
@@ -187,38 +162,17 @@ def mock_validation_rules():
     """Provide mock validation rules for testing."""
     return {
         "I": {
-            "a1_birthyr": {
-                "type": "integer",
-                "min": 1900,
-                "max": 2023
-            },
-            "a1_sex": {
-                "type": "integer",
-                "allowed": [1, 2, 9]
-            }
+            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
+            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
         },
         "I4": {
-            "a1_birthyr": {
-                "type": "integer",
-                "min": 1900,
-                "max": 2023
-            },
-            "a1_sex": {
-                "type": "integer",
-                "allowed": [1, 2, 9]
-            }
+            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
+            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
         },
         "F": {
-            "a1_birthyr": {
-                "type": "integer",
-                "min": 1900,
-                "max": 2023
-            },
-            "a1_sex": {
-                "type": "integer",
-                "allowed": [1, 2, 9]
-            }
-        }
+            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
+            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
+        },
     }
 
 
@@ -232,7 +186,7 @@ def mock_environment_variables():
         "OUTPUT_PATH": "/tmp/mock_output",
         "JSON_RULES_PATH_I": "/mock/rules/I",
         "JSON_RULES_PATH_I4": "/mock/rules/I4",
-        "JSON_RULES_PATH_F": "/mock/rules/F"
+        "JSON_RULES_PATH_F": "/mock/rules/F",
     }
 
     with patch.dict(os.environ, env_vars):
@@ -250,7 +204,7 @@ def sample_error_data():
             "error_message": "Value is too high",
             "current_value": "2050",
             "packet": "I",
-            "redcap_event_name": "udsv4_ivp_1_arm_1"
+            "redcap_event_name": "udsv4_ivp_1_arm_1",
         },
         {
             "ptid": "TEST002",
@@ -259,8 +213,8 @@ def sample_error_data():
             "error_message": "Invalid value",
             "current_value": "5",
             "packet": "I4",
-            "redcap_event_name": "udsv4_ivp_1_arm_1"
-        }
+            "redcap_event_name": "udsv4_ivp_1_arm_1",
+        },
     ]
 
 
@@ -276,7 +230,7 @@ def sample_passed_data():
             "rule_file": "a1_rules.json",
             "packet": "I",
             "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "instrument_name": "a1_participant_demographics"
+            "instrument_name": "a1_participant_demographics",
         },
         {
             "ptid": "TEST003",
@@ -286,8 +240,8 @@ def sample_passed_data():
             "rule_file": "a1_rules.json",
             "packet": "F",
             "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "instrument_name": "a1_participant_demographics"
-        }
+            "instrument_name": "a1_participant_demographics",
+        },
     ]
 
 
@@ -301,7 +255,7 @@ def sample_log_data():
             "validation_status": "PASSED",
             "error_count": 0,
             "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "packet": "I"
+            "packet": "I",
         },
         {
             "ptid": "TEST002",
@@ -309,8 +263,8 @@ def sample_log_data():
             "validation_status": "FAILED",
             "error_count": 2,
             "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "packet": "I4"
-        }
+            "packet": "I4",
+        },
     ]
 
 
@@ -330,6 +284,7 @@ class TestUtils:
     def create_temp_json_file(data: dict[str, Any], temp_dir: Path) -> Path:
         """Create a temporary JSON file with test data."""
         import json
+
         temp_file = temp_dir / "test_rules.json"
         with open(temp_file, "w") as f:
             json.dump(data, f, indent=2)
@@ -337,9 +292,8 @@ class TestUtils:
 
     @staticmethod
     def create_temp_csv_file(
-            data: pd.DataFrame,
-            temp_dir: Path,
-            filename: str = "test_data.csv") -> Path:
+        data: pd.DataFrame, temp_dir: Path, filename: str = "test_data.csv"
+    ) -> Path:
         """Create a temporary CSV file with test data."""
         temp_file = temp_dir / filename
         data.to_csv(temp_file, index=False)
@@ -394,6 +348,8 @@ def pytest_collection_modifyitems(config, items):
 def pytest_report_header(config):
     """Add custom header to pytest report."""
     version = config.getoption("--version") if hasattr(config, "getoption") else "Unknown"
-    return ["UDSv4 REDCap QC Validator - Essential Test Suite",
-            "Testing configuration, fetching, routing, validation, and outputs",
-            f"Python version: {version}"]
+    return [
+        "UDSv4 REDCap QC Validator - Essential Test Suite",
+        "Testing configuration, fetching, routing, validation, and outputs",
+        f"Python version: {version}",
+    ]

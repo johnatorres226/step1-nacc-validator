@@ -43,8 +43,7 @@ class HierarchicalRuleResolver:
         self._f_rules_warning_logged = False  # Track if F rules warning has been logged
         logger.debug("HierarchicalRuleResolver initialized")
 
-    def resolve_rules(self, record: dict[str, Any],
-                      instrument_name: str) -> dict[str, Any]:
+    def resolve_rules(self, record: dict[str, Any], instrument_name: str) -> dict[str, Any]:
         """
         Resolve rules using both packet and dynamic instrument routing.
 
@@ -82,18 +81,18 @@ class HierarchicalRuleResolver:
         resolved_rules = base_rules
         if is_dynamic_rule_instrument(instrument_name):
             resolved_rules = self._apply_dynamic_routing(
-                base_rules, record, instrument_name, packet, is_rules_loading=False)
+                base_rules, record, instrument_name, packet, is_rules_loading=False
+            )
 
         # Cache the resolved rules
         self._resolution_cache[cache_key] = resolved_rules
 
         logger.debug(
-            f"Resolved rules for {instrument_name} in packet {packet}: {
-                type(resolved_rules)}")
+            f"Resolved rules for {instrument_name} in packet {packet}: {type(resolved_rules)}"
+        )
         return resolved_rules
 
-    def load_all_rules_for_instrument(
-            self, instrument_name: str) -> dict[str, Any]:
+    def load_all_rules_for_instrument(self, instrument_name: str) -> dict[str, Any]:
         """
         Load all possible rule variants for an instrument during rules loading phase.
 
@@ -132,8 +131,7 @@ class HierarchicalRuleResolver:
                     all_rules[packet] = base_rules
 
             except Exception as e:
-                logger.debug(
-                    f"Could not load rules for {instrument_name} in packet {packet}: {e}")
+                logger.debug(f"Could not load rules for {instrument_name} in packet {packet}: {e}")
                 continue
 
         # Return the most comprehensive rule set found
@@ -142,15 +140,14 @@ class HierarchicalRuleResolver:
             if all_rules.get(packet):
                 logger.debug(
                     f"Rules loading complete for {instrument_name}, "
-                f"using packet {packet} as template")
+                    f"using packet {packet} as template"
+                )
                 return all_rules[packet]
 
-        logger.warning(
-            f"No rules found for instrument {instrument_name} in any packet")
+        logger.warning(f"No rules found for instrument {instrument_name} in any packet")
         return {}
 
-    def get_packet_rules(
-            self, packet: str, instrument_name: str) -> dict[str, Any]:
+    def get_packet_rules(self, packet: str, instrument_name: str) -> dict[str, Any]:
         """
         Get packet-specific base rules.
 
@@ -166,8 +163,7 @@ class HierarchicalRuleResolver:
         """
         # Create a dummy record with the packet value for the PacketRuleRouter
         dummy_record = {"packet": packet}
-        return self.packet_router.get_rules_for_record(
-            dummy_record, instrument_name)
+        return self.packet_router.get_rules_for_record(dummy_record, instrument_name)
 
     def _apply_dynamic_routing(
         self,
@@ -175,7 +171,7 @@ class HierarchicalRuleResolver:
         record: dict[str, Any],
         instrument_name: str,
         packet: str,
-        is_rules_loading: bool = False
+        is_rules_loading: bool = False,
     ) -> dict[str, Any]:
         """
         Apply dynamic instrument routing to base rules.
@@ -214,13 +210,13 @@ class HierarchicalRuleResolver:
             # default
             if isinstance(base_rules, dict) and base_rules:
                 default_variant = list(base_rules.keys())[0]
-                logger.info(
-                    f"Using default variant '{default_variant}' for {instrument_name}")
+                logger.info(f"Using default variant '{default_variant}' for {instrument_name}")
                 logger.debug(f"base_rules keys: {list(base_rules.keys())}")
                 logger.debug(
                     f"Returning rules for variant '{default_variant}': {
-                        type(
-                            base_rules[default_variant])}")
+                        type(base_rules[default_variant])
+                    }"
+                )
                 return base_rules[default_variant]
             return base_rules
 
@@ -250,7 +246,7 @@ class HierarchicalRuleResolver:
         return {
             "hierarchical_cache_size": len(self._resolution_cache),
             "hierarchical_cache_keys": list(self._resolution_cache.keys()),
-            "packet_router_stats": packet_cache_stats
+            "packet_router_stats": packet_cache_stats,
         }
 
     def clear_cache(self) -> None:
@@ -264,10 +260,7 @@ class HierarchicalRuleResolver:
         self.packet_router.clear_cache()
         logger.info("Cleared all hierarchical rule resolver caches")
 
-    def preload_rules_for_packet(
-            self,
-            packet: str,
-            instrument_names: list) -> None:
+    def preload_rules_for_packet(self, packet: str, instrument_names: list) -> None:
         """
         Preload rules for a specific packet and list of instruments.
 
@@ -278,9 +271,7 @@ class HierarchicalRuleResolver:
             packet: Packet type to preload (I, I4, F)
             instrument_names: List of instrument names to preload
         """
-        logger.info(
-            f"Preloading rules for packet {packet} and {
-                len(instrument_names)} instruments")
+        logger.info(f"Preloading rules for packet {packet} and {len(instrument_names)} instruments")
 
         for instrument_name in instrument_names:
             try:
@@ -290,12 +281,10 @@ class HierarchicalRuleResolver:
                 # If dynamic instrument, preload variant rules
                 if is_dynamic_rule_instrument(instrument_name):
                     rule_mappings = get_rule_mappings(instrument_name)
-                    discriminant_var = get_discriminant_variable(
-                        instrument_name)
+                    discriminant_var = get_discriminant_variable(instrument_name)
 
                     for variant in rule_mappings.keys():
-                        dummy_record = {
-                            "packet": packet, discriminant_var: variant}
+                        dummy_record = {"packet": packet, discriminant_var: variant}
                         self.resolve_rules(dummy_record, instrument_name)
 
             except Exception as e:

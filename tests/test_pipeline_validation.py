@@ -22,12 +22,7 @@ class TestQualityCheckInitialization:
 
     def test_quality_check_creation_with_valid_schema(self):
         """Test QualityCheck creation with valid schema."""
-        schema = {
-            "test_field": {
-                "type": "string",
-                "required": True
-            }
-        }
+        schema = {"test_field": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
@@ -39,12 +34,7 @@ class TestQualityCheckInitialization:
 
     def test_quality_check_creation_with_datastore(self):
         """Test QualityCheck creation with datastore."""
-        schema = {
-            "test_field": {
-                "type": "string",
-                "required": True
-            }
-        }
+        schema = {"test_field": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         # Mock datastore
@@ -60,7 +50,7 @@ class TestQualityCheckInitialization:
         invalid_schema = {
             "test_field": {
                 "type": "invalid_type",  # Invalid type
-                "required": True
+                "required": True,
             }
         }
         pk_field = "ptid"
@@ -71,12 +61,7 @@ class TestQualityCheckInitialization:
 
     def test_quality_check_creation_with_mismatched_datastore_pk(self):
         """Test QualityCheck creation with mismatched datastore primary key."""
-        schema = {
-            "test_field": {
-                "type": "string",
-                "required": True
-            }
-        }
+        schema = {"test_field": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         # Mock datastore with different pk_field
@@ -95,24 +80,14 @@ class TestValidationExecution:
     def test_validate_record_success(self):
         """Test successful record validation."""
         schema = {
-            "ptid": {
-                "type": "string",
-                "required": True
-            },
-            "age": {
-                "type": "integer",
-                "min": 0,
-                "max": 120
-            }
+            "ptid": {"type": "string", "required": True},
+            "age": {"type": "integer", "min": 0, "max": 120},
         }
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
-        valid_record = {
-            "ptid": "TEST001",
-            "age": 65
-        }
+        valid_record = {"ptid": "TEST001", "age": 65}
 
         result = qc.validate_record(valid_record)
 
@@ -124,15 +99,8 @@ class TestValidationExecution:
     def test_validate_record_with_errors(self):
         """Test record validation with validation errors."""
         schema = {
-            "ptid": {
-                "type": "string",
-                "required": True
-            },
-            "age": {
-                "type": "integer",
-                "min": 0,
-                "max": 120
-            }
+            "ptid": {"type": "string", "required": True},
+            "age": {"type": "integer", "min": 0, "max": 120},
         }
         pk_field = "ptid"
 
@@ -140,7 +108,7 @@ class TestValidationExecution:
 
         invalid_record = {
             "ptid": "TEST001",
-            "age": 150  # Invalid age > 120
+            "age": 150,  # Invalid age > 120
         }
 
         result = qc.validate_record(invalid_record)
@@ -154,14 +122,8 @@ class TestValidationExecution:
     def test_validate_record_with_missing_required_field(self):
         """Test record validation with missing required field."""
         schema = {
-            "ptid": {
-                "type": "string",
-                "required": True
-            },
-            "required_field": {
-                "type": "string",
-                "required": True
-            }
+            "ptid": {"type": "string", "required": True},
+            "required_field": {"type": "string", "required": True},
         }
         pk_field = "ptid"
 
@@ -180,12 +142,7 @@ class TestValidationExecution:
 
     def test_validate_record_with_system_error(self):
         """Test record validation with system error."""
-        schema = {
-            "ptid": {
-                "type": "string",
-                "required": True
-            }
-        }
+        schema = {"ptid": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
@@ -208,12 +165,7 @@ class TestValidationResult:
         """Test ValidationResult creation."""
         errors = {"field1": ["error1"], "field2": ["error2"]}
 
-        result = ValidationResult(
-            passed=False,
-            errors=errors,
-            sys_failure=False,
-            error_tree=None
-        )
+        result = ValidationResult(passed=False, errors=errors, sys_failure=False, error_tree=None)
 
         assert result.passed is False
         assert result.errors == errors
@@ -221,12 +173,7 @@ class TestValidationResult:
 
     def test_validation_result_passed_state(self):
         """Test ValidationResult in passed state."""
-        result = ValidationResult(
-            passed=True,
-            errors={},
-            sys_failure=False,
-            error_tree=None
-        )
+        result = ValidationResult(passed=True, errors={}, sys_failure=False, error_tree=None)
 
         assert result.passed is True
         assert len(result.errors) == 0
@@ -234,12 +181,7 @@ class TestValidationResult:
 
     def test_validation_result_system_failure_state(self):
         """Test ValidationResult in system failure state."""
-        result = ValidationResult(
-            passed=False,
-            errors={},
-            sys_failure=True,
-            error_tree=None
-        )
+        result = ValidationResult(passed=False, errors={}, sys_failure=True, error_tree=None)
 
         assert result.passed is False
         assert result.sys_failure is True
@@ -250,12 +192,7 @@ class TestNACCValidator:
 
     def test_nacc_validator_initialization(self):
         """Test NACC validator initialization."""
-        schema = {
-            "test_field": {
-                "type": "string",
-                "required": True
-            }
-        }
+        schema = {"test_field": {"type": "string", "required": True}}
 
         validator = NACCValidator(schema)
 
@@ -272,7 +209,7 @@ class TestNACCValidator:
             "float_field": {"type": "float"},
             "boolean_field": {"type": "boolean"},
             "date_field": {"type": "date"},
-            "datetime_field": {"type": "datetime"}
+            "datetime_field": {"type": "datetime"},
         }
 
         validator = NACCValidator(schema)
@@ -283,7 +220,7 @@ class TestNACCValidator:
             "float_field": "float",
             "boolean_field": "bool",
             "date_field": "date",
-            "datetime_field": "datetime"
+            "datetime_field": "datetime",
         }
 
         for field, expected_type in expected_mappings.items():
@@ -291,10 +228,7 @@ class TestNACCValidator:
 
     def test_nacc_validator_with_primary_key(self):
         """Test NACC validator with primary key configuration."""
-        schema = {
-            "ptid": {"type": "string", "required": True},
-            "test_field": {"type": "string"}
-        }
+        schema = {"ptid": {"type": "string", "required": True}, "test_field": {"type": "string"}}
 
         validator = NACCValidator(schema)
         validator.primary_key = "ptid"
@@ -303,10 +237,7 @@ class TestNACCValidator:
 
     def test_nacc_validator_with_datastore(self):
         """Test NACC validator with datastore configuration."""
-        schema = {
-            "ptid": {"type": "string", "required": True},
-            "test_field": {"type": "string"}
-        }
+        schema = {"ptid": {"type": "string", "required": True}, "test_field": {"type": "string"}}
 
         mock_datastore = Mock()
         mock_datastore.pk_field = "ptid"
@@ -322,14 +253,7 @@ class TestValidationRules:
 
     def test_string_validation_rules(self):
         """Test string validation rules."""
-        schema = {
-            "ptid": {
-                "type": "string",
-                "required": True,
-                "minlength": 3,
-                "maxlength": 10
-            }
-        }
+        schema = {"ptid": {"type": "string", "required": True, "minlength": 3, "maxlength": 10}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
@@ -353,11 +277,7 @@ class TestValidationRules:
         """Test integer validation rules."""
         schema = {
             "ptid": {"type": "string", "required": True},
-            "age": {
-                "type": "integer",
-                "min": 0,
-                "max": 120
-            }
+            "age": {"type": "integer", "min": 0, "max": 120},
         }
         pk_field = "ptid"
 
@@ -382,10 +302,7 @@ class TestValidationRules:
         """Test allowed values validation."""
         schema = {
             "ptid": {"type": "string", "required": True},
-            "status": {
-                "type": "string",
-                "allowed": ["active", "inactive", "pending"]
-            }
+            "status": {"type": "string", "allowed": ["active", "inactive", "pending"]},
         }
         pk_field = "ptid"
 
@@ -409,18 +326,20 @@ class TestValidationWithDataframes:
         """Test validation of DataFrame with valid data."""
         schema = {
             "ptid": {"type": "string", "required": True},
-            "age": {"type": "integer", "min": 0, "max": 120}
+            "age": {"type": "integer", "min": 0, "max": 120},
         }
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
         # Create test DataFrame
-        data = pd.DataFrame([
-            {"ptid": "TEST001", "age": 65},
-            {"ptid": "TEST002", "age": 45},
-            {"ptid": "TEST003", "age": 78}
-        ])
+        data = pd.DataFrame(
+            [
+                {"ptid": "TEST001", "age": 65},
+                {"ptid": "TEST002", "age": 45},
+                {"ptid": "TEST003", "age": 78},
+            ]
+        )
 
         # Validate each record
         all_passed = True
@@ -437,18 +356,20 @@ class TestValidationWithDataframes:
         """Test validation of DataFrame with invalid data."""
         schema = {
             "ptid": {"type": "string", "required": True},
-            "age": {"type": "integer", "min": 0, "max": 120}
+            "age": {"type": "integer", "min": 0, "max": 120},
         }
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
         # Create test DataFrame with invalid data
-        data = pd.DataFrame([
-            {"ptid": "TEST001", "age": 65},   # Valid
-            {"ptid": "TEST002", "age": 150},  # Invalid age
-            {"ptid": "TEST003", "age": -5}    # Invalid age
-        ])
+        data = pd.DataFrame(
+            [
+                {"ptid": "TEST001", "age": 65},  # Valid
+                {"ptid": "TEST002", "age": 150},  # Invalid age
+                {"ptid": "TEST003", "age": -5},  # Invalid age
+            ]
+        )
 
         # Validate each record and collect results
         results = []
@@ -457,7 +378,7 @@ class TestValidationWithDataframes:
             result = qc.validate_record(record_dict)
             results.append(result)
 
-        assert results[0].passed is True   # First record should pass
+        assert results[0].passed is True  # First record should pass
         assert results[1].passed is False  # Second record should fail
         assert results[2].passed is False  # Third record should fail
 
@@ -467,9 +388,7 @@ class TestValidationRobustness:
 
     def test_validation_with_empty_record(self):
         """Test validation with empty record."""
-        schema = {
-            "ptid": {"type": "string", "required": True}
-        }
+        schema = {"ptid": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
@@ -484,16 +403,13 @@ class TestValidationRobustness:
         """Test validation with None values."""
         schema = {
             "ptid": {"type": "string", "required": True},
-            "optional_field": {"type": "string", "nullable": True}
+            "optional_field": {"type": "string", "nullable": True},
         }
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
-        record_with_none = {
-            "ptid": "TEST001",
-            "optional_field": None
-        }
+        record_with_none = {"ptid": "TEST001", "optional_field": None}
 
         result = qc.validate_record(record_with_none)
 
@@ -502,17 +418,12 @@ class TestValidationRobustness:
 
     def test_validation_with_unexpected_fields(self):
         """Test validation with unexpected fields."""
-        schema = {
-            "ptid": {"type": "string", "required": True}
-        }
+        schema = {"ptid": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field, strict=False)
 
-        record_with_extra = {
-            "ptid": "TEST001",
-            "unexpected_field": "some_value"
-        }
+        record_with_extra = {"ptid": "TEST001", "unexpected_field": "some_value"}
 
         result = qc.validate_record(record_with_extra)
 
@@ -521,18 +432,12 @@ class TestValidationRobustness:
 
     def test_validation_with_malformed_data_types(self):
         """Test validation with malformed data types."""
-        schema = {
-            "ptid": {"type": "string", "required": True},
-            "age": {"type": "integer"}
-        }
+        schema = {"ptid": {"type": "string", "required": True}, "age": {"type": "integer"}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
-        malformed_record = {
-            "ptid": "TEST001",
-            "age": "not_a_number"
-        }
+        malformed_record = {"ptid": "TEST001", "age": "not_a_number"}
 
         result = qc.validate_record(malformed_record)
 
@@ -547,17 +452,10 @@ class TestValidationIntegration:
     def test_validation_pipeline_integration(self, mock_validate):
         """Test validation integration within pipeline."""
         # Mock validation result
-        mock_result = ValidationResult(
-            passed=True,
-            errors={},
-            sys_failure=False,
-            error_tree=None
-        )
+        mock_result = ValidationResult(passed=True, errors={}, sys_failure=False, error_tree=None)
         mock_validate.return_value = mock_result
 
-        schema = {
-            "ptid": {"type": "string", "required": True}
-        }
+        schema = {"ptid": {"type": "string", "required": True}}
         pk_field = "ptid"
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)

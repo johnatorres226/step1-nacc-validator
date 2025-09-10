@@ -21,8 +21,7 @@ from src.pipeline.logging.logging_config import get_logger
 logger = get_logger(__name__)
 
 
-def load_dynamic_rules_for_instrument(
-        instrument_name: str) -> dict[str, dict[str, Any]]:
+def load_dynamic_rules_for_instrument(instrument_name: str) -> dict[str, dict[str, Any]]:
     """
     Loads rules for instruments that use dynamic rule selection.
 

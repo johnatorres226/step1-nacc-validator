@@ -165,8 +165,7 @@ class TestRuleCaching:
 
         # Check if we can infer the cache key format
         with patch.object(router, "_load_rules", return_value={}) as mock_load:
-            router.get_rules_for_record(
-                {"packet": packet, "ptid": "TEST001"}, instrument)
+            router.get_rules_for_record({"packet": packet, "ptid": "TEST001"}, instrument)
 
             mock_load.assert_called_once()
 
@@ -198,11 +197,7 @@ class TestHierarchicalRouting:
         resolver = hierarchical_router_module.HierarchicalRuleResolver(config)
 
         # Test rule resolution
-        record = {
-            "packet": "I",
-            "ptid": "TEST001",
-            "redcap_event_name": "udsv4_ivp_1_arm_1"
-        }
+        record = {"packet": "I", "ptid": "TEST001", "redcap_event_name": "udsv4_ivp_1_arm_1"}
         instrument = "a1_participant_demographics"
 
         with patch.object(resolver, "resolve_rules") as mock_resolve:
@@ -224,7 +219,7 @@ class TestInstrumentSpecificRouting:
         test_cases = [
             ("c2c2t_neuropsychological_battery_scores", True),  # Known dynamic instrument
             ("a1_participant_demographics", False),  # Standard instrument
-            ("unknown_instrument", False)  # Unknown should default to False
+            ("unknown_instrument", False),  # Unknown should default to False
         ]
 
         if config_manager_module is None:
@@ -265,12 +260,7 @@ class TestRuleFileLoading:
     @patch("json.load")
     def test_json_rule_loading(self, mock_json_load, mock_open):
         """Test JSON rule file loading."""
-        mock_rules = {
-            "test_field": {
-                "type": "string",
-                "required": True
-            }
-        }
+        mock_rules = {"test_field": {"type": "string", "required": True}}
         mock_json_load.return_value = mock_rules
 
         # Test rule loading
@@ -323,7 +313,7 @@ class TestRoutingIntegration:
             "redcap_event_name": "udsv4_ivp_1_arm_1",
             "a1_birthyr": "1950",
             "a1_sex": "1",
-            "form_header_complete": "2"
+            "form_header_complete": "2",
         }
 
         instrument = "a1_participant_demographics"
@@ -365,8 +355,10 @@ class TestRoutingErrorHandling:
         test_instruments = ["", None]
 
         for instrument in test_instruments:
-            with patch.object(router, "_load_rules", side_effect=Exception("File not found")), \
-                pytest.raises(Exception, match="File not found"):
+            with (
+                patch.object(router, "_load_rules", side_effect=Exception("File not found")),
+                pytest.raises(Exception, match="File not found"),
+            ):
                 router.get_rules_for_record(record, instrument)
 
     def test_routing_with_file_system_errors(self):
@@ -378,8 +370,10 @@ class TestRoutingErrorHandling:
         instrument = "test_instrument"
 
         # Mock file system error
-        with patch.object(router, "_load_rules", side_effect=PermissionError("Access denied")), \
-            pytest.raises(PermissionError):
+        with (
+            patch.object(router, "_load_rules", side_effect=PermissionError("Access denied")),
+            pytest.raises(PermissionError),
+        ):
             router.get_rules_for_record(record, instrument)
 
 
@@ -420,12 +414,10 @@ class TestRoutingPerformance:
 
         with patch.object(router, "_load_rules", side_effect=mock_load_side_effect) as mock_load:
             # Load rules for packet I
-            rules_i = router.get_rules_for_record(
-                {"packet": "I", "ptid": "TEST001"}, instrument)
+            rules_i = router.get_rules_for_record({"packet": "I", "ptid": "TEST001"}, instrument)
 
             # Load rules for packet F
-            rules_f = router.get_rules_for_record(
-                {"packet": "F", "ptid": "TEST002"}, instrument)
+            rules_f = router.get_rules_for_record({"packet": "F", "ptid": "TEST002"}, instrument)
 
             # Should have called load twice (once for each packet type)
             assert mock_load.call_count == 2

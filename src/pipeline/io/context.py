@@ -4,6 +4,7 @@ Configuration dataclasses for pipeline processing.
 This module provides structured configuration objects to reduce function parameter
 complexity and improve maintainability across the pipeline.
 """
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ class ProcessingContext:
     This replaces passing multiple parameters to processing functions,
     improving maintainability and reducing parameter complexity.
     """
+
     data_df: pd.DataFrame
     instrument_list: list[str]
     rules_cache: dict[str, Any]
@@ -36,19 +38,17 @@ class ProcessingContext:
         """Get variables for a specific instrument from the rules cache."""
         return list(self.rules_cache.get(instrument, {}).keys())
 
-    def filter_to_instruments(
-            self,
-            instruments: list[str]) -> "ProcessingContext":
+    def filter_to_instruments(self, instruments: list[str]) -> "ProcessingContext":
         """Create a new context filtered to specific instruments."""
         return ProcessingContext(
             data_df=self.data_df,
-            instrument_list=[
-                inst for inst in instruments if inst in self.instrument_list],
+            instrument_list=[inst for inst in instruments if inst in self.instrument_list],
             rules_cache={
-                inst: rules for inst,
-                rules in self.rules_cache.items() if inst in instruments},
+                inst: rules for inst, rules in self.rules_cache.items() if inst in instruments
+            },
             primary_key_field=self.primary_key_field,
-            config=self.config)
+            config=self.config,
+        )
 
 
 @dataclass
@@ -58,6 +58,7 @@ class ExportConfiguration:
 
     This standardizes export parameters across different report generation functions.
     """
+
     output_dir: Path
     date_tag: str
     time_tag: str
@@ -89,6 +90,7 @@ class ValidationContext:
 
     This provides validation-specific configuration and utilities.
     """
+
     instrument_name: str
     primary_key_field: str
     validation_rules: dict[str, Any]
@@ -100,12 +102,14 @@ class ValidationContext:
     def is_dynamic_instrument(self) -> bool:
         """Check if this is a dynamic rule instrument."""
         from ..config.config_manager import is_dynamic_rule_instrument
+
         return is_dynamic_rule_instrument(self.instrument_name)
 
     def get_discriminant_variable(self) -> str | None:
         """Get discriminant variable for dynamic instruments."""
         if self.is_dynamic_instrument:
             from ..config.config_manager import get_discriminant_variable
+
             return get_discriminant_variable(self.instrument_name)
         return None
 
@@ -117,6 +121,7 @@ class AnalyticsConfiguration:
 
     This provides structured configuration for analysis operations.
     """
+
     verbosity_level: str = "normal"  # "minimal", "normal", "detailed", "debug"
     include_coverage_analysis: bool = True
     include_orphaned_columns: bool = True
@@ -141,6 +146,7 @@ class ReportConfiguration:
 
     This standardizes report generation settings across different report types.
     """
+
     qc_run_by: str
     primary_key_field: str
     instruments: list[str]
@@ -159,5 +165,5 @@ class ReportConfiguration:
             "qc_run_by",
             "qc_last_run",
             "qc_status",
-            "quality_control_check_complete"
+            "quality_control_check_complete",
         ]

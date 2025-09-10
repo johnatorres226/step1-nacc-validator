@@ -70,15 +70,15 @@ class TestReportGeneration:
                 "instrument_name": "a1_participant_demographics",
                 "validation_status": "PASSED",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "packet": "I"
+                "packet": "I",
             },
             {
                 "ptid": "TEST002",
                 "instrument_name": "a1_participant_demographics",
                 "validation_status": "FAILED",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "packet": "I"
-            }
+                "packet": "I",
+            },
         ]
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
@@ -109,19 +109,12 @@ class TestReportGeneration:
                 "total_records": 100,
                 "passed_records": 95,
                 "failed_records": 5,
-                "execution_time": 10.5
+                "execution_time": 10.5,
             },
             "details": [
-                {
-                    "ptid": "TEST001",
-                    "status": "PASSED"
-                },
-                {
-                    "ptid": "TEST002",
-                    "status": "FAILED",
-                    "errors": ["Invalid age value"]
-                }
-            ]
+                {"ptid": "TEST001", "status": "PASSED"},
+                {"ptid": "TEST002", "status": "FAILED", "errors": ["Invalid age value"]},
+            ],
         }
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as temp_file:
@@ -148,10 +141,9 @@ class TestReportGeneration:
 
     def test_multiple_report_format_generation(self):
         """Test generation of multiple report formats."""
-        test_data = pd.DataFrame([
-            {"ptid": "TEST001", "status": "PASSED"},
-            {"ptid": "TEST002", "status": "FAILED"}
-        ])
+        test_data = pd.DataFrame(
+            [{"ptid": "TEST001", "status": "PASSED"}, {"ptid": "TEST002", "status": "FAILED"}]
+        )
 
         with tempfile.TemporaryDirectory() as temp_dir:
             csv_path = Path(temp_dir) / "report.csv"
@@ -189,7 +181,7 @@ class TestValidationReportGeneration:
                 "error_message": "Invalid birth year",
                 "current_value": "2050",
                 "packet": "I",
-                "redcap_event_name": "udsv4_ivp_1_arm_1"
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
             },
             {
                 "ptid": "TEST002",
@@ -198,8 +190,8 @@ class TestValidationReportGeneration:
                 "error_message": "Height out of range",
                 "current_value": "300",
                 "packet": "I",
-                "redcap_event_name": "udsv4_ivp_1_arm_1"
-            }
+                "redcap_event_name": "udsv4_ivp_1_arm_1",
+            },
         ]
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
@@ -231,7 +223,7 @@ class TestValidationReportGeneration:
                 "rule_file": "a1_rules.json",
                 "packet": "I",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "instrument_name": "a1_participant_demographics"
+                "instrument_name": "a1_participant_demographics",
             }
         ]
 
@@ -262,7 +254,7 @@ class TestValidationReportGeneration:
                 "validation_status": "PASSED",
                 "error_count": 0,
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "packet": "I"
+                "packet": "I",
             },
             {
                 "ptid": "TEST002",
@@ -270,8 +262,8 @@ class TestValidationReportGeneration:
                 "validation_status": "FAILED",
                 "error_count": 2,
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "packet": "I"
-            }
+                "packet": "I",
+            },
         ]
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
@@ -297,10 +289,9 @@ class TestDataSaving:
 
     def test_dataframe_to_csv_saving(self):
         """Test saving DataFrame to CSV file."""
-        test_df = pd.DataFrame([
-            {"id": 1, "name": "Test1", "value": 100},
-            {"id": 2, "name": "Test2", "value": 200}
-        ])
+        test_df = pd.DataFrame(
+            [{"id": 1, "name": "Test1", "value": 100}, {"id": 2, "name": "Test2", "value": 200}]
+        )
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
@@ -324,12 +315,14 @@ class TestDataSaving:
         # Create a larger test DataFrame
         large_data = []
         for i in range(1000):
-            large_data.append({
-                "ptid": f"TEST{i:04d}",
-                "value1": i,
-                "value2": i * 2,
-                "status": "PASSED" if i % 2 == 0 else "FAILED"
-            })
+            large_data.append(
+                {
+                    "ptid": f"TEST{i:04d}",
+                    "value1": i,
+                    "value2": i * 2,
+                    "status": "PASSED" if i % 2 == 0 else "FAILED",
+                }
+            )
 
         large_df = pd.DataFrame(large_data)
 
@@ -352,13 +345,15 @@ class TestDataSaving:
 
     def test_file_saving_with_special_characters(self):
         """Test saving files with special characters in data."""
-        special_data = pd.DataFrame([
-            {"text": "Normal text"},
-            {"text": 'Text with "quotes"'},
-            {"text": "Text with, commas"},
-            {"text": "Text with\nnewlines"},
-            {"text": "Text with émojis 🎉"}
-        ])
+        special_data = pd.DataFrame(
+            [
+                {"text": "Normal text"},
+                {"text": 'Text with "quotes"'},
+                {"text": "Text with, commas"},
+                {"text": "Text with\nnewlines"},
+                {"text": "Text with émojis 🎉"},
+            ]
+        )
 
         with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as temp_file:
             temp_path = temp_file.name
@@ -375,8 +370,7 @@ class TestDataSaving:
             # Check that the special character text exists (allow for potential
             # encoding variations)
             text_values = loaded_df["text"].tolist()
-            emoji_found = any("émojis" in str(val) and "🎉" in str(val)
-                              for val in text_values)
+            emoji_found = any("émojis" in str(val) and "🎉" in str(val) for val in text_values)
             assert emoji_found, f"Expected emoji text not found in {text_values}"
 
         finally:
@@ -401,7 +395,7 @@ class TestReportSummaryGeneration:
             "failed_validations": failed_records,
             "success_rate": (passed_records / total_records) * 100,
             "execution_time_seconds": execution_time,
-            "timestamp": datetime.now(UTC).isoformat()
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         # Verify summary structure
@@ -413,7 +407,7 @@ class TestReportSummaryGeneration:
         """Test generation of instrument breakdown summary."""
         instrument_results = {
             "a1_participant_demographics": {"passed": 45, "failed": 5},
-            "b1_vital_signs_and_anthropometrics": {"passed": 40, "failed": 10}
+            "b1_vital_signs_and_anthropometrics": {"passed": 40, "failed": 10},
         }
 
         # Generate breakdown
@@ -424,7 +418,7 @@ class TestReportSummaryGeneration:
                 "total_records": total,
                 "passed_count": results["passed"],
                 "failed_count": results["failed"],
-                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0
+                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0,
             }
 
         # Verify breakdown
@@ -436,7 +430,7 @@ class TestReportSummaryGeneration:
         packet_results = {
             "I": {"passed": 30, "failed": 5},
             "I4": {"passed": 25, "failed": 3},
-            "F": {"passed": 30, "failed": 7}
+            "F": {"passed": 30, "failed": 7},
         }
 
         # Generate packet summary
@@ -445,13 +439,11 @@ class TestReportSummaryGeneration:
             total = results["passed"] + results["failed"]
             packet_summary[packet] = {
                 "total_records": total,
-                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0
+                "success_rate": (results["passed"] / total) * 100 if total > 0 else 0,
             }
 
         # Verify packet summary (using approximate comparison for floating point)
-        assert abs(
-            packet_summary["I"]["success_rate"] -
-            85.7) < 0.1  # Approximately 85.7%
+        assert abs(packet_summary["I"]["success_rate"] - 85.7) < 0.1  # Approximately 85.7%
         assert packet_summary["I4"]["success_rate"] >= 89.0
         assert packet_summary["F"]["success_rate"] >= 80.0
 
@@ -469,7 +461,7 @@ class TestOutputFileManagement:
             f"{base_name}_{date_tag}_{time_tag}_errors.csv",
             f"{base_name}_{date_tag}_{time_tag}_logs.csv",
             f"{base_name}_{date_tag}_{time_tag}_passed_records.csv",
-            f"{base_name}_{date_tag}_{time_tag}_summary.json"
+            f"{base_name}_{date_tag}_{time_tag}_summary.json",
         ]
 
         # Verify naming pattern
@@ -489,12 +481,7 @@ class TestOutputFileManagement:
             run_dir.mkdir()
 
             # Create expected files
-            files_to_create = [
-                "errors.csv",
-                "logs.csv",
-                "passed_records.csv",
-                "summary.json"
-            ]
+            files_to_create = ["errors.csv", "logs.csv", "passed_records.csv", "summary.json"]
 
             for file_name in files_to_create:
                 file_path = run_dir / file_name
@@ -576,11 +563,7 @@ class TestOutputRobustness:
         test_df = pd.DataFrame([{"test": "data"}])
 
         # Test with various invalid path characters
-        invalid_paths = [
-            "output<>.csv",
-            "output|.csv",
-            "output?.csv"
-        ]
+        invalid_paths = ["output<>.csv", "output|.csv", "output?.csv"]
 
         for invalid_path in invalid_paths:
             with pytest.raises((ValueError, OSError)):

@@ -45,8 +45,7 @@ class Datastore(ABC):
         return self.__orderby
 
     @abstractmethod
-    def get_previous_record(
-            self, current_record: dict[str, str]) -> dict[str, str] | None:
+    def get_previous_record(self, current_record: dict[str, str]) -> dict[str, str] | None:
         """Abstract method to return the previous visit record for the
         specified participant. Override this method to retrieve the records
         from the desired datastore/warehouse.
@@ -61,8 +60,8 @@ class Datastore(ABC):
 
     @abstractmethod
     def get_previous_nonempty_record(
-            self, current_record: dict[str, str],
-            fields: list[str]) -> dict[str, str] | None:
+        self, current_record: dict[str, str], fields: list[str]
+    ) -> dict[str, str] | None:
         """Abstract method to return the previous record where all fields are
         NOT empty for the specified participant. Override this method to
         retrieve the records from the desired datastore/warehouse.

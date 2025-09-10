@@ -97,9 +97,9 @@ class QualityCheck:
         if self.datastore:
             if self.datastore.pk_field != self.pk_field:
                 raise QualityCheckException(
-                    f"Mismatched primary key fields: schema='{
-                        self.pk_field}', " f"datastore='{
-                        self.datastore.pk_field}'")
+                    f"Mismatched primary key fields: schema='{self.pk_field}', "
+                    f"datastore='{self.datastore.pk_field}'"
+                )
             validator.datastore = self.datastore
 
         return validator
@@ -147,12 +147,8 @@ class QualityCheck:
             sys_failure = True
             passed = False
 
-        errors = (
-            self.validator.sys_errors if sys_failure else self.validator.errors
-        )
-        error_tree = (
-            None if sys_failure else self.validator.document_error_tree
-        )
+        errors = self.validator.sys_errors if sys_failure else self.validator.errors
+        error_tree = None if sys_failure else self.validator.document_error_tree
 
         return ValidationResult(
             passed=passed,

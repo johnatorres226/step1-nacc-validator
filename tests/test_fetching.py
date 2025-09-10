@@ -68,10 +68,7 @@ class TestETLResult:
         test_data = pd.DataFrame({"test": [1, 2, 3]})
 
         result = ETLResult(
-            data=test_data,
-            records_processed=3,
-            execution_time=1.5,
-            saved_files=[Path("test.csv")]
+            data=test_data, records_processed=3, execution_time=1.5, saved_files=[Path("test.csv")]
         )
 
         assert not result.is_empty
@@ -83,12 +80,7 @@ class TestETLResult:
         """Test ETL result empty detection."""
         empty_data = pd.DataFrame()
 
-        result = ETLResult(
-            data=empty_data,
-            records_processed=0,
-            execution_time=0.1,
-            saved_files=[]
-        )
+        result = ETLResult(data=empty_data, records_processed=0, execution_time=0.1, saved_files=[])
 
         assert result.is_empty
 
@@ -141,7 +133,7 @@ class TestRedcapETLPipeline:
             config = QCConfig(
                 api_token="test_token",
                 redcap_api_token="test_token",
-                redcap_api_url="https://test.redcap.url"
+                redcap_api_url="https://test.redcap.url",
             )
             pipeline = RedcapETLPipeline(config)
 
@@ -170,28 +162,25 @@ class TestDataFetching:
                 "ptid": "TEST001",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
                 "a1_birthyr": "1950",
-                "packet": "I"
+                "packet": "I",
             },
             {
                 "ptid": "TEST002",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
                 "a1_birthyr": "1960",
-                "packet": "I4"
-            }
+                "packet": "I4",
+            },
         ]
 
         # Create config with explicit URLs to avoid environment variables
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token="test_token",
-                redcap_api_url="https://test.redcap.url"
+                redcap_api_token="test_token", redcap_api_url="https://test.redcap.url"
             )
 
         # Mock both possible URLs (test URL and any environment URL)
         requests_mock.post("https://test.redcap.url", json=mock_response_data)
-        requests_mock.post(
-            "https://hsc-ctsc-rc-api.health.unm.edu/api/",
-            json=mock_response_data)
+        requests_mock.post("https://hsc-ctsc-rc-api.health.unm.edu/api/", json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
 
@@ -211,8 +200,7 @@ class TestDataFetching:
         """Test handling of empty data response."""
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token="test_token",
-                redcap_api_url="https://test.redcap.url"
+                redcap_api_token="test_token", redcap_api_url="https://test.redcap.url"
             )
 
         # Mock both possible URLs
@@ -232,8 +220,7 @@ class TestDataFetching:
     def test_api_error_handling(self, requests_mock):
         """Test handling of API errors."""
         config = QCConfig(
-            redcap_api_token="invalid_token",
-            redcap_api_url="https://test.redcap.url"
+            redcap_api_token="invalid_token", redcap_api_url="https://test.redcap.url"
         )
 
         requests_mock.post("https://test.redcap.url", status_code=403, text="Forbidden")
@@ -257,11 +244,7 @@ class TestETLPipelineRun:
         """Test successful pipeline execution."""
         # Mock fetched data
         mock_fetch.return_value = [
-            {
-                "ptid": "TEST001",
-                "redcap_event_name": "udsv4_ivp_1_arm_1",
-                "a1_birthyr": "1950"
-            }
+            {"ptid": "TEST001", "redcap_event_name": "udsv4_ivp_1_arm_1", "a1_birthyr": "1950"}
         ]
 
         config = QCConfig()
@@ -299,7 +282,7 @@ class TestDataValidation:
         valid_record = {
             "ptid": "TEST001",
             "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": "1950"
+            "a1_birthyr": "1950",
         }
 
         # Check that required fields are present
@@ -313,8 +296,9 @@ class TestDataValidation:
         }
 
         # Check that required fields are missing
-        missing_fields = [field for field in DataContract.REQUIRED_FIELDS
-                          if field not in invalid_record]
+        missing_fields = [
+            field for field in DataContract.REQUIRED_FIELDS if field not in invalid_record
+        ]
 
         assert len(missing_fields) > 0
 
@@ -374,7 +358,7 @@ class TestETLPipelineIntegration:
                 "ptid": "TEST001",
                 "redcap_event_name": "udsv4_ivp_1_arm_1",
                 "a1_birthyr": "1950",
-                "packet": "I"
+                "packet": "I",
             }
         ]
 
@@ -382,14 +366,12 @@ class TestETLPipelineIntegration:
             config = QCConfig(
                 redcap_api_token="test_token",
                 redcap_api_url="https://test.redcap.url",
-                instruments=["a1_participant_demographics"]
+                instruments=["a1_participant_demographics"],
             )
 
         # Mock both URLs
         requests_mock.post("https://test.redcap.url", json=mock_response_data)
-        requests_mock.post(
-            "https://hsc-ctsc-rc-api.health.unm.edu/api/",
-            json=mock_response_data)
+        requests_mock.post("https://hsc-ctsc-rc-api.health.unm.edu/api/", json=mock_response_data)
 
         pipeline = RedcapETLPipeline(config)
 

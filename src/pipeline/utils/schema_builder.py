@@ -20,7 +20,7 @@ from .instrument_mapping import (
 def build_cerberus_schema_for_instrument(
     instrument_name: str,
     include_temporal_rules: bool = True,
-    include_compatibility_rules: bool = True
+    include_compatibility_rules: bool = True,
 ) -> dict[str, Any]:
     """
     Loads JSON rules and builds a Cerberus schema for a given instrument.
@@ -49,7 +49,7 @@ def build_cerberus_schema_for_instrument(
             variant: _build_schema_from_raw(
                 raw_rules,
                 include_temporal_rules=include_temporal_rules,
-                include_compatibility_rules=include_compatibility_rules
+                include_compatibility_rules=include_compatibility_rules,
             )
             for variant, raw_rules in raw_rule_map.items()
         }
@@ -59,14 +59,14 @@ def build_cerberus_schema_for_instrument(
     return _build_schema_from_raw(
         raw_rules,
         include_temporal_rules=include_temporal_rules,
-        include_compatibility_rules=include_compatibility_rules
+        include_compatibility_rules=include_compatibility_rules,
     )
 
 
 def _build_schema_from_raw(
     rules_dict: dict[str, Any],
     include_temporal_rules: bool = True,
-    include_compatibility_rules: bool = True
+    include_compatibility_rules: bool = True,
 ) -> dict[str, dict[str, Any]]:
     """
     Transforms a dictionary of raw JSON rules into a Cerberus schema.

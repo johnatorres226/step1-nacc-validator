@@ -32,12 +32,12 @@ class ColoredFormatter(logging.Formatter):
 
     # ANSI color codes for different log levels
     COLORS: ClassVar[dict[str, str]] = {
-        "DEBUG": "\033[36m",     # Cyan
-        "INFO": "\033[32m",      # Green
-        "WARNING": "\033[33m",   # Yellow
-        "ERROR": "\033[31m",     # Red
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
         "CRITICAL": "\033[35m",  # Magenta
-        "RESET": "\033[0m"       # Reset
+        "RESET": "\033[0m",  # Reset
     }
 
     # Icons for different log levels - simplified and professional
@@ -46,16 +46,17 @@ class ColoredFormatter(logging.Formatter):
         "INFO": "▶",
         "WARNING": "⚠",
         "ERROR": "✗",
-        "CRITICAL": "✗✗"
+        "CRITICAL": "✗✗",
     }
 
     def __init__(
-            self,
-            fmt: str | None = None,
-            datefmt: str | None = None,
-            *,
-            use_colors: bool | None = None,
-            use_icons: bool = True) -> None:
+        self,
+        fmt: str | None = None,
+        datefmt: str | None = None,
+        *,
+        use_colors: bool | None = None,
+        use_icons: bool = True,
+    ) -> None:
         super().__init__(fmt=fmt, datefmt=datefmt)
         # Auto-detect color support if not specified
         if use_colors is None:
@@ -77,8 +78,7 @@ class ColoredFormatter(logging.Formatter):
 
         # Check for Windows terminal color support
         if os.name == "nt":
-            return os.getenv("ANSICON") is not None or "ON" in os.getenv(
-                "CONEMUANSI", "OFF")
+            return os.getenv("ANSICON") is not None or "ON" in os.getenv("CONEMUANSI", "OFF")
 
         return False
 
@@ -120,14 +120,11 @@ class ProductionCLIFormatter(logging.Formatter):
         message = record.getMessage()
 
         # Simplified patterns to avoid ambiguous unicode characters in logs
-        emoji_patterns = [
-            "✅ ", "🔄 ", "📋 ", "📊 ", "INFO  ", "WARN  ",
-            "===", "---", "***"
-        ]
+        emoji_patterns = ["✅ ", "🔄 ", "📋 ", "📊 ", "INFO  ", "WARN  ", "===", "---", "***"]
 
         for pattern in emoji_patterns:
             if message.startswith(pattern):
-                message = message[len(pattern):]
+                message = message[len(pattern) :]
                 break
 
         # Clean up repeated information
@@ -176,7 +173,7 @@ def setup_logging(
     structured_logging: bool = False,
     performance_tracking: bool = True,
     max_file_size: str = "10MB",
-    backup_count: int = 5
+    backup_count: int = 5,
 ) -> None:
     """
     Configure comprehensive logging for the QC pipeline.
@@ -203,7 +200,7 @@ def setup_logging(
             "class": "logging.StreamHandler",
             "level": numeric_level,
             "formatter": "colored_console",
-            "stream": "ext://sys.stdout"
+            "stream": "ext://sys.stdout",
         }
     else:
         # Add NullHandler when console output is disabled to prevent logs from
@@ -224,14 +221,12 @@ def setup_logging(
             "filename": str(log_path),
             "maxBytes": _parse_file_size(max_file_size),
             "backupCount": backup_count,
-            "encoding": "utf-8"
+            "encoding": "utf-8",
         }
 
     # Structured JSON file handler if requested
     if structured_logging and log_file:
-        json_log_path = Path(
-            str(log_file).replace(
-                ".log", "_structured.jsonl"))
+        json_log_path = Path(str(log_file).replace(".log", "_structured.jsonl"))
         handlers["json_file"] = {
             "class": "logging.handlers.RotatingFileHandler",
             "level": logging.DEBUG,
@@ -239,7 +234,7 @@ def setup_logging(
             "filename": str(json_log_path),
             "maxBytes": _parse_file_size(max_file_size),
             "backupCount": backup_count,
-            "encoding": "utf-8"
+            "encoding": "utf-8",
         }
 
     # Configure formatters
@@ -249,22 +244,20 @@ def setup_logging(
             "format": "%(asctime)s | %(levelname)-7s | %(message)s",
             "datefmt": "%H:%M:%S",
             "use_colors": True,
-            "use_icons": False  # Disable icons to reduce clutter
+            "use_icons": False,  # Disable icons to reduce clutter
         },
         "detailed_file": {
             "format": (
                 "%(asctime)s | %(levelname)-8s | %(name)-20s | "
                 "%(filename)s:%(lineno)d | %(message)s"
             ),
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
         "json_structured": {
             "format": "%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        "simple": {
-            "format": "%(levelname)s: %(message)s"
-        }
+        "simple": {"format": "%(levelname)s: %(message)s"},
     }
 
     # Configure filters - simplified for compatibility
@@ -276,10 +269,7 @@ def setup_logging(
         "disable_existing_loggers": False,
         "formatters": formatters,
         "handlers": handlers,
-        "root": {
-            "level": logging.DEBUG,
-            "handlers": list(handlers.keys())
-        },
+        "root": {"level": logging.DEBUG, "handlers": list(handlers.keys())},
         "loggers": {
             "": {
                 "handlers": list(handlers.keys()),
@@ -292,20 +282,15 @@ def setup_logging(
                 "propagate": False,
             },
             # Suppress noisy third-party loggers
-            "urllib3": {
-                "level": logging.WARNING
-            },
-            "requests": {
-                "level": logging.WARNING
-            }
-        }
+            "urllib3": {"level": logging.WARNING},
+            "requests": {"level": logging.WARNING},
+        },
     }
 
     # Add filters to handlers if configured
     if filters:
         for handler_name in handlers:
-            if handler_name not in [
-                    "console"]:  # Don't add performance filter to console
+            if handler_name not in ["console"]:  # Don't add performance filter to console
                 handlers[handler_name]["filters"] = list(filters.keys())
         logging_config["filters"] = filters
 
@@ -360,7 +345,8 @@ class JSONFormatter(logging.Formatter):
                 "threadName",
                 "processName",
                 "process",
-                    "message"]:
+                "message",
+            ]:
                 log_entry[key] = value
 
         return json.dumps(log_entry)
@@ -376,8 +362,7 @@ def get_logger(name: str) -> logging.Logger:
 class QCLogger:
     """Context manager for QC operations with progress tracking."""
 
-    def __init__(self, operation_name: str,
-                 logger: logging.Logger | None = None):
+    def __init__(self, operation_name: str, logger: logging.Logger | None = None):
         self.operation_name = operation_name
         self.logger = logger or get_logger("qc_operation")
         self.start_time = None
@@ -388,10 +373,7 @@ class QCLogger:
     def __enter__(self):
         """Start the operation logging."""
         self.start_time = time.time()
-        if self.operation_name in [
-            "Configuration Check",
-            "Environment Setup",
-                "QC Pipeline"]:
+        if self.operation_name in ["Configuration Check", "Environment Setup", "QC Pipeline"]:
             self.logger.info("Starting operation: %s", self.operation_name)
         return self
 
@@ -404,7 +386,8 @@ class QCLogger:
                 if self.operation_name in [
                     "Configuration Check",
                     "Environment Setup",
-                        "QC Pipeline"]:
+                    "QC Pipeline",
+                ]:
                     self.logger.info(
                         "Completed operation: %s (Duration: %.2fs)",
                         self.operation_name,
@@ -423,10 +406,7 @@ class QCLogger:
     def log_progress(self, message: str, step: int | None = None) -> None:
         """Log progress update with optional step tracking."""
         # Only log progress for high-level operations
-        if self.operation_name in [
-            "Configuration Check",
-            "Environment Setup",
-                "QC Pipeline"]:
+        if self.operation_name in ["Configuration Check", "Environment Setup", "QC Pipeline"]:
             with self._lock:
                 if step is not None:
                     self.steps_completed = step
@@ -479,8 +459,9 @@ def _parse_file_size(size_str: str) -> int:
 
 
 @contextmanager
-def log_performance(operation_name: str,
-                    logger: logging.Logger | None = None) -> Generator[None, None, None]:
+def log_performance(
+    operation_name: str, logger: logging.Logger | None = None
+) -> Generator[None, None, None]:
     """Context manager for logging operation performance."""
     if logger is None:
         logger = get_logger("performance")

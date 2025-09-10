@@ -41,7 +41,7 @@ class TestQCConfigCreation:
         config = QCConfig(
             instruments=custom_instruments,
             redcap_api_token=custom_api_token,
-            redcap_api_url=custom_api_url
+            redcap_api_url=custom_api_url,
         )
 
         assert config.instruments == custom_instruments
@@ -66,7 +66,7 @@ class TestConfigValidation:
         config = QCConfig(
             redcap_api_token="valid_token",
             redcap_api_url="https://valid.url.com",
-            instruments=["a1_participant_demographics"]
+            instruments=["a1_participant_demographics"],
         )
 
         # Should not raise any exceptions
@@ -87,18 +87,22 @@ class TestConfigValidation:
 class TestEnvironmentVariableLoading:
     """Test loading configuration from environment variables."""
 
-    @patch.dict(os.environ, {
-        "REDCAP_API_TOKEN": "env_token_123",
-        "REDCAP_API_URL": "https://env.redcap.url",
-        "PROJECT_ID": "env_project_123",
-        "OUTPUT_PATH": "/tmp/env_output"
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "REDCAP_API_TOKEN": "env_token_123",
+            "REDCAP_API_URL": "https://env.redcap.url",
+            "PROJECT_ID": "env_project_123",
+            "OUTPUT_PATH": "/tmp/env_output",
+        },
+    )
     def test_environment_variable_loading(self):
         """Test that environment variables are properly loaded."""
         # Test with fresh imports that will pick up the patched environment
         import importlib
 
         import src.pipeline.config.config_manager
+
         importlib.reload(src.pipeline.config.config_manager)
 
         from src.pipeline.config.config_manager import (
@@ -115,10 +119,10 @@ class TestEnvironmentVariableLoading:
 
     def test_config_uses_environment_variables(self):
         """Test that QCConfig properly uses environment variables."""
-        with patch.dict(os.environ, {
-            "REDCAP_API_TOKEN": "test_env_token",
-            "REDCAP_API_URL": "https://test.env.url"
-        }):
+        with patch.dict(
+            os.environ,
+            {"REDCAP_API_TOKEN": "test_env_token", "REDCAP_API_URL": "https://test.env.url"},
+        ):
             # Create new config that should pick up env vars
             config = QCConfig()
 
@@ -141,7 +145,7 @@ class TestInstrumentConfiguration:
         expected_instruments = [
             "form_header",
             "a1_participant_demographics",
-            "b1_vital_signs_and_anthropometrics"
+            "b1_vital_signs_and_anthropometrics",
         ]
 
         for instrument in expected_instruments:
@@ -174,10 +178,7 @@ class TestConfigSerialization:
 
     def test_config_to_dict(self):
         """Test converting config to dictionary."""
-        config = QCConfig(
-            redcap_api_token="test_token",
-            instruments=["test_instrument"]
-        )
+        config = QCConfig(redcap_api_token="test_token", instruments=["test_instrument"])
 
         config_dict = config.to_dict()
 
@@ -195,8 +196,7 @@ class TestConfigSerialization:
         try:
             # Create and save config
             original_config = QCConfig(
-                redcap_api_token="file_test_token",
-                instruments=["file_test_instrument"]
+                redcap_api_token="file_test_token", instruments=["file_test_instrument"]
             )
             original_config.to_file(temp_path)
 
@@ -284,11 +284,7 @@ class TestConfigRobustness:
     @patch.dict(os.environ, {}, clear=True)  # Clear all environment variables
     def test_config_with_empty_values(self):
         """Test configuration with empty or None values."""
-        config = QCConfig(
-            redcap_api_token=None,
-            redcap_api_url="",
-            instruments=[]
-        )
+        config = QCConfig(redcap_api_token=None, redcap_api_url="", instruments=[])
 
         # Should not crash
         assert config.redcap_api_token is None

@@ -5,6 +5,7 @@ This module provides structured data models for pipeline stages, replacing loose
 variables with proper result objects that encapsulate state and provide clear
 interfaces between pipeline steps.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,7 @@ import pandas as pd
 @dataclass
 class DataFetchResult:
     """Result object for data fetching stage."""
+
     data: pd.DataFrame
     records_processed: int
     execution_time: float
@@ -39,13 +41,14 @@ class DataFetchResult:
             raise ValueError("Failed fetch result must have error message")
         if self.success and self.data.empty:
             import logging
-            logging.getLogger(__name__).warning(
-                "Successful fetch but no data returned")
+
+            logging.getLogger(__name__).warning("Successful fetch but no data returned")
 
 
 @dataclass
 class RulesLoadingResult:
     """Result object for rules loading stage."""
+
     rules_cache: dict[str, dict[str, Any]]
     instruments_processed: list[str]
     loading_time: float
@@ -67,13 +70,13 @@ class RulesLoadingResult:
     def validate(self) -> None:
         """Validate the rules loading result."""
         if not self.success and not self.failed_instruments:
-            raise ValueError(
-                "Failed rules loading must specify failed instruments")
+            raise ValueError("Failed rules loading must specify failed instruments")
 
 
 @dataclass
 class DataPreparationResult:
     """Result object for data preparation stage."""
+
     instrument_data_cache: dict[str, pd.DataFrame]
     complete_visits_data: Optional["CompleteVisitsResult"]
     preparation_time: float
@@ -89,8 +92,7 @@ class DataPreparationResult:
     @property
     def instruments_with_data(self) -> list[str]:
         """List of instruments that have data after preparation."""
-        return [inst for inst, count in self.records_per_instrument.items()
-                if count > 0]
+        return [inst for inst, count in self.records_per_instrument.items() if count > 0]
 
     def get_instrument_data(self, instrument: str) -> pd.DataFrame:
         """Get prepared data for a specific instrument."""
@@ -100,6 +102,7 @@ class DataPreparationResult:
 @dataclass
 class CompleteVisitsResult:
     """Result object for complete visits processing."""
+
     summary_dataframe: pd.DataFrame
     complete_visits_tuples: list[tuple]
     total_visits_processed: int
@@ -111,8 +114,7 @@ class CompleteVisitsResult:
         """Calculate the completion rate as a percentage."""
         if self.total_visits_processed == 0:
             return 0.0
-        return (self.complete_visits_count /
-                self.total_visits_processed) * 100.0
+        return (self.complete_visits_count / self.total_visits_processed) * 100.0
 
     @property
     def has_complete_visits(self) -> bool:
@@ -123,6 +125,7 @@ class CompleteVisitsResult:
 @dataclass
 class ValidationResult:
     """Result object for validation stage."""
+
     errors_df: pd.DataFrame
     logs_df: pd.DataFrame
     passed_df: pd.DataFrame
@@ -155,13 +158,13 @@ class ValidationResult:
         """Get errors for a specific instrument."""
         if self.errors_df.empty:
             return pd.DataFrame()
-        return self.errors_df[self.errors_df.get(
-            "instrument_name", "") == instrument]
+        return self.errors_df[self.errors_df.get("instrument_name", "") == instrument]
 
 
 @dataclass
 class ReportGenerationResult:
     """Result object for report generation stage."""
+
     generated_files: list[Path]
     export_time: float
     reports_created: dict[str, Path]
@@ -182,6 +185,7 @@ class ReportGenerationResult:
 @dataclass
 class PipelineExecutionResult:
     """Complete pipeline execution result."""
+
     data_fetch: DataFetchResult
     rules_loading: RulesLoadingResult
     data_preparation: DataPreparationResult
@@ -209,36 +213,35 @@ class PipelineExecutionResult:
                 "data_fetch": {
                     "success": self.data_fetch.success,
                     "execution_time": self.data_fetch.execution_time,
-                    "records": self.data_fetch.records_processed
+                    "records": self.data_fetch.records_processed,
                 },
                 "rules_loading": {
                     "success": self.rules_loading.success,
                     "execution_time": self.rules_loading.loading_time,
-                    "instruments_loaded": self.rules_loading.loaded_instruments_count
+                    "instruments_loaded": self.rules_loading.loaded_instruments_count,
                 },
                 "data_preparation": {
                     "success": self.data_preparation.success,
                     "execution_time": self.data_preparation.preparation_time,
-                    "records_prepared": self.data_preparation.total_records_prepared
+                    "records_prepared": self.data_preparation.total_records_prepared,
                 },
                 "validation": {
                     "success": self.validation.success,
                     "execution_time": self.validation.validation_time,
-                    "errors_found": self.validation.total_errors
+                    "errors_found": self.validation.total_errors,
                 },
                 "report_generation": {
                     "success": self.report_generation.success,
                     "execution_time": self.report_generation.export_time,
-                    "files_created": self.report_generation.total_files_created
-                }
-            }
+                    "files_created": self.report_generation.total_files_created,
+                },
+            },
         }
 
     def validate(self) -> None:
         """Validate the complete pipeline result."""
         if not self.success and self.pipeline_error is None:
-            raise ValueError(
-                "Failed pipeline execution must have error message")
+            raise ValueError("Failed pipeline execution must have error message")
 
         # Validate individual stages
         try:
@@ -252,14 +255,11 @@ class PipelineExecutionResult:
 # PIPELINE STAGE ERROR CLASSES
 # =============================================================================
 
+
 class PipelineStageError(Exception):
     """Base exception for pipeline stage errors."""
 
-    def __init__(
-            self,
-            stage: str,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, stage: str, message: str, original_error: Exception | None = None):
         self.stage = stage
         self.original_error = original_error
         super().__init__(f"Pipeline stage '{stage}' failed: {message}")
@@ -268,48 +268,33 @@ class PipelineStageError(Exception):
 class DataFetchError(PipelineStageError):
     """Error during data fetching stage."""
 
-    def __init__(
-            self,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__("data_fetch", message, original_error)
 
 
 class RulesLoadingError(PipelineStageError):
     """Error during rules loading stage."""
 
-    def __init__(
-            self,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__("rules_loading", message, original_error)
 
 
 class DataPreparationError(PipelineStageError):
     """Error during data preparation stage."""
 
-    def __init__(
-            self,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__("data_preparation", message, original_error)
 
 
 class ValidationError(PipelineStageError):
     """Error during validation stage."""
 
-    def __init__(
-            self,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__("validation", message, original_error)
 
 
 class ReportGenerationError(PipelineStageError):
     """Error during report generation stage."""
 
-    def __init__(
-            self,
-            message: str,
-            original_error: Exception | None = None):
+    def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__("report_generation", message, original_error)
