@@ -217,6 +217,7 @@ dmypy.json
 /output
 output/
 output
+pull_errors/
 
 # ruff
 .ruff_cache/

@@ -516,102 +516,6 @@
                         "nullable": true
                     }
                 }
-            },
-            {
-                "index": 2,
-                "then_op": "or",
-                "if": {
-                    "depd": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "majordep": {
-                        "allowed": [
-                            1
-                        ]
-                    },
-                    "otherdep": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 3,
-                "then_op": "and",
-                "if": {
-                    "depd": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "majordep": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    },
-                    "otherdep": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            },
-            {
-                "index": 4,
-                "then_op": "or",
-                "if": {
-                    "depd": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "majdepdx": {
-                        "allowed": [
-                            1
-                        ]
-                    },
-                    "othdepdx": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 5,
-                "then_op": "and",
-                "if": {
-                    "depd": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "majdepdx": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    },
-                    "othdepdx": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
             }
         ]
     },
@@ -696,76 +600,6 @@
                 },
                 "then": {
                     "beanx": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            },
-            {
-                "index": 2,
-                "if": {
-                    "anx": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "anxiety": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 3,
-                "if": {
-                    "anx": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "anxiety": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            },
-            {
-                "index": 4,
-                "if": {
-                    "anx": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "anxiet": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 5,
-                "if": {
-                    "anx": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "anxiet": {
                         "forbidden": [
                             1
                         ],
@@ -1096,43 +930,6 @@
             0,
             1,
             9
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "irr": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "beirrit": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "irr": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "beirrit": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "irrsev": {
@@ -1186,43 +983,6 @@
             0,
             1,
             9
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "mot": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "decclmot": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "mot": {
-                        "allowed": [
-                            0
-                        ]
-                    }
-                },
-                "then": {
-                    "decclmot": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "motsev": {

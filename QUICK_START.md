@@ -25,13 +25,13 @@ poetry run udsv4-qc --help
 # Check configuration
 poetry run udsv4-qc config
 
-# Run QC validation (main command)
+# Run QC validation (main command) -- This DOES NOT create the UPLOAD READY FILE just a Run Summary
 poetry run udsv4-qc --initials "YOUR_INITIALS"
 
 # Run QC with logging
 poetry run udsv4-qc --initials "YOUR_INITIALS" --log
 
-# Run QC with detailed outputs (slower, more files)
+# Run QC with detailed outputs (slower, more files) -- This creates the UPLOAD READY FILE
 poetry run udsv4-qc --initials "YOUR_INITIALS" --detailed-run
 
 # Diagnostics (use with --detailed-run)
@@ -68,7 +68,7 @@ udsv4-qc --initials "YOUR_INITIALS"
 # Run QC with logging
 udsv4-qc --initials "YOUR_INITIALS" --log
 
-# Run QC with detailed outputs
+# Run QC with detailed outputs -- This creates the UPLOAD READY FILE
 udsv4-qc --initials "YOUR_INITIALS" --detailed-run
 ```
 

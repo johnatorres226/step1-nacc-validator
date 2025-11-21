@@ -141,7 +141,34 @@
                     }
                 }
             }
-        ]
+        ],
+        "logic": {
+            "formula": {
+                ">=": [
+                    {
+                        "count_exact": [
+                            1,
+                            {
+                                "var": "normcog"
+                            },
+                            {
+                                "var": "demented"
+                            },
+                            {
+                                "var": "mci"
+                            },
+                            {
+                                "var": "impnomci"
+                            },
+                            {
+                                "var": "mbi"
+                            }
+                        ]
+                    },
+                    1
+                ]
+            }
+        }
     },
     "scd": {
         "nullable": true,
@@ -318,26 +345,6 @@
         "allowed": [
             0,
             1
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "demented": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "normcog": {
-                        "forbidden": [
-                            1
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "mcicritcln": {

@@ -163,6 +163,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bills": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "bills": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "taxes": {
@@ -175,6 +195,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "taxes": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "taxes": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "shopping": {
@@ -187,6 +227,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "shopping": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "shopping": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "games": {
@@ -199,6 +259,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "games": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "games": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "stove": {
@@ -211,6 +291,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "stove": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "stove": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "mealprep": {
@@ -261,6 +361,26 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "mealprep": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "mealprep": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "events": {
@@ -273,6 +393,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "events": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "events": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "payattn": {
@@ -285,6 +425,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "payattn": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "payattn": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "remdates": {
@@ -297,6 +457,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "remdates": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "remdates": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "travel": {
@@ -309,6 +489,26 @@
             3,
             8,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "travel": {
+                        "allowed": [
+                            3
+                        ]
+                    }
+                },
+                "current": {
+                    "travel": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "initialsb7": {

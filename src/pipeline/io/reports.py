@@ -498,16 +498,7 @@ class ReportFactory:
                 "qc_status": row["qc_status"],
                 "qc_run_by": row["qc_run_by"],
                 "qc_last_run": row["qc_last_run"],
-                "instruments": {},
             }
-
-            # Add instrument status
-            from ..config.config_manager import get_instruments
-
-            instruments = get_instruments()
-            for instrument in instruments:
-                if instrument in row:
-                    participant_data["instruments"][instrument] = row[instrument]
 
             json_data["participant_status"].append(participant_data)
 
@@ -549,6 +540,15 @@ class ReportFactory:
     ) -> Path | None:
         """
         Generate Data_Fetched report containing all fetched records.
+        
+        This creates a record-keeping/audit file that shows exactly which records 
+        were retrieved from REDCap during the ETL fetch stage.
+        
+        Its value:
+        - Verify which participants and events were processed
+        - Audit trail for compliance
+        - Debug data fetching issues
+        - Track which instruments were included in the validation run
 
         Args:
             all_records_df: DataFrame containing all fetched records
@@ -611,20 +611,47 @@ class ReportFactory:
 
         from ..config.config_manager import get_config
 
-        # Create basic JSON structure
-        json_data = {
-            "report_type": "basic_qc_status",
-            "generation_timestamp": datetime.now().isoformat(),
-            "run_mode": "standard",
-            "summary": {
-                "total_records_fetched": len(all_records_df),
-                "total_validation_errors": len(df_errors),
-                "participants_with_errors": len(df_errors["ptid"].unique())
-                if not df_errors.empty
-                else 0,
-            },
-            "files_generated": ["Errors/", "Data_Fetched/", "QC_Status_Report.json"],
-        }
+        # Get unique participant-event combinations
+        if all_records_df.empty:
+            logger.warning("No records to generate JSON report")
+            json_data = []
+        else:
+            unique_records = all_records_df[["ptid", "redcap_event_name"]].drop_duplicates()
+            
+            # Create upload-ready records
+            json_data = []
+            for _, row in unique_records.iterrows():
+                # Get errors for this participant-event and determine failed instruments
+                failed_instruments = []
+                if not df_errors.empty:
+                    participant_errors = df_errors[
+                        (df_errors["ptid"] == row["ptid"]) & 
+                        (df_errors["redcap_event_name"] == row["redcap_event_name"])
+                    ]
+                    if not participant_errors.empty:
+                        # Get unique instruments that have errors
+                        failed_instruments = participant_errors["instrument_name"].unique().tolist()
+                
+                # Determine QC status based on failed instruments
+                if failed_instruments:
+                    qc_status = f"Failed in instruments: {', '.join(failed_instruments)}"
+                else:
+                    qc_status = "PASSED"
+                
+                # Get current date and initials
+                config = get_config()
+                qc_run_by = config.user_initials if config.user_initials else "N/A"
+                
+                record = {
+                    "ptid": row["ptid"],
+                    "redcap_event_name": row["redcap_event_name"],
+                    "qc_status_complete": "0",
+                    "qc_run_by": qc_run_by,
+                    "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
+                    "qc_status": qc_status,
+                    "quality_control_check_complete": "0",
+                }
+                json_data.append(record)
 
         # Get output path
         config = get_config()
@@ -650,7 +677,7 @@ class ReportFactory:
             ReportMetadata(
                 report_type="basic_json_status",
                 filename=output_path.name,
-                rows_exported=0,  # Not applicable for summary report
+                rows_exported=len(json_data),
                 file_size_mb=file_size_mb,
                 export_timestamp=datetime.now(),
             )
@@ -775,8 +802,8 @@ class ReportFactory:
                 "Standard run mode - generating core outputs only (Errors, Data_Fetched, Json)"
             )
 
-            logger.info("Report generation complete: %d files created", len(generated_files))
-            return generated_files
+        logger.info("Report generation complete: %d files created", len(generated_files))
+        return generated_files
 
     def _create_generation_summary(self, export_config: ExportConfiguration) -> Path:
         """Create a summary of all generated reports."""

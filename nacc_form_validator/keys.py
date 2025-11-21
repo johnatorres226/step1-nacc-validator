@@ -8,6 +8,9 @@ Original source: https://github.com/naccdata/nacc-form-validator
 """
 
 
+"""Module for commonly used keys."""
+
+
 class SchemaDefs:
     """Class to store JSON schema attribute labels."""
 
@@ -46,3 +49,4 @@ class SchemaDefs:
     SWAP_ORDER = "swap_order"
     FUNCTION_NAME = "name"
     FUNCTION_ARGS = "args"
+    INITIAL_RECORD = 'initial_record'

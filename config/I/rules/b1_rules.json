@@ -78,45 +78,6 @@
                     88.8
                 ]
             }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "height": {
-                        "forbidden": [
-                            88.8
-                        ]
-                    }
-                },
-                "then": {
-                    "height": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "height": {
-                                        "forbidden": [
-                                            88.8
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "height": {
-                                        "compare_with": {
-                                            "comparator": "<=",
-                                            "base": "height",
-                                            "previous_record": true,
-                                            "op": "abs",
-                                            "adjustment": 5
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
         ]
     },
     "weight": {
@@ -131,45 +92,6 @@
                 "allowed": [
                     888
                 ]
-            }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "weight": {
-                        "forbidden": [
-                            888
-                        ]
-                    }
-                },
-                "then": {
-                    "weight": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "weight": {
-                                        "forbidden": [
-                                            888
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "weight": {
-                                        "compare_with": {
-                                            "comparator": "<=",
-                                            "base": "weight",
-                                            "previous_record": true,
-                                            "op": "abs",
-                                            "adjustment": 50
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
             }
         ]
     },

@@ -7,7 +7,10 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.
 Original source: https://github.com/naccdata/nacc-form-validator
 """
 
+"""Datastore module."""
+
 from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional
 
 # pylint: disable=(too-few-public-methods, no-self-use, unused-argument)
 
@@ -45,7 +48,8 @@ class Datastore(ABC):
         return self.__orderby
 
     @abstractmethod
-    def get_previous_record(self, current_record: dict[str, str]) -> dict[str, str] | None:
+    def get_previous_record(
+            self, current_record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Abstract method to return the previous visit record for the
         specified participant. Override this method to retrieve the records
         from the desired datastore/warehouse.
@@ -60,18 +64,50 @@ class Datastore(ABC):
 
     @abstractmethod
     def get_previous_nonempty_record(
-        self, current_record: dict[str, str], fields: list[str]
-    ) -> dict[str, str] | None:
+            self, current_record: Dict[str, Any],
+            ignore_empty_fields: List[str]) -> Optional[Dict[str, Any]]:
         """Abstract method to return the previous record where all fields are
         NOT empty for the specified participant. Override this method to
         retrieve the records from the desired datastore/warehouse.
 
         Args:
             current_record: Record currently being validated
-            fields: Field(s) to check for non-empty values
+            ignore_empty_fields: Field(s) to check for non-empty values
 
         Returns:
-            Dict[str, str]: Previous nonempty record or None if none found
+            Dict[str, Any]: Previous nonempty record or None if none found
+        """
+        return None
+
+    @abstractmethod
+    def get_initial_record(
+            self, current_record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Abstract method to return the initial record. Override this method
+        to retrieve the record from the desired datastore/warehouse.
+
+        Note: Return the IVP packet for the modules that has only one initial packet,
+        else return the first record sorted by visit date or form date.
+
+        Args:
+            current_record: Record currently being validated
+
+        Returns:
+            Dict[str, str]: Initial record or None if no initial record found
+        """
+        return None
+
+    @abstractmethod
+    def get_uds_ivp_record(
+            self, current_record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Abstract method to return the UDS IVP record for the particiapnt.
+        Override this method to retrieve the record from the desired
+        datastore/warehouse.
+
+        Args:
+            current_record: Record currently being validated
+
+        Returns:
+            Dict[str, str]: UDS IVP record or None if no UDS IVP found
         """
         return None
 

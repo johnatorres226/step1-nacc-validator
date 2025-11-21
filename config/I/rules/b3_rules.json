@@ -992,26 +992,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "rigidr": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "rigduprt": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "rigduprx": {
@@ -1096,26 +1076,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "rigidl": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "rigduplf": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "rigduplx": {
@@ -1186,30 +1146,6 @@
                 "then": {
                     "rigdlort": {
                         "allowed": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            },
-            {
-                "index": 2,
-                "if_op": "or",
-                "if": {
-                    "rigdlort": {
-                        "allowed": [
-                            4
-                        ]
-                    },
-                    "rigdlolf": {
-                        "allowed": [
-                            4
-                        ]
-                    }
-                },
-                "then": {
-                    "gait": {
-                        "forbidden": [
                             0
                         ],
                         "nullable": true
@@ -1392,26 +1328,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "slowingr": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "tapsrt": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "tapsrtx": {
@@ -1496,26 +1412,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "slowingl": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "tapslf": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "tapslfx": {
@@ -2284,6 +2180,30 @@
             },
             {
                 "index": 2,
+                "if_op": "or",
+                "if": {
+                    "rigdlort": {
+                        "allowed": [
+                            4
+                        ]
+                    },
+                    "rigdlolf": {
+                        "allowed": [
+                            4
+                        ]
+                    }
+                },
+                "then": {
+                    "gait": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 3,
                 "if": {
                     "gaitabn": {
                         "allowed": [
@@ -2410,26 +2330,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "postinst": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "posstab": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "posstabx": {
@@ -2514,26 +2414,6 @@
             3,
             4,
             8
-        ],
-        "temporalrules": [
-            {
-                "index": 0,
-                "previous": {
-                    "brady": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "current": {
-                    "bradykin": {
-                        "forbidden": [
-                            0
-                        ],
-                        "nullable": true
-                    }
-                }
-            }
         ]
     },
     "bradykix": {

@@ -369,6 +369,67 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "decclcog": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "cogmem": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogori": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogjudg": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "coglang": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogvis": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogattn": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogfluc": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "cogothr": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    }
+                }
             }
         ],
         "allowed": [
@@ -916,7 +977,7 @@
                 }
             }
         ],
-        "min": 15,
+        "min": 9,
         "max": 110
     },
     "cogmode": {
@@ -1033,6 +1094,127 @@
                     "decclbe": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "decclbe": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "beapathy": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "bedep": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beanx": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beeuph": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beirrit": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beagit": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "bevhall": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beahall": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "bedel": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beaggrs": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "bedisin": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beperch": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beempath": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beobcom": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beanger": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "besubab": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "berem": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "beothr": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
                     }
                 }
             }
@@ -1419,7 +1601,7 @@
                 }
             }
         ],
-        "min": 9,
+        "min": 5,
         "max": 110
     },
     "bevhall": {
@@ -1835,7 +2017,7 @@
                 }
             }
         ],
-        "min": 9,
+        "min": 5,
         "max": 110
     },
     "bedisin": {
@@ -2330,7 +2512,7 @@
                 }
             }
         ],
-        "min": 9,
+        "min": 5,
         "max": 110
     },
     "berem": {
@@ -2412,7 +2594,7 @@
                 }
             }
         ],
-        "min": 9,
+        "min": 5,
         "max": 110
     },
     "beremconf": {
@@ -2651,6 +2833,61 @@
                     "decclmot": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "decclmot": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "mogait": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "mofalls": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "moslow": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "motrem": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "molimb": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "moface": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
+                    },
+                    "mospeech": {
+                        "forbidden": [
+                            0,
+                            9
+                        ]
                     }
                 }
             }

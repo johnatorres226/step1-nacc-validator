@@ -3453,8 +3453,8 @@
                 "index": 0,
                 "if": {
                     "alzdis": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -3596,8 +3596,8 @@
                 "index": 0,
                 "if": {
                     "lbdis": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -3746,8 +3746,8 @@
                 "index": 0,
                 "if": {
                     "psp": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -3801,8 +3801,8 @@
                 "index": 0,
                 "if": {
                     "cort": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -3856,8 +3856,8 @@
                 "index": 0,
                 "if": {
                     "ftldmo": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -3911,8 +3911,8 @@
                 "index": 0,
                 "if": {
                     "ftldnos": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4046,8 +4046,8 @@
                 "index": 0,
                 "if": {
                     "cvd": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4082,8 +4082,8 @@
                 "index": 0,
                 "if": {
                     "msa": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4192,8 +4192,8 @@
                 "index": 0,
                 "if": {
                     "downs": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4228,8 +4228,8 @@
                 "index": 0,
                 "if": {
                     "hunt": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4264,8 +4264,8 @@
                 "index": 0,
                 "if": {
                     "prion": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4366,8 +4366,8 @@
                 "index": 0,
                 "if": {
                     "othcog": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }
@@ -4404,8 +4404,8 @@
                 "index": 1,
                 "if": {
                     "othcog": {
-                        "allowed": [
-                            0
+                        "forbidden": [
+                            1
                         ],
                         "nullable": true
                     }

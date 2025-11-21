@@ -124,44 +124,6 @@
                     "adjustment": 20
                 }
             }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "momyob": {
-                        "forbidden": [
-                            9999
-                        ]
-                    }
-                },
-                "then": {
-                    "momyob": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "momyob": {
-                                        "forbidden": [
-                                            9999
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "momyob": {
-                                        "compare_with": {
-                                            "comparator": "==",
-                                            "base": "momyob",
-                                            "previous_record": true,
-                                            "ignore_empty": true
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
         ]
     },
     "momdage": {
@@ -178,71 +140,12 @@
                     999
                 ]
             }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "momdage": {
-                        "forbidden": [
-                            888,
-                            999
-                        ]
-                    }
-                },
-                "then": {
-                    "momdage": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "momdage": {
-                                        "forbidden": [
-                                            888,
-                                            999
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "momdage": {
-                                        "compare_with": {
-                                            "comparator": "==",
-                                            "base": "momdage",
-                                            "previous_record": true,
-                                            "ignore_empty": true
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
         ]
     },
     "mometpr": {
         "required": true,
         "type": "string",
-        "regex": "^([0][0-9]|[1][0-2]|99)$",
-        "temporalrules": [
-            {
-                "index": 0,
-                "ignore_empty": "momneur",
-                "previous": {
-                    "momneur": {
-                        "max": 7
-                    }
-                },
-                "current": {
-                    "mometpr": {
-                        "compare_with": {
-                            "comparator": "!=",
-                            "base": "00"
-                        }
-                    }
-                }
-            }
-        ]
+        "regex": "^([0][0-9]|[1][0-2]|99)$"
     },
     "mometsec": {
         "nullable": true,
@@ -411,44 +314,6 @@
                     "adjustment": 20
                 }
             }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "dadyob": {
-                        "forbidden": [
-                            9999
-                        ]
-                    }
-                },
-                "then": {
-                    "dadyob": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "dadyob": {
-                                        "forbidden": [
-                                            9999
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "dadyob": {
-                                        "compare_with": {
-                                            "comparator": "==",
-                                            "base": "dadyob",
-                                            "previous_record": true,
-                                            "ignore_empty": true
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
         ]
     },
     "daddage": {
@@ -465,71 +330,12 @@
                     999
                 ]
             }
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "daddage": {
-                        "forbidden": [
-                            888,
-                            999
-                        ]
-                    }
-                },
-                "then": {
-                    "daddage": {
-                        "temporalrules": [
-                            {
-                                "index": 0,
-                                "previous": {
-                                    "daddage": {
-                                        "forbidden": [
-                                            888,
-                                            999
-                                        ]
-                                    }
-                                },
-                                "current": {
-                                    "daddage": {
-                                        "compare_with": {
-                                            "comparator": "==",
-                                            "base": "daddage",
-                                            "previous_record": true,
-                                            "ignore_empty": true
-                                        }
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
         ]
     },
     "dadetpr": {
         "required": true,
         "type": "string",
-        "regex": "^([0][0-9]|[1][0-2]|99)$",
-        "temporalrules": [
-            {
-                "index": 0,
-                "ignore_empty": "dadneur",
-                "previous": {
-                    "dadneur": {
-                        "max": 7
-                    }
-                },
-                "current": {
-                    "dadetpr": {
-                        "compare_with": {
-                            "comparator": "!=",
-                            "base": "00"
-                        }
-                    }
-                }
-            }
-        ]
+        "regex": "^([0][0-9]|[1][0-2]|99)$"
     },
     "dadetsec": {
         "nullable": true,
@@ -693,13 +499,7 @@
                     77
                 ]
             }
-        ],
-        "compare_with": {
-            "comparator": "==",
-            "base": "sibs",
-            "previous_record": true,
-            "ignore_empty": true
-        }
+        ]
     },
     "sib1yob": {
         "nullable": true,
@@ -1051,7 +851,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -1407,7 +1206,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -1763,7 +1561,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -2119,7 +1916,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -2475,7 +2271,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -2831,7 +2626,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -3187,7 +2981,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -3543,7 +3336,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -3899,7 +3691,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -4255,7 +4046,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -4611,7 +4401,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -4967,7 +4756,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -5323,7 +5111,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -5679,7 +5466,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -6035,7 +5821,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -6391,7 +6176,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -6747,7 +6531,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -7103,7 +6886,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -7459,7 +7241,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -7818,7 +7599,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -7828,13 +7608,7 @@
         "required": true,
         "type": "integer",
         "min": 0,
-        "max": 15,
-        "compare_with": {
-            "comparator": "==",
-            "base": "kids",
-            "previous_record": true,
-            "ignore_empty": true
-        }
+        "max": 15
     },
     "kid1yob": {
         "nullable": true,
@@ -8132,7 +7906,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -8434,7 +8207,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -8736,7 +8508,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -9038,7 +8809,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -9340,7 +9110,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -9642,7 +9411,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -9944,7 +9712,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -10246,7 +10013,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -10548,7 +10314,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -10850,7 +10615,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -11152,7 +10916,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -11454,7 +11217,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -11756,7 +11518,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -12058,7 +11819,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }
@@ -12363,7 +12123,6 @@
             },
             {
                 "allowed": [
-                    888,
                     999
                 ]
             }

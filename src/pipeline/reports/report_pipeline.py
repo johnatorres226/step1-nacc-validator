@@ -300,9 +300,9 @@ class _SchemaAndRulesCache:
                         rules = load_json_rules_for_instrument(instrument_name)
 
                     # Build schema without temporal rules since no datastore is
-                    # available
+                    # available. Include compatibility rules to catch cross-field logic errors.
                     schema = build_cerberus_schema_for_instrument(
-                        instrument_name, include_temporal_rules=False
+                        instrument_name, include_temporal_rules=False, include_compatibility_rules=True
                     )
                     self._cache[cache_key] = (schema, rules)
                 except Exception as e:  # noqa: BLE001 - intentional broad catch for rule loading
@@ -382,18 +382,16 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
 
             # Create QualityCheck instance without datastore (temporal rules already
             # excluded from schema)
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
+            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
 
             # Validate record
-            validation_result = qc.validate_record(record_dict)
+            passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
 
             # Process results
             pk_value = record_dict.get(primary_key_field, "unknown")
 
             # Check if validation failed or had system errors
-            if not validation_result.passed or validation_result.sys_failure:
-                # Extract errors from the ValidationResult object
-                record_errors = validation_result.errors
+            if not passed or sys_failure:
 
                 # Get packet value for tracking
                 packet_value = record_dict.get("packet", "unknown")
@@ -581,14 +579,14 @@ def validate_data_with_hierarchical_routing(
 
             # For hierarchical routing, always use the resolved rules directly
             # The hierarchical resolver already provides flat, variant-specific
-            # rules
+            # rules. Include compatibility rules to catch cross-field logic errors.
             schema = _build_schema_from_raw(
                 resolved_rules, include_temporal_rules=False, include_compatibility_rules=True
             )
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
-            validation_result = qc.validate_record(record_dict)
+            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
             pk_value = record_dict.get(primary_key_field, "unknown")
@@ -611,9 +609,7 @@ def validate_data_with_hierarchical_routing(
                 discriminant_value = record_dict.get(discriminant_var, "")
                 discriminant_info = "%s=%s" % (discriminant_var, discriminant_value)
 
-            if not validation_result.passed or validation_result.sys_failure:
-                # Extract errors from the ValidationResult object
-                record_errors = validation_result.errors
+            if not passed or sys_failure:
 
                 # Process each field that has errors
                 for field_name, field_errors in record_errors.items():
@@ -640,7 +636,7 @@ def validate_data_with_hierarchical_routing(
                         "error_count": len(
                             [
                                 err
-                                for field_errors in validation_result.errors.values()
+                                for field_errors in record_errors.values()
                                 for err in field_errors
                             ]
                         ),
@@ -802,9 +798,11 @@ def validate_data_with_packet_routing(
 
             try:
                 # Try to build schema from rules directly
+                # Include compatibility rules to catch cross-field logic errors
                 schema = build_cerberus_schema_for_instrument(
                     instrument_name,
                     include_temporal_rules=False,
+                    include_compatibility_rules=True,
                 )
                 # Update schema with packet-specific rules if different
                 if final_rules != packet_rules:
@@ -821,16 +819,14 @@ def validate_data_with_packet_routing(
                 schema = final_rules
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(schema=schema, pk_field=primary_key_field, datastore=None)
-            validation_result = qc.validate_record(record_dict)
+            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
             pk_value = record_dict.get(primary_key_field, "unknown")
             packet_value = record_dict.get("packet", "unknown")
 
-            if not validation_result.passed or validation_result.sys_failure:
-                # Extract errors from the ValidationResult object
-                record_errors = validation_result.errors
+            if not passed or sys_failure:
 
                 # Get the packet-specific rules path for error tracking
                 packet_value = record_dict.get("packet", "unknown")
@@ -967,7 +963,10 @@ def _get_schema_and_rules_for_record(
 
     rules = validation_rules_cache.get(cache_key, {})
     # Build schema without temporal rules since no datastore is available
-    schema = build_cerberus_schema_for_instrument(instrument_name, include_temporal_rules=False)
+    # Include compatibility rules to catch cross-field logic errors
+    schema = build_cerberus_schema_for_instrument(
+        instrument_name, include_temporal_rules=False, include_compatibility_rules=True
+    )
 
     return schema, rules
 

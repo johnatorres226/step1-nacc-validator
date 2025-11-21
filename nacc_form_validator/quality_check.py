@@ -14,145 +14,137 @@ initializes a `NACCValidator` instance and uses it to perform the validation,
 capturing any errors or system failures that occur.
 """
 
-from collections.abc import Mapping
-from typing import Any
+"""Module for performing data quality checks."""
 
+from typing import Any, Dict, List, Optional, Tuple
+
+from cerberus.errors import DocumentErrorTree
 from cerberus.schema import SchemaError
 
-from .datastore import Datastore
-from .errors import CustomErrorHandler
-from .models import ValidationResult
-from .nacc_validator import NACCValidator, ValidationException
+from nacc_form_validator.datastore import Datastore
+from nacc_form_validator.errors import CustomErrorHandler
+from nacc_form_validator.nacc_validator import NACCValidator, ValidationException
 
 
 class QualityCheckException(Exception):
-    """Custom exception for errors during QualityCheck initialization."""
+    """Raised if something goes wrong while loading rule definitions."""
 
 
 class QualityCheck:
-    """Coordinates the validation of a single data record against a schema.
-
-    This class wraps the `NACCValidator`, configuring it with a specific schema,
-    primary key for the data validation, and optional datastore for temporal
-    validations. It provides a simple interface to validate a record and
-    retrieve structured results.
-
-    Attributes:
-        pk_field: The primary key field name for the record.
-        schema: The validation schema rules.
-        datastore: Optional datastore for temporal and previous record validations.
-        validator: The configured `NACCValidator` instance.
-    """
+    """Class to initiate validator object with the provided schema and run the
+    data quality checks."""
 
     def __init__(
         self,
-        schema: Mapping[str, Any],
         pk_field: str,
-        datastore: Datastore | None = None,
-        strict: bool = False,
-    ) -> None:
-        """Initialize the QualityCheck with schema, primary key, and optional datastore.
+        schema: Dict[str, Dict[str, Any]],
+        strict: bool = True,
+        datastore: Optional[Datastore] = None,
+    ):
+        """
 
         Args:
-            schema: The Cerberus validation schema to apply.
-            pk_field: The name of the primary key field.
-            datastore: Optional datastore instance for temporal validations.
-                      If None, temporal validations will be skipped with warnings.
-            strict: Whether to disallow unknown fields in validation.
-
-        Raises:
-            QualityCheckException: If the schema is invalid or there's a
-                                   configuration error.
+            pk_field: Primary key field of the project
+            schema: Validation rules schema as Dict[field, rule objects].
+            strict (optional): Validation mode, defaults to True.
+                    If False, unknown forms/fields are skipped from validation
+            datastore (optional): Datastore instance to retrieve previous data
         """
-        self.pk_field: str = pk_field
-        self.schema: Mapping[str, Any] = schema
-        self.datastore: Datastore | None = datastore
-        self.strict: bool = strict
-        self.validator: NACCValidator = self._init_validator()
 
-    # @profile  # Uncomment if using `line_profiler` or similar tools
-    def _init_validator(self) -> NACCValidator:
-        """Creates and configures the NACCValidator instance.
+        self.__pk_field: str = pk_field
+        self.__strict: bool = strict
+        self.__schema: Dict[str, Dict[str, Any]] = schema
+
+        # Validator object for rule evaluation
+        self.__validator: NACCValidator = None  # type: ignore
+        self.__init_validator(datastore)
+
+    @property
+    def pk_field(self) -> str:
+        """primary key field.
 
         Returns:
-            A configured `NACCValidator` instance.
+            str: primary key field of validated data
+        """
+        return self.__pk_field
+
+    @property
+    def schema(self) -> Dict[str, Dict[str, Any]]:
+        """The schema property.
+
+        Returns:
+            Dict[str, Dict[str, Any]]:
+            Schema of validation rules defined in the project
+        """
+        return self.__schema
+
+    @property
+    def validator(self) -> NACCValidator:
+        """The validator property.
+
+        Returns:
+            NACCValidator: Validator object for rule evaluation
+        """
+        return self.__validator
+
+    def __init_validator(self, datastore: Optional[Datastore] = None):
+        """Initialize the validator object.
 
         Raises:
-            QualityCheckException: If there is a schema compilation error or
-                                   datastore configuration mismatch.
+            QualityCheckException: If there is an schema error
         """
         try:
-            validator = NACCValidator(
+            self.__validator = NACCValidator(
                 self.schema,
-                allow_unknown=not self.strict,  # Use strict mode setting
+                allow_unknown=not self.__strict,
                 error_handler=CustomErrorHandler(self.schema),
             )
-        except (SchemaError, RuntimeError) as e:
-            raise QualityCheckException(f"Schema Error: {e}") from e
+        except (SchemaError, RuntimeError) as error:
+            raise QualityCheckException(f"Schema Error - {error}") from error
 
-        # Set primary key
-        validator.primary_key = self.pk_field
+        if datastore and self.pk_field != datastore.pk_field:
+            raise QualityCheckException(
+                f"Mismatched primary key fields - {self.pk_field}, {datastore.pk_field}"
+            )
 
-        # Set datastore if provided and validate primary key compatibility
-        if self.datastore:
-            if self.datastore.pk_field != self.pk_field:
-                raise QualityCheckException(
-                    f"Mismatched primary key fields: schema='{self.pk_field}', "
-                    f"datastore='{self.datastore.pk_field}'"
-                )
-            validator.datastore = self.datastore
+        self.validator.primary_key = self.pk_field
+        self.validator.datastore = datastore
 
-        return validator
-
-    def validate_record(self, record: dict[str, Any]) -> ValidationResult:
-        """Validates a single record against the configured schema.
-
-        This method performs type casting on the input record before running
-        the validation. It captures validation results, including system-level
-        failures (e.g., errors in rule logic) separately from standard
-        validation errors.
+    def validate_record(
+        self, record: Dict[str, str]
+    ) -> Tuple[bool, bool, Dict[str, List[str]], DocumentErrorTree]:
+        """Evaluate the record against the defined rules using cerberus.
 
         Args:
-            record: The data record to validate, as a dictionary.
+            record (Dict[str, str]): Record to be validated, Dict[field, value]
 
         Returns:
-            A `ValidationResult` object containing the outcome of the validation.
-
-        Raises:
-            QualityCheckException: If the validator was not initialized correctly.
+            bool: True if the record satisfied all rules
+            bool: True if system error occurred
+            Dict[str, List[str]: Dict of formatted error messages by variable
+            DocumentErrorTree: A dict like object of ValidationError instances
+            (check https://docs.python-cerberus.org/errors.html)
         """
-        if not self.validator:
-            # This should not be reachable due to the __init__ structure,
-            # but it's a safeguard.
-            raise QualityCheckException("Validator is not initialized.")
 
-        # Cast fields to appropriate data types as defined in the schema.
-        # A copy is made to avoid modifying the original record.
+        # All the fields in the input record represented as string values,
+        # cast the fields to appropriate data types according to the schema
         cst_record = self.validator.cast_record(record.copy())
 
+        # Validate the record against the defined schema
         sys_failure = False
         passed = False
         try:
-            # Reset state for the new validation run
             self.validator.reset_sys_errors()
             self.validator.reset_record_cache()
             passed = self.validator.validate(cst_record, normalize=False)
         except ValidationException:
-            # Captures critical errors within the validation logic itself
             sys_failure = True
-        except Exception:
-            # Any unexpected exception raised by the underlying validator
-            # should be treated as a system failure for the QualityCheck
-            # (tests mock validator.validate to raise Exception("System error")).
-            sys_failure = True
-            passed = False
 
-        errors = self.validator.sys_errors if sys_failure else self.validator.errors
-        error_tree = None if sys_failure else self.validator.document_error_tree
+        if sys_failure:
+            errors = self.validator.sys_errors
+            error_tree = None
+        else:
+            errors = self.validator.errors
+            error_tree = self.validator.document_error_tree
 
-        return ValidationResult(
-            passed=passed,
-            sys_failure=sys_failure,
-            errors=errors,
-            error_tree=error_tree,
-        )
+        return passed, sys_failure, errors, error_tree

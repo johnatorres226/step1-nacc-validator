@@ -290,7 +290,25 @@ class DataSaver:
         self.saved_files: list[Path] = []
 
     def save_etl_output(self, df: pd.DataFrame, filename_prefix: str) -> Path | None:
-        """Save ETL output with consistent naming."""
+        """
+        Save ETL output with consistent naming.
+        
+        This creates a record-keeping/audit file that shows exactly which records 
+        were retrieved from REDCap during the ETL fetch stage. 
+        
+        Its value:
+        - Verify which participants and events were processed
+        - Audit trail for compliance
+        - Debug data fetching issues
+        - Track which instruments were included in the validation run
+        
+        Args:
+            df: DataFrame containing the ETL output data
+            filename_prefix: Prefix for the output filename
+            
+        Returns:
+            Path to saved file or None if DataFrame is empty or no output path configured
+        """
         if df.empty:
             logger.warning(f"Empty DataFrame, skipping save for {filename_prefix}")
             return None

@@ -1,85 +1,40 @@
-[project]
+[tool.poetry]
 name = "udsv4-redcap-qc-validator"
 version = "0.1.0"
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
-requires-python = ">=3.11"
-license = {text = "Mozilla Public License 2.0"}
-authors = [
-    {name = "John Torres", email = "sdccunm.john@gmail.com"}
-]
-maintainers = [
-    {name = "John Torres", email = "sdccunm.john@gmail.com"}
-]
-keywords = ["redcap", "qc", "validation", "udsv4", "nacc"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-]
-dependencies = [
-    "cerberus>=1.3.5",
-    "python-dateutil>=2.9.0",
-    "types-python-dateutil>=2.9.0.20240316",
-    "json-logic",
-    "python-dotenv",
-    "python-decouple",
-    "jsonschema",
-    "pandas",
-    "requests",
-    "setuptools",
-    "ipython",
-    "click>=8.0.0",
-    "rich>=13.0.0",
-    "typer>=0.9.0"
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.2.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "ruff>=0.12.0",
-    "mypy>=1.0.0",
-    "pre-commit>=3.0.0",
-    "wheel>=0.40.0",
-    "build>=0.10.0",
-    "twine>=5.0.0"
-]
-
-[project.urls]
-Homepage = "https://github.com/johnatorres226/step1-nacc-validator"
-Repository = "https://github.com/johnatorres226/step1-nacc-validator"
-
-[project.scripts]
-udsv4-qc = "cli.cli:cli"
-
-[tool.poetry]
-name = "udsv4-redcap-qc-validator"
-version = "0.1.0"
-description = "REDCap Data QC Validator for UDSv4 using NACC From Validator Tools"
 license = "MPL-2.0"
 packages = [
+    { include = "nacc_form_validator" },
     { include = "pipeline", from = "src" },
     { include = "cli", from = "src" },
-    { include = "nacc_form_validator" },
-]
-include = [
-    "ruff.toml",
-    "README.md",
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.11"
+cerberus = ">=1.3.5"
+python-dateutil = ">=2.9.0"
+types-python-dateutil = ">=2.9.0.20240316"
+json-logic = "*"
+python-dotenv = "*"
+python-decouple = "*"
+jsonschema = "*"
+pandas = "*"
+requests = "*"
+setuptools = "*"
+ipython = "*"
+click = ">=8.0.0"
+rich = ">=13.0.0"
+typer = ">=0.9.0"
+
+[tool.poetry.scripts]
+udsv4-qc = "cli.cli:cli"
+
 [tool.poetry.group.dev.dependencies]
-# Development and CI tools required by the workflow
-ruff = "^0.12.0"
-black = "^23.0.0"
-mypy = "^1.0.0"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
-pre-commit = "^3.0.0"
+ruff = "^0.12.0"
+mypy = "^1.0.0"
 wheel = "^0.40.0"
 build = "^0.10.0"
 twine = "^5.0.0"
@@ -90,204 +45,19 @@ types-python-dateutil = "^2.9.0.20250822"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 100
-target-version = ['py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 100
-
 [tool.ruff]
-# Set the maximum line length to 100 (project-specific setting)
 line-length = 100
-# Target Python 3.13 (the version we're using)
 target-version = "py313"
-# Show fixes in output
-show-fixes = true
-# Respect .gitignore files
-respect-gitignore = true
 
 [tool.ruff.lint]
-# Enable comprehensive rule sets for professional-grade linting
-select = [
-    "E",     # pycodestyle errors
-    "W",     # pycodestyle warnings  
-    "F",     # Pyflakes
-    "I",     # isort
-    "N",     # pep8-naming
-    "UP",    # pyupgrade
-    "YTT",   # flake8-2020
-    "ANN",   # flake8-annotations
-    "S",     # flake8-bandit
-    "BLE",   # flake8-blind-except
-    "FBT",   # flake8-boolean-trap
-    "B",     # flake8-bugbear
-    "A",     # flake8-builtins
-    "COM",   # flake8-commas
-    "C4",    # flake8-comprehensions
-    "DTZ",   # flake8-datetimez
-    "T10",   # flake8-debugger
-    "EM",    # flake8-errmsg
-    "EXE",   # flake8-executable
-    "ISC",   # flake8-implicit-str-concat
-    "ICN",   # flake8-import-conventions
-    "G",     # flake8-logging-format
-    "INP",   # flake8-no-pep420
-    "PIE",   # flake8-pie
-    "T20",   # flake8-print
-    "PYI",   # flake8-pyi
-    "PT",    # flake8-pytest-style
-    "Q",     # flake8-quotes
-    "RSE",   # flake8-raise
-    "RET",   # flake8-return
-    "SLF",   # flake8-self
-    "SIM",   # flake8-simplify
-    "TID",   # flake8-tidy-imports
-    "TCH",   # flake8-type-checking
-    "ARG",   # flake8-unused-arguments
-    "PTH",   # flake8-use-pathlib
-    "ERA",   # eradicate
-    "PD",    # pandas-vet
-    "PGH",   # pygrep-hooks
-    "PL",    # Pylint
-    "TRY",   # tryceratops
-    "NPY",   # NumPy-specific rules
-    "RUF",   # Ruff-specific rules
-]
-
-ignore = [
-    "ANN204",   # Missing return type annotation for special method
-    "S101",     # Use of `assert` detected (needed for tests)
-    "T20",      # Avoid print statements (useful for debugging)
-    "COM812",   # Trailing comma missing (conflicts with formatter)
-    "ISC001",   # Implicitly concatenated string literals (conflicts with formatter)
-]
+select = ["E", "F", "W", "I", "N", "UP", "B", "S", "SIM", "PL"]
+ignore = ["S101", "PLR2004"]
 
 [tool.ruff.lint.per-file-ignores]
-# Allow specific violations in test files
-"tests/*" = [
-    "S101",     # Allow assert statements in tests
-    "ANN",      # Don't require type annotations in tests
-    "PLR2004",  # Magic value used in comparison
-    "S105",     # Possible hardcoded password
-    "S106",     # Possible hardcoded password
-]
-# Allow print statements in CLI modules
-"src/cli/*" = ["T20"]
-# Relax some rules for configuration files
-"**/config*.py" = [
-    "PLR0913",  # Too many arguments to function call
-    "S105",     # Possible hardcoded password
-    "S106",     # Possible hardcoded password
-]
+"tests/*" = ["S101", "PLR2004"]
 
-[tool.ruff.lint.flake8-annotations]
-allow-star-arg-any = true
-ignore-fully-untyped = true
-
-[tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["typer.Option", "typer.Argument"]
-
-[tool.ruff.lint.pylint]
-max-args = 8
-max-branches = 15
-max-returns = 8
-max-statements = 60
-
-[tool.ruff.lint.isort]
-force-single-line = false
-lines-after-imports = 2
-known-first-party = ["qc_pipeline", "nacc_form_validator", "cli"]
-split-on-trailing-comma = true
-
-[tool.ruff.format]
-# Use double quotes for strings
-quote-style = "double"
-# Use spaces around operators  
-docstring-code-format = true
-# Skip magic trailing comma
-skip-magic-trailing-comma = false
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = [
-    "-ra",
-    "-q", 
-    "--strict-markers",
-    "--strict-config",
-    "--verbose",
-    "--cov=qc_pipeline",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "config: marks tests related to configuration",
-    "fetching: marks tests related to data fetching",
-    "routing: marks tests related to data routing",
-    "validation: marks tests related to pipeline validation",
-    "output: marks tests related to output generation",
-]
-filterwarnings = [
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning", 
-    "ignore::PendingDeprecationWarning",
-]
-log_cli = true
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-junit_family = "xunit2"
-
-[tool.coverage.run]
-source = ["qc_pipeline"]
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/__pycache__/*",
-    "*/venv/*",
-    "*/virtualenv/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
