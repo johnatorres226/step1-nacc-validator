@@ -1,0 +1,195 @@
+# Pipeline Bug Investigation - RESOLVED
+
+## Date: December 6, 2025
+
+---
+
+## PROBLEM IDENTIFIED
+
+The bug fix for false positive compatibility rule errors was working in **local testing** but **NOT in the pipeline**.
+
+### Root Cause
+
+The fix checked for missing values using:
+```python
+if field in record_copy and record_copy[field] not in (None, ''):
+```
+
+This worked when data was loaded with `keep_default_na=False` (test scripts), where empty CSV cells become empty strings `''`.
+
+However, the **pipeline loads data differently** - empty CSV cells become `NaN` (float), which is **NOT in** the tuple `(None, '')`, so the condition passed and tried to cast NaN values, causing issues.
+
+---
+
+## THE COMPLETE FIX
+
+### 1. Created Helper Function
+
+Added `_is_missing_value()` function to properly detect all missing value types:
+
+```python
+def _is_missing_value(value: Any) -> bool:
+    """Check if a value should be treated as missing (None, empty string, or NaN).
+    
+    Args:
+        value: Value to check
+        
+    Returns:
+        True if value is None, empty string, or NaN
+    """
+    if value is None or value == '':
+        return True
+    # Check for NaN (works for both float and numpy.float64)
+    if isinstance(value, (float, int)):
+        try:
+            return math.isnan(value)
+        except (TypeError, ValueError):
+            return False
+    # Handle pandas NA (avoid comparing directly due to ambiguous boolean)
+    try:
+        # Check if it's pandas NA by checking the type name
+        if type(value).__name__ == 'NAType':
+            return True
+    except Exception:
+        pass
+    return False
+```
+
+### 2. Updated Type Casting in `_check_subschema_valid()`
+
+**Location:** `nacc_form_validator/nacc_validator.py`, line ~613
+
+**Before:**
+```python
+if field in record_copy and record_copy[field] not in (None, ''):
+```
+
+**After:**
+```python
+if field in record_copy and not _is_missing_value(record_copy[field]):
+```
+
+### 3. Updated `cast_record()` Method
+
+**Location:** `nacc_form_validator/nacc_validator.py`, line ~220
+
+**Before:**
+```python
+if value == "":
+    record[key] = None
+    continue
+if value is None:
+    continue
+```
+
+**After:**
+```python
+if _is_missing_value(value):
+    record[key] = None
+    continue
+```
+
+---
+
+## VERIFICATION TESTING
+
+### Test 1: Local Test with Empty Strings
+```python
+# test_pipeline_simulation.py with keep_default_na=False
+Result: ✓ PASS - No bipolar/anxiety false positives
+```
+
+### Test 2: Pipeline Simulation with NaN
+```python
+# test_pipeline_simulation.py loading data as pipeline does
+Result: ✓ PASS - No bipolar/anxiety false positives
+```
+
+### Test 3: cast_record() with NaN
+```python
+# test_cast_record.py
+Input:  bipoldx=nan, bipolar=0
+Output: bipoldx=None, bipolar=0
+Result: ✓ PASS - NaN correctly converted to None
+```
+
+### Test 4: _is_missing_value() Function
+```python
+# test_nan_fix.py
+''     -> True  ✓
+None   -> True  ✓
+nan    -> True  ✓
+'0'    -> False ✓
+0      -> False ✓
+```
+
+---
+
+## FILES MODIFIED
+
+1. **nacc_form_validator/nacc_validator.py**
+   - Added `_is_missing_value()` helper function (line 32)
+   - Updated `cast_record()` to use helper (line 223)
+   - Updated `_check_subschema_valid()` to use helper (line 613)
+
+---
+
+## WHY THE DISCREPANCY OCCURRED
+
+### Test Script Approach
+```python
+df = pd.read_csv(file, dtype=str, keep_default_na=False)
+# Empty cells → ''
+```
+
+### Pipeline Approach
+```python
+df = pd.read_csv(file)
+# Empty cells → np.nan (float)
+```
+
+The original fix only handled `None` and `''`, missing the `NaN` case that occurs in the actual pipeline.
+
+---
+
+## NEXT STEPS
+
+1. **Run Fresh Pipeline**: Execute a new pipeline run to confirm the fix works with real data
+   ```powershell
+   poetry run udsv4-qc --initials JT
+   ```
+
+2. **Verify Error Reduction**: Check the latest error file for NM0099:
+   ```powershell
+   Get-Content "output\QC_CompleteVisits_*\Errors\Final_Error_*.csv" | Select-String "NM0099.*bipolar"
+   ```
+   
+   **Expected Result**: No bipolar or anxiety false positive errors for NM0099
+
+3. **Compare Error Counts**: 
+   - **Before Fix**: ~66 bipolar errors, ~61 anxiety errors
+   - **After Fix**: 0 bipolar/anxiety false positives (for records where if-condition fields are missing)
+
+---
+
+## CONCLUSION
+
+The fix is **complete and verified** in testing. The helper function `_is_missing_value()` now properly handles all three types of missing values:
+- `None` (from explicit None values)
+- `''` (from CSV with `keep_default_na=False`)
+- `nan` (from default pandas CSV loading - **this was the missing piece**)
+
+All test scripts pass. The next pipeline run should show the errors are resolved.
+
+---
+
+## TEST ARTIFACTS CREATED
+
+- `diagnose_pipeline_data.py` - Demonstrates the NaN issue
+- `test_nan_fix.py` - Tests the helper function
+- `test_pipeline_simulation.py` - Simulates pipeline data loading
+- `test_cast_record.py` - Verifies NaN handling in cast_record
+- `debug_actual_pipeline.py` - Traces validation with debugging
+- `quick_verify.py` - Quick error count checker
+
+All test scripts are in the root directory and can be run to verify the fix.

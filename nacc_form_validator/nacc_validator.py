@@ -29,6 +29,33 @@ from nacc_form_validator.keys import SchemaDefs
 log = logging.getLogger(__name__)
 
 
+def _is_missing_value(value: Any) -> bool:
+    """Check if a value should be treated as missing (None, empty string, or NaN).
+    
+    Args:
+        value: Value to check
+        
+    Returns:
+        True if value is None, empty string, or NaN
+    """
+    if value is None or value == '':
+        return True
+    # Check for NaN (works for both float and numpy.float64)
+    if isinstance(value, (float, int)):
+        try:
+            return math.isnan(value)
+        except (TypeError, ValueError):
+            return False
+    # Handle pandas NA (avoid comparing directly due to ambiguous boolean)
+    try:
+        # Check if it's pandas NA by checking the type name
+        if type(value).__name__ == 'NAType':
+            return True
+    except Exception:
+        pass
+    return False
+
+
 class ValidationException(Exception):
     """Raised when an system error occurs during validation."""
 
@@ -193,10 +220,8 @@ class NACCValidator(Validator):
             # otherwise data type validation is triggered.
             # Don't remove empty fields from the record, if removed, any
             # validation rules defined for that field will not be triggered.
-            if value == "":
+            if _is_missing_value(value):
                 record[key] = None
-                continue
-            if value is None:
                 continue
 
             if key in self.dtypes:
@@ -580,7 +605,49 @@ class NACCValidator(Validator):
         valid = operator != "OR"
         errors: Dict[str, Any] = {}
 
+        # Cast record values for fields in the conditions to ensure proper type checking
+        # This is necessary for cross-form compatibility rules where if-condition fields
+        # may not be in the current form's schema and thus not cast by cast_record()
+        record_copy = record.copy()
         for field, conds in all_conditions.items():
+            if field in record_copy and not _is_missing_value(record_copy[field]):
+                # Infer type from the conditions
+                field_type = conds.get('type')
+                if not field_type and 'allowed' in conds:
+                    # Infer type from allowed values
+                    allowed_vals = conds['allowed']
+                    if allowed_vals and isinstance(allowed_vals[0], int):
+                        field_type = 'integer'
+                    elif allowed_vals and isinstance(allowed_vals[0], float):
+                        field_type = 'float'
+                
+                # Cast the value if we know the type
+                if field_type == 'integer' and isinstance(record_copy[field], str):
+                    try:
+                        record_copy[field] = int(record_copy[field])
+                    except (ValueError, TypeError):
+                        pass  # Keep as string if conversion fails
+                elif field_type == 'float' and isinstance(record_copy[field], str):
+                    try:
+                        record_copy[field] = float(record_copy[field])
+                    except (ValueError, TypeError):
+                        pass  # Keep as string if conversion fails
+
+        for field, conds in all_conditions.items():
+            # Check if the field is missing or has a missing value (None, '', or NaN)
+            # For compatibility rules, if a field in the if-condition is missing or empty,
+            # treat it as "condition not satisfied" to prevent false positives
+            if field not in record_copy or _is_missing_value(record_copy[field]):
+                if operator == "OR":
+                    # For OR, a missing field means this condition fails,
+                    # but other conditions might still pass
+                    continue
+                else:
+                    # For AND, a missing field means the entire condition fails
+                    # (condition not satisfied)
+                    valid = False
+                    break
+            
             subschema = {field: conds}
 
             temp_validator = NACCValidator(
@@ -595,7 +662,7 @@ class NACCValidator(Validator):
                 temp_validator.datastore = self.datastore
 
             if operator == "OR":
-                valid = valid or temp_validator.validate(record,
+                valid = valid or temp_validator.validate(record_copy,
                                                          normalize=False)
                 # if something passed, don't need to evaluate rest,
                 # and ignore any errors found
@@ -606,7 +673,7 @@ class NACCValidator(Validator):
                 errors.update(temp_validator.errors)
 
             # Evaluate as logical AND operation
-            elif not temp_validator.validate(record, normalize=False):
+            elif not temp_validator.validate(record_copy, normalize=False):
                 valid = False
                 errors = temp_validator.errors
                 break

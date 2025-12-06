@@ -5,6 +5,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Cross-Form Compatibility Rule False Positives** - Fixed critical issue in `nacc_form_validator/nacc_validator.py` where compatibility rules referencing fields from other forms were generating false positive errors when those fields were missing or empty. Changed condition in `_check_subschema_valid()` from `if field in record_copy and _is_missing_value(...)` to `if field not in record_copy or _is_missing_value(...)` to properly handle both absent fields and fields with missing values. This eliminates false positives for cross-form validation rules (e.g., apnea/apneadx, bipolar/bipoldx, etc.).
+
+### Changed
+- **Removed Caching from Report Pipeline** - Eliminated all caching mechanisms in `src/pipeline/reports/report_pipeline.py` to ensure fresh rule loading on each validation run. Removed `_SchemaAndRulesCache` and `_SchemaAndRulesOptimizedCache` classes, replacing with direct rule loading.
+- **Updated I4 Rules Configuration** - Fixed field name in `config/I4/rules/a5d2_rules.json` line 4617 from "anxiet" to "anxiety" to match current form specifications.
+
 ## [0.1.0] - 2025-09-10
 
 ### Added

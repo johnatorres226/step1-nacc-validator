@@ -244,81 +244,49 @@ def _collect_processed_records_info(
 # =============================================================================
 
 
-class _SchemaAndRulesCache:
+def _load_schema_and_rules(
+    instrument_name: str,
+    variant: str = "",
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
-    Cache for storing and retrieving validation schemas and rules.
+    Load schema and rules directly from JSON files (no caching).
 
-    This class provides caching functionality for validation schemas and rules
-    to avoid repeated loading and processing during validation.
+    Args:
+        instrument_name: Name of the instrument
+        variant: Variant identifier for dynamic instruments
+
+    Returns:
+        Tuple of (schema, rules)
     """
+    try:
+        if is_dynamic_rule_instrument(instrument_name):
+            from ..utils.instrument_mapping import (
+                load_dynamic_rules_for_instrument,
+            )
 
-    def __init__(self):
-        self._cache = {}
+            dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
+            rules = dynamic_rules.get(variant, {})
+        else:
+            from ..utils.instrument_mapping import (
+                load_json_rules_for_instrument,
+            )
 
-    def _get_cache_key(self, instrument_name: str, variant: str = "") -> str:
-        """Generate cache key for instrument and variant."""
-        return f"{instrument_name}_{variant}" if variant else instrument_name
+            rules = load_json_rules_for_instrument(instrument_name)
 
-    def _get_cached_schema_and_rules(
-        self,
-        instrument_name: str,
-        variant: str = "",
-        fallback_func: Callable[..., tuple[dict[str, Any], dict[str, Any]]] | None = None,
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
-        """
-        Get cached schema and rules, or compute and cache them.
-
-        Args:
-            instrument_name: Name of the instrument
-            variant: Variant identifier for dynamic instruments
-            fallback_func: Function to compute schema/rules if not cached
-
-        Returns:
-            Tuple of (schema, rules)
-        """
-        cache_key = self._get_cache_key(instrument_name, variant)
-
-        if cache_key not in self._cache:
-            if fallback_func:
-                schema, rules = fallback_func(instrument_name, variant)
-                self._cache[cache_key] = (schema, rules)
-            else:
-                # Default fallback
-                try:
-                    if is_dynamic_rule_instrument(instrument_name):
-                        from ..utils.instrument_mapping import (
-                            load_dynamic_rules_for_instrument,
-                        )
-
-                        dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
-                        rules = dynamic_rules.get(variant, {})
-                    else:
-                        from ..utils.instrument_mapping import (
-                            load_json_rules_for_instrument,
-                        )
-
-                        rules = load_json_rules_for_instrument(instrument_name)
-
-                    # Build schema without temporal rules since no datastore is
-                    # available. Include compatibility rules to catch cross-field logic errors.
-                    schema = build_cerberus_schema_for_instrument(
-                        instrument_name, include_temporal_rules=False, include_compatibility_rules=True
-                    )
-                    self._cache[cache_key] = (schema, rules)
-                except Exception as e:  # noqa: BLE001 - intentional broad catch for rule loading
-                    logger.warning("Failed to load rules for %s: %s", instrument_name, e)
-                    self._cache[cache_key] = ({}, {})
-
-        return self._cache[cache_key]
+        # Build schema without temporal rules since no datastore is
+        # available. Include compatibility rules to catch cross-field logic errors.
+        schema = build_cerberus_schema_for_instrument(
+            instrument_name, include_temporal_rules=False, include_compatibility_rules=True
+        )
+        return schema, rules
+    except Exception as e:  # noqa: BLE001 - intentional broad catch for rule loading
+        logger.warning("Failed to load rules for %s: %s", instrument_name, e)
+        return {}, {}
 
 
-# Global cache instance
-_schema_rules_cache = _SchemaAndRulesCache()
-
-
-class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
+class _ValidationEngine:
     """
-    Optimized cache with additional features for better performance.
+    Validation engine for processing records without caching.
     """
 
     def validate_data_optimized(
@@ -329,7 +297,7 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         primary_key_field: str,
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
         """
-        Optimized validation using cached schemas and rules.
+        Validation that loads schemas fresh for each batch.
 
         Args:
             data: DataFrame to validate
@@ -347,16 +315,15 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         for _index, record in data.iterrows():
             record_dict = record.to_dict()
 
-            # Get schema and rules from cache - handle dynamic instruments
-            # properly
+            # Load schema and rules fresh - handle dynamic instruments properly
             if is_dynamic_rule_instrument(instrument_name):
                 # For dynamic instruments, we need to get the discriminant variable
                 # value
                 discriminant_var = get_discriminant_variable(instrument_name)
                 discriminant_value = record_dict.get(discriminant_var, "")
 
-                # Get the cached schema structure (which contains variants)
-                schema_variants, rules = self._get_cached_schema_and_rules(instrument_name)
+                # Load the schema structure (which contains variants)
+                schema_variants, rules = _load_schema_and_rules(instrument_name)
 
                 # Select the appropriate schema variant
                 if discriminant_value in schema_variants:
@@ -377,8 +344,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
                         schema = {}
                         logger.error("No schema variants available for %s", instrument_name)
             else:
-                # For standard instruments, get schema directly
-                schema, rules = self._get_cached_schema_and_rules(instrument_name)
+                # For standard instruments, load schema directly
+                schema, rules = _load_schema_and_rules(instrument_name)
 
             # Create QualityCheck instance without datastore (temporal rules already
             # excluded from schema)
@@ -485,8 +452,8 @@ class _SchemaAndRulesOptimizedCache(_SchemaAndRulesCache):
         logger.info("  Success rate: %.1f%%", success_rate)
 
 
-# Global optimized cache instance
-_optimized_cache = _SchemaAndRulesOptimizedCache()
+# Global validation engine instance
+_validation_engine = _ValidationEngine()
 
 
 def validate_data(
