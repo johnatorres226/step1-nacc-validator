@@ -5,6 +5,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-13
+
+### Project Refactoring Initiative
+- **Rescaling Project Scope** - Initiating major refactoring to simplify project architecture and focus on core QC extraction from nacc_form_validator. The goal is to reduce complexity in CLI, logging, and ETL processes while maintaining fundamental validation philosophy and line-by-line validation integrity.
+
+### Planned Changes
+- Simplify CLI interface and reduce logging verbosity
+- Streamline output generation and validation log creation
+- Refactor ETL pipeline while preserving core validation logic
+- Minimize non-essential reporting features
+- Maintain nacc_form_validator as core immutable component
+
+## [0.2.0] - 2025-12-06
+
 ### Fixed
 - **Cross-Form Compatibility Rule False Positives** - Fixed critical issue in `nacc_form_validator/nacc_validator.py` where compatibility rules referencing fields from other forms were generating false positive errors when those fields were missing or empty. Changed condition in `_check_subschema_valid()` from `if field in record_copy and _is_missing_value(...)` to `if field not in record_copy or _is_missing_value(...)` to properly handle both absent fields and fields with missing values. This eliminates false positives for cross-form validation rules (e.g., apnea/apneadx, bipolar/bipoldx, etc.).
 
