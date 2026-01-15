@@ -4,7 +4,6 @@ Enhanced Configuration Management for UDSv4 QC Validator.
 
 import json
 import os
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
@@ -243,125 +242,6 @@ def is_dynamic_rule_instrument(instrument_name: str) -> bool:
 
 
 # =============================================================================
-# CONFIGURATION VALIDATORS
-# Modular validation system for better maintainability and testability
-# =============================================================================
-
-
-class ConfigValidator(ABC):
-    """Abstract base class for configuration validators."""
-
-    @abstractmethod
-    def validate(self, config: "QCConfig") -> list[str]:
-        """Validate configuration and return list of errors."""
-
-
-class RequiredFieldsValidator(ConfigValidator):
-    """Validates that all required fields are present and valid."""
-
-    def validate(self, config: "QCConfig") -> list[str]:
-        """Validate required fields and return list of errors."""
-        errors = []
-
-        # Require REDCap API configuration
-        if not config.api_token and not config.redcap_api_token:
-            errors.append("REDCAP_API_TOKEN is required")
-        if not config.api_url and not config.redcap_api_url:
-            errors.append("REDCAP_API_URL is required")
-
-        # Require ALL packet rule paths (no fallbacks)
-        required_packet_paths = {
-            "JSON_RULES_PATH_I": config.json_rules_path_i,
-            "JSON_RULES_PATH_I4": config.json_rules_path_i4,
-            "JSON_RULES_PATH_F": config.json_rules_path_f,
-        }
-
-        for env_var, path in required_packet_paths.items():
-            if not path:
-                errors.append(f"Missing required environment variable: {env_var}")
-
-        return errors
-
-
-class PathValidator(ConfigValidator):
-    """Validates and creates necessary paths."""
-
-    def validate(self, config: "QCConfig") -> list[str]:
-        """Validate paths and return list of errors."""
-        errors = []
-
-        # Validate packet-specific rules paths (required for production)
-        packet_paths = {
-            "JSON_RULES_PATH_I": config.json_rules_path_i,
-            "JSON_RULES_PATH_I4": config.json_rules_path_i4,
-            "JSON_RULES_PATH_F": config.json_rules_path_f,
-        }
-
-        for env_var, path in packet_paths.items():
-            if path and not Path(path).is_dir():
-                errors.append(f"{env_var} '{path}' is not a valid directory.")
-
-        # Validate and create output path if needed
-        if config.output_path and not Path(config.output_path).is_dir():
-            try:
-                Path(config.output_path).mkdir(parents=True, exist_ok=True)
-            except OSError as e:
-                errors.append(
-                    f"OUTPUT_PATH '{config.output_path}' is not a valid directory "
-                    f"and could not be created: {e}"
-                )
-
-        # Validate and create log path if needed
-        if config.log_path and not Path(config.log_path).is_dir():
-            try:
-                Path(config.log_path).mkdir(parents=True, exist_ok=True)
-            except OSError as e:
-                errors.append(
-                    f"LOG_PATH '{config.log_path}' is not a valid directory "
-                    f"and could not be created: {e}"
-                )
-
-        return errors
-
-
-class PerformanceValidator(ConfigValidator):
-    """Validates performance-related settings."""
-
-    def validate(self, config: "QCConfig") -> list[str]:
-        """Validate performance settings and return list of errors."""
-        errors = []
-
-        # Validate performance settings and report errors
-        if config.max_workers < 1:
-            errors.append("max_workers must be at least 1")
-        if config.timeout < 30:
-            errors.append("timeout must be at least 30 seconds")
-        if config.retry_attempts < 0:
-            errors.append("retry_attempts cannot be negative")
-
-        return errors
-
-
-class CustomValidator(ConfigValidator):
-    """Validates custom business logic and constraints."""
-
-    def validate(self, config: "QCConfig") -> list[str]:
-        """Validate custom constraints and return list of errors."""
-        errors = []
-
-        # Validate instrument consistency
-        if len(config.instruments) != len(set(config.instruments)):
-            errors.append("Duplicate instruments found in configuration.")
-
-        # Validate instrument mapping consistency
-        for instrument in config.instruments:
-            if instrument not in config.instrument_json_mapping:
-                errors.append(f"Instrument '{instrument}' has no JSON mapping configured.")
-
-        return errors
-
-
-# =============================================================================
 # MODERN CONFIGURATION SECTION
 # Enhanced features while maintaining backward compatibility
 # =============================================================================
@@ -531,19 +411,68 @@ class QCConfig:
         Validates the configuration and returns a list of errors.
         An empty list indicates a valid configuration.
         """
-        validators = [
-            RequiredFieldsValidator(),
-            PathValidator(),
-            PerformanceValidator(),
-            CustomValidator(),
-        ]
+        errors = []
 
-        all_errors = []
-        for validator in validators:
-            errors = validator.validate(self)
-            all_errors.extend(errors)
+        # Validate required fields
+        if not self.api_token and not self.redcap_api_token:
+            errors.append("REDCAP_API_TOKEN is required")
+        if not self.api_url and not self.redcap_api_url:
+            errors.append("REDCAP_API_URL is required")
 
-        return all_errors
+        # Require ALL packet rule paths
+        required_packet_paths = {
+            "JSON_RULES_PATH_I": self.json_rules_path_i,
+            "JSON_RULES_PATH_I4": self.json_rules_path_i4,
+            "JSON_RULES_PATH_F": self.json_rules_path_f,
+        }
+
+        for env_var, path in required_packet_paths.items():
+            if not path:
+                errors.append(f"Missing required environment variable: {env_var}")
+
+        # Validate packet-specific rules paths
+        for env_var, path in required_packet_paths.items():
+            if path and not Path(path).is_dir():
+                errors.append(f"{env_var} '{path}' is not a valid directory.")
+
+        # Validate and create output path if needed
+        if self.output_path and not Path(self.output_path).is_dir():
+            try:
+                Path(self.output_path).mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                errors.append(
+                    f"OUTPUT_PATH '{self.output_path}' is not a valid directory "
+                    f"and could not be created: {e}"
+                )
+
+        # Validate and create log path if needed
+        if self.log_path and not Path(self.log_path).is_dir():
+            try:
+                Path(self.log_path).mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                errors.append(
+                    f"LOG_PATH '{self.log_path}' is not a valid directory "
+                    f"and could not be created: {e}"
+                )
+
+        # Validate performance settings
+        if self.max_workers < 1:
+            errors.append("max_workers must be at least 1")
+        if self.timeout < 30:
+            errors.append("timeout must be at least 30 seconds")
+        if self.retry_attempts < 0:
+            errors.append("retry_attempts cannot be negative")
+
+        # Validate instrument consistency
+        if len(self.instruments) != len(set(self.instruments)):
+            errors.append("Duplicate instruments found in configuration.")
+
+        # Validate instrument mapping consistency
+        for instrument in self.instruments:
+            if instrument not in self.instrument_json_mapping:
+                errors.append(f"Instrument '{instrument}' has no JSON mapping configured.")
+
+        return errors
 
 
 # =============================================================================
