@@ -392,22 +392,4 @@ def prepare_instrument_data_cache(
         raise DataProcessingError(f"Instrument cache preparation failed: {e}") from e
 
 
-# =============================================================================
-# LEGACY COMPATIBILITY (DEPRECATED)
-# =============================================================================
 
-
-def _preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
-    """
-    DEPRECATED: Use preprocess_cast_types() instead.
-
-    Legacy function maintained for backward compatibility during refactoring.
-    """
-    import warnings
-
-    warnings.warn(
-        "_preprocess_cast_types is deprecated. Use preprocess_cast_types() instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return preprocess_cast_types(df, rules)

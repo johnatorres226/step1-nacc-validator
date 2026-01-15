@@ -18,8 +18,8 @@ from pipeline.config.config_manager import (
     is_dynamic_rule_instrument,
 )
 from pipeline.io.context import ProcessingContext
+from pipeline.io.rules import load_dynamic_rules_for_instrument
 from pipeline.logging.logging_config import get_logger
-from pipeline.utils.instrument_mapping import load_dynamic_rules_for_instrument
 
 logger = get_logger(__name__)
 

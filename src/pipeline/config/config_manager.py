@@ -726,7 +726,7 @@ class ModernSchemaBuilder:
     def _build_standard_schema(self, instrument_name: str) -> dict[str, Any]:
         """Build schema for standard instruments."""
         # Import here to avoid circular dependencies
-        from .utils.instrument_mapping import load_json_rules_for_instrument
+        from ..io.rules import load_json_rules_for_instrument
 
         raw_rules = load_json_rules_for_instrument(instrument_name)
 
@@ -747,7 +747,7 @@ class ModernSchemaBuilder:
     def _build_dynamic_schema(self, instrument_name: str) -> dict[str, Any]:
         """Build schema for dynamic rule instruments."""
         # Import here to avoid circular dependencies
-        from .utils.instrument_mapping import load_dynamic_rules_for_instrument
+        from ..io.rules import load_dynamic_rules_for_instrument
 
         raw_rule_map = load_dynamic_rules_for_instrument(instrument_name)
 

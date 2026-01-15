@@ -260,14 +260,14 @@ def _load_schema_and_rules(
     """
     try:
         if is_dynamic_rule_instrument(instrument_name):
-            from ..utils.instrument_mapping import (
+            from ..io.rules import (
                 load_dynamic_rules_for_instrument,
             )
 
             dynamic_rules = load_dynamic_rules_for_instrument(instrument_name)
             rules = dynamic_rules.get(variant, {})
         else:
-            from ..utils.instrument_mapping import (
+            from ..io.rules import (
                 load_json_rules_for_instrument,
             )
 

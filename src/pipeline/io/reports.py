@@ -409,7 +409,7 @@ class ReportFactory:
             get_config,
             get_instruments,
         )
-        from ..utils.instrument_mapping import load_json_rules_for_instrument
+        from .rules import load_json_rules_for_instrument
 
         instruments = get_instruments()
         config = get_config()
@@ -844,35 +844,4 @@ class ReportFactory:
         }
 
 
-# Legacy compatibility functions for backward compatibility
-def create_legacy_export_results_to_csv(
-    df_errors: pd.DataFrame,
-    df_logs: pd.DataFrame,
-    df_passed: pd.DataFrame,
-    all_records_df: pd.DataFrame,
-    complete_visits_df: pd.DataFrame,
-    detailed_validation_logs_df: pd.DataFrame,
-    output_dir: Path,
-    date_tag: str,
-    time_tag: str,
-    processing_context: ProcessingContext,
-    report_config: ReportConfiguration,
-) -> list[Path]:
-    """
-    Legacy compatibility wrapper for export_results_to_csv.
 
-    This function maintains the old interface while using the new ReportFactory.
-    """
-    export_config = ExportConfiguration(output_dir=output_dir, date_tag=date_tag, time_tag=time_tag)
-
-    factory = ReportFactory(processing_context)
-    return factory.export_all_reports(
-        df_errors,
-        df_logs,
-        df_passed,
-        all_records_df,
-        complete_visits_df,
-        detailed_validation_logs_df,
-        export_config,
-        report_config,
-    )
