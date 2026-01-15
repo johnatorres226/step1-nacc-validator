@@ -411,7 +411,7 @@ class QCConfig:
     )
 
     # --- QC Pipeline Behavior ---
-    # 'complete_visits', 'all_visits', 'ivp_only', 'fvp_only'
+    # Only 'complete_visits' mode is currently supported
     mode: str = "complete_visits"
     test_mode: bool = False  # Use test database instead of production database
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))

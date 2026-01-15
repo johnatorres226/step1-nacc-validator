@@ -31,9 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Initial Release**: Complete UDSv4 REDCap Quality Control validation system
 - **CLI Interface**: Comprehensive command-line interface with `udsv4-qc` command
-- **Multiple Processing Modes**: 
+- **Processing Mode**: 
   - `complete_visits`: Validate complete visits that haven't been QC'd
-  - `all_incomplete_visits`: Process incomplete visits for quality control
 - **REDCap Integration**: Secure API connection and data extraction from REDCap instances
 - **Validation Engine**: Comprehensive NACC-specific validation rules with JSON-based rule definitions
 - **Packet-Based Processing**: Automatic routing based on visit types (I, I4, F packets)

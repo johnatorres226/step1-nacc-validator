@@ -382,9 +382,6 @@ poetry run udsv4-qc --initials "YOUR_INITIALS"
 ```bash
 # Validate complete visits (all instruments completed)
 poetry run udsv4-qc --mode complete_visits --initials "ABC"
-
-# Validate incomplete visits (instruments with missing data)
-poetry run udsv4-qc --mode all_incomplete_visits --initials "ABC"
 ```
 
 ### Advanced Command Options
@@ -424,7 +421,7 @@ poetry run pytest -k "validation"
 
 ### Command Parameters
 
-- `--mode` - Validation mode (complete_visits, all_incomplete_visits)
+- `--mode` - Validation mode (complete_visits)
 - `--initials` - User initials for tracking and reporting (required)
 - `--output-dir` - Custom output directory path
 - `--event` - Specify specific REDCap events to process (can be used multiple times)
