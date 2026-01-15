@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2026-01-13
 
 ### Project Refactoring Initiative
-- **Rescaling Project Scope** - Initiating major refactoring to simplify project architecture and focus on core QC extraction from nacc_form_validator. The goal is to reduce complexity in CLI, logging, and ETL processes while maintaining fundamental validation philosophy and line-by-line validation integrity.
+- **Rescaling Project Scope** - Initiating minor adjustment to simplify project architecture and focus on core QC extraction from nacc_form_validator. The goal is to reduce complexity in CLI, logging, and minor ETL processes while maintaining fundamental validation philosophy and line-by-line validation integrity.
 
 ### Planned Changes
 - Simplify CLI interface and reduce logging verbosity
