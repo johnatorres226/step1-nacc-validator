@@ -5,6 +5,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-15
+
+### Fixed
+- **A1A SDOH Form Validation with a1anot=93** - Updated `a1a_rules.json` for I, I4, and F packets to properly handle cases where `a1anot=93` (form not completed). All data fields in the A1A SDOH form are now nullable by default with a compatibility rule that makes them non-nullable when `a1anot` is forbidden (i.e., not equal to 93). System fields (`frmdatea1a`, `langa1a`, `modea1a`, `rmreasa1a`, `rmmodea1a`) remain required regardless of `a1anot` value. This resolves false positive errors for participants who declined or were unable to complete the form.
+
 ## [0.3.0] - 2026-01-13
 
 ### Project Refactoring Initiative

@@ -1,110 +1,5 @@
 {
     "ownscar": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            0,
-            1,
-            8
-        ]
-    },
-    "trspaccess": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            0,
-            1,
-            8
-        ]
-    },
-    "transprob": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            8
-        ]
-    },
-    "transworry": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            8
-        ]
-    },
-    "trspmed": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            8
-        ]
-    },
-    "incomeyr": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            4,
-            8,
-            9
-        ]
-    },
-    "finsatis": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            8
-        ]
-    },
-    "billpay": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            8
-        ]
-    },
-    "finupset": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            1,
-            2,
-            3,
-            4,
-            8
-        ]
-    },
-    "eatless": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            0,
-            1,
-            8
-        ]
-    },
-    "eatlessyr": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -114,6 +9,295 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "ownscar": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "trspaccess": {
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "trspaccess": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "transprob": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "transprob": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "transworry": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "transworry": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "trspmed": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "trspmed": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "incomeyr": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8,
+            9
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "incomeyr": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "finsatis": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "finsatis": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "billpay": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "billpay": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "finupset": {
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "finupset": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "eatless": {
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "eatless": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "eatlessyr": {
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "eatlessyr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if": {
                     "eatless": {
                         "allowed": [
@@ -130,19 +314,10 @@
                     }
                 }
             }
-        ]
+        ],
+        "nullable": true
     },
     "lessmeds": {
-        "required": true,
-        "type": "integer",
-        "allowed": [
-            0,
-            1,
-            8
-        ]
-    },
-    "lessmedsyr": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -152,6 +327,47 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "lessmeds": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
+    },
+    "lessmedsyr": {
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "lessmedsyr": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if": {
                     "lessmeds": {
                         "allowed": [
@@ -168,10 +384,10 @@
                     }
                 }
             }
-        ]
+        ],
+        "nullable": true
     },
     "compcomm": {
-        "required": true,
         "type": "integer",
         "anyof": [
             {
@@ -183,10 +399,27 @@
                     88
                 ]
             }
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "compcomm": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "guardedu": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -197,10 +430,27 @@
             6,
             8,
             9
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "guardedu": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "emptiness": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -209,10 +459,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "emptiness": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "misspeople": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -221,10 +488,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "misspeople": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "friends": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -233,10 +517,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "friends": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "abandoned": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -245,10 +546,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "abandoned": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "closefrnd": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -257,10 +575,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "closefrnd": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "parentcomm": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -270,10 +605,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "parentcomm": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "childcomm": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -287,6 +639,21 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "childcomm": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if_op": "and",
                 "if": {
                     "modea2": {
@@ -317,7 +684,7 @@
                 }
             },
             {
-                "index": 1,
+                "index": 2,
                 "if_op": "and",
                 "if": {
                     "modea2": {
@@ -345,10 +712,10 @@
                     }
                 }
             }
-        ]
+        ],
+        "nullable": true
     },
     "friendcomm": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -362,6 +729,21 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "friendcomm": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if_op": "and",
                 "if": {
                     "modea2": {
@@ -392,7 +774,7 @@
                 }
             },
             {
-                "index": 1,
+                "index": 2,
                 "if_op": "and",
                 "if": {
                     "modea2": {
@@ -420,10 +802,10 @@
                     }
                 }
             }
-        ]
+        ],
+        "nullable": true
     },
     "participate": {
-        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -433,10 +815,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "participate": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "safehome": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -444,10 +843,27 @@
             3,
             4,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "safehome": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "safecomm": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -455,10 +871,27 @@
             3,
             4,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "safecomm": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "delaymed": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -467,10 +900,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "delaymed": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "scriptprob": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -479,10 +929,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "scriptprob": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "missedfup": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -491,10 +958,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "missedfup": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "docadvice": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -503,10 +987,27 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "docadvice": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "healthacc": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -514,10 +1015,27 @@
             3,
             4,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "healthacc": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "lesscourt": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -527,10 +1045,27 @@
             5,
             6,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "lesscourt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "poorserv": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -540,10 +1075,27 @@
             5,
             6,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "poorserv": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "notsmart": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -553,10 +1105,27 @@
             5,
             6,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "notsmart": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "actafraid": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -566,10 +1135,27 @@
             5,
             6,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "actafraid": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "threatened": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -579,10 +1165,27 @@
             5,
             6,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "threatened": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "poormedtrt": {
-        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -591,7 +1194,25 @@
             4,
             5,
             8
-        ]
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "poormedtrt": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "nullable": true
     },
     "expancest": {
         "nullable": true,
@@ -654,6 +1275,23 @@
         },
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expancest": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expgender": {
@@ -661,6 +1299,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expgender": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "exprace": {
@@ -668,6 +1323,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "exprace": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expage": {
@@ -675,6 +1347,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expage": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "exprelig": {
@@ -682,6 +1371,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "exprelig": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expheight": {
@@ -689,6 +1395,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expheight": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expweight": {
@@ -696,6 +1419,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expweight": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expappear": {
@@ -703,6 +1443,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expappear": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expsexorn": {
@@ -710,6 +1467,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expsexorn": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expeducinc": {
@@ -717,6 +1491,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expeducinc": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expdisab": {
@@ -724,6 +1515,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expdisab": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expskin": {
@@ -731,6 +1539,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expskin": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expother": {
@@ -738,6 +1563,23 @@
         "type": "integer",
         "allowed": [
             1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expother": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "expnotapp": {
@@ -749,6 +1591,21 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expnotapp": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if_op": "or",
                 "if": {
                     "expancest": {
@@ -842,6 +1699,21 @@
         "compatibility": [
             {
                 "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expnoans": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
                 "if_op": "or",
                 "if": {
                     "expancest": {
@@ -933,6 +1805,21 @@
             {
                 "index": 0,
                 "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "expstrs": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
                     "expnotapp": {
                         "allowed": [
                             1
@@ -947,7 +1834,7 @@
                 }
             },
             {
-                "index": 1,
+                "index": 2,
                 "if": {
                     "expnotapp": {
                         "forbidden": [
@@ -1081,8 +1968,25 @@
         ]
     },
     "admina1a": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "admina1a": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
         "allowed": [
             1,
             2
