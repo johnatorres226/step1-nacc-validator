@@ -11,7 +11,7 @@ from typing import Any
 
 import pandas as pd
 
-from ..config.config_manager import get_config, is_dynamic_rule_instrument
+from ..config.config_manager import is_dynamic_rule_instrument
 from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)

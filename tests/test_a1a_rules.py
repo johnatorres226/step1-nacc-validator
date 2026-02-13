@@ -171,7 +171,8 @@ class TestA1ARulesA1AnotCompatibility:
         
         # Also verify it's nullable by default (should be True to allow null when a1anot=93)
         assert admina1a_rules.get('nullable') is True, (
-            f"Packet {packet}: admina1a should be nullable=true by default to allow null when a1anot=93"
+            f"Packet {packet}: admina1a should be nullable=true by default to allow "
+            f"null when a1anot=93"
         )
 
 

@@ -31,7 +31,7 @@ import json
 # Set up logging
 import logging
 import time
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
@@ -349,7 +349,9 @@ class _ValidationEngine:
 
             # Create QualityCheck instance without datastore (temporal rules already
             # excluded from schema)
-            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            qc = QualityCheck(
+                pk_field=primary_key_field, schema=schema, strict=False, datastore=None
+            )
 
             # Validate record
             passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
@@ -552,7 +554,9 @@ def validate_data_with_hierarchical_routing(
             )
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            qc = QualityCheck(
+                pk_field=primary_key_field, schema=schema, strict=False, datastore=None
+            )
             passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
@@ -786,7 +790,9 @@ def validate_data_with_packet_routing(
                 schema = final_rules
 
             # Perform validation using existing QualityCheck engine
-            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            qc = QualityCheck(
+                pk_field=primary_key_field, schema=schema, strict=False, datastore=None
+            )
             passed, sys_failure, record_errors, error_tree = qc.validate_record(record_dict)
 
             # Process results using existing logic pattern
