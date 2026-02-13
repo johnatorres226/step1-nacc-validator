@@ -274,24 +274,4 @@ def build_complete_visits_df(
         raise DataProcessingError(f"Complete visits processing failed: {e}") from e
 
 
-# =============================================================================
-# LEGACY COMPATIBILITY
-# =============================================================================
 
-
-def build_complete_visits_df_legacy(
-    data_df: pd.DataFrame, instrument_list: list[str]
-) -> tuple[pd.DataFrame, list[tuple[str, str]]]:
-    """
-    DEPRECATED: Use build_complete_visits_df() instead.
-
-    Legacy function maintained for backward compatibility during refactoring.
-    """
-    import warnings
-
-    warnings.warn(
-        "build_complete_visits_df_legacy is deprecated. Use build_complete_visits_df() instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return build_complete_visits_df(data_df, instrument_list)

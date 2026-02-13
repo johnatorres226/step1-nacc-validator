@@ -295,7 +295,6 @@ class ReportFactory:
                     result_df.loc[mask, row["instrument_name"]] = "Fail"
 
         # Add QC status columns
-        result_df["qc_status_complete"] = 0
         result_df["qc_run_by"] = report_config.qc_run_by
         result_df["qc_last_run"] = datetime.now().strftime("%Y-%m-%d")
 
@@ -311,7 +310,15 @@ class ReportFactory:
             return "Pass"
 
         result_df["qc_status"] = result_df.apply(get_qc_status, axis=1)
-        result_df["quality_control_check_complete"] = 0
+        
+        # Set qc_status_complete based on verdict: 1 if Pass, 0 if Failed
+        result_df["qc_status_complete"] = result_df["qc_status"].apply(
+            lambda status: 1 if status == "Pass" else 0
+        )
+        # Set quality_control_check_complete based on verdict: 2 if Pass, 0 if Failed
+        result_df["quality_control_check_complete"] = result_df["qc_status"].apply(
+            lambda status: 2 if status == "Pass" else 0
+        )
 
         # Sort by ptid and event
         result_df = result_df.sort_values([report_config.primary_key_field, "redcap_event_name"])
@@ -409,7 +416,7 @@ class ReportFactory:
             get_config,
             get_instruments,
         )
-        from ..utils.instrument_mapping import load_json_rules_for_instrument
+        from .rules import load_json_rules_for_instrument
 
         instruments = get_instruments()
         config = get_config()
@@ -492,12 +499,28 @@ class ReportFactory:
         }
 
         for _, row in status_df.iterrows():
+            # Set qc_status_complete based on verdict if not in CSV
+            if "qc_status_complete" in row:
+                qc_status_complete = str(row["qc_status_complete"])
+            else:
+                # Fallback: determine from qc_status
+                qc_status_complete = "1" if row["qc_status"] == "Pass" else "0"
+            
+            # Set quality_control_check_complete based on verdict if not in CSV
+            if "quality_control_check_complete" in row:
+                quality_control_check_complete = str(row["quality_control_check_complete"])
+            else:
+                # Fallback: determine from qc_status
+                quality_control_check_complete = "2" if row["qc_status"] == "Pass" else "0"
+            
             participant_data = {
                 "ptid": row["ptid"],
                 "redcap_event_name": row["redcap_event_name"],
+                "qc_status_complete": qc_status_complete,
                 "qc_status": row["qc_status"],
                 "qc_run_by": row["qc_run_by"],
                 "qc_last_run": row["qc_last_run"],
+                "quality_control_check_complete": quality_control_check_complete,
             }
 
             json_data["participant_status"].append(participant_data)
@@ -635,8 +658,12 @@ class ReportFactory:
                 # Determine QC status based on failed instruments
                 if failed_instruments:
                     qc_status = f"Failed in instruments: {', '.join(failed_instruments)}"
+                    qc_status_complete = "0"  # Failed = 0
+                    quality_control_check_complete = "0"  # Failed = 0
                 else:
                     qc_status = "PASSED"
+                    qc_status_complete = "1"  # Passed = 1
+                    quality_control_check_complete = "2"  # Passed = 2
                 
                 # Get current date and initials
                 config = get_config()
@@ -645,11 +672,11 @@ class ReportFactory:
                 record = {
                     "ptid": row["ptid"],
                     "redcap_event_name": row["redcap_event_name"],
-                    "qc_status_complete": "0",
+                    "qc_status_complete": qc_status_complete,
                     "qc_run_by": qc_run_by,
                     "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
                     "qc_status": qc_status,
-                    "quality_control_check_complete": "0",
+                    "quality_control_check_complete": quality_control_check_complete,
                 }
                 json_data.append(record)
 
@@ -844,35 +871,4 @@ class ReportFactory:
         }
 
 
-# Legacy compatibility functions for backward compatibility
-def create_legacy_export_results_to_csv(
-    df_errors: pd.DataFrame,
-    df_logs: pd.DataFrame,
-    df_passed: pd.DataFrame,
-    all_records_df: pd.DataFrame,
-    complete_visits_df: pd.DataFrame,
-    detailed_validation_logs_df: pd.DataFrame,
-    output_dir: Path,
-    date_tag: str,
-    time_tag: str,
-    processing_context: ProcessingContext,
-    report_config: ReportConfiguration,
-) -> list[Path]:
-    """
-    Legacy compatibility wrapper for export_results_to_csv.
 
-    This function maintains the old interface while using the new ReportFactory.
-    """
-    export_config = ExportConfiguration(output_dir=output_dir, date_tag=date_tag, time_tag=time_tag)
-
-    factory = ReportFactory(processing_context)
-    return factory.export_all_reports(
-        df_errors,
-        df_logs,
-        df_passed,
-        all_records_df,
-        complete_visits_df,
-        detailed_validation_logs_df,
-        export_config,
-        report_config,
-    )

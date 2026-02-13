@@ -35,7 +35,7 @@ logger = get_logger("cli")
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["complete_visits", "all_incomplete_visits"], case_sensitive=False),
+    type=click.Choice(["complete_visits"], case_sensitive=False),
     default="complete_visits",
     help="Select the QC validation mode. [default: complete_visits]",
 )

@@ -17,10 +17,11 @@ from src.pipeline.config.config_manager import QCConfig
 
 # Import the modules we're testing
 from src.pipeline.core.fetcher import (
-    DataContract,
+    REQUIRED_FIELDS,
     ETLContext,
     ETLResult,
     RedcapETLPipeline,
+    validate_required_fields,
 )
 
 
@@ -90,15 +91,14 @@ class TestDataContract:
 
     def test_data_contract_required_fields(self):
         """Test that data contract defines required fields."""
-        assert hasattr(DataContract, "REQUIRED_FIELDS")
-        assert isinstance(DataContract.REQUIRED_FIELDS, list)
-        assert "ptid" in DataContract.REQUIRED_FIELDS
-        assert "redcap_event_name" in DataContract.REQUIRED_FIELDS
+        assert isinstance(REQUIRED_FIELDS, list)
+        assert "ptid" in REQUIRED_FIELDS
+        assert "redcap_event_name" in REQUIRED_FIELDS
 
     def test_data_contract_validation_method_exists(self):
         """Test that data contract has validation capabilities."""
-        # Check if validation methods exist on DataContract
-        assert hasattr(DataContract, "REQUIRED_FIELDS")
+        # Check if validation function exists
+        assert callable(validate_required_fields)
 
 
 class TestRedcapETLPipeline:
@@ -286,7 +286,7 @@ class TestDataValidation:
         }
 
         # Check that required fields are present
-        for field in DataContract.REQUIRED_FIELDS:
+        for field in REQUIRED_FIELDS:
             assert field in valid_record
 
     def test_data_contract_validation_missing_fields(self):
@@ -297,7 +297,7 @@ class TestDataValidation:
 
         # Check that required fields are missing
         missing_fields = [
-            field for field in DataContract.REQUIRED_FIELDS if field not in invalid_record
+            field for field in REQUIRED_FIELDS if field not in invalid_record
         ]
 
         assert len(missing_fields) > 0

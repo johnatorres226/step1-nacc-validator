@@ -170,7 +170,6 @@ The system applies filter logic based on configuration mode:
 
 - **complete_events**: Fetches complete events that haven't been QC'd
 - **complete_visits**: Same as complete_events (alias)
-- **all_incomplete_visits**: Fetches incomplete visits for processing
 - **none**: No filtering (fetches all records)
 
 ## Data Validation and Processing

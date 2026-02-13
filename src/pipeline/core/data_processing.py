@@ -140,60 +140,9 @@ def detect_column_type(field_name: str, rules: dict[str, Any]) -> str | None:
     return field_config.get("type")
 
 
-def cast_to_integer_type(series: pd.Series) -> pd.Series:
-    """
-    Cast series to nullable integer type with error handling.
-
-    Args:
-        series: Pandas series to cast.
-
-    Returns:
-        Series cast to nullable Int64 type.
-    """
-    try:
-        return pd.to_numeric(series, errors="coerce").astype("Int64")
-    except Exception as e:
-        logger.warning(f"Failed to cast series to integer: {e}")
-        return series
-
-
-def cast_to_float_type(series: pd.Series) -> pd.Series:
-    """
-    Cast series to float type with error handling.
-
-    Args:
-        series: Pandas series to cast.
-
-    Returns:
-        Series cast to float64 type.
-    """
-    try:
-        return pd.to_numeric(series, errors="coerce")
-    except Exception as e:
-        logger.warning(f"Failed to cast series to float: {e}")
-        return series
-
-
-def cast_to_datetime_type(series: pd.Series) -> pd.Series:
-    """
-    Cast series to datetime type with error handling.
-
-    Args:
-        series: Pandas series to cast.
-
-    Returns:
-        Series cast to datetime64[ns] type.
-    """
-    try:
-        return pd.to_datetime(series, errors="coerce")
-    except Exception as e:
-        logger.warning(f"Failed to cast series to datetime: {e}")
-        return series
-
-
 def preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """
-    Orchestrate type casting for all columns in dataframe.
+    Cast dataframe columns according to schema types.
 
     Bulk-cast columns according to schema types:
     - integer → pandas Int64 (nullable int)
@@ -215,12 +164,15 @@ def preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) ->
 
         dtype = detect_column_type(field, {field: cfg})
 
-        if dtype == "integer":
-            out[field] = cast_to_integer_type(out[field])
-        elif dtype == "float":
-            out[field] = cast_to_float_type(out[field])
-        elif dtype in ("date", "datetime"):
-            out[field] = cast_to_datetime_type(out[field])
+        try:
+            if dtype == "integer":
+                out[field] = pd.to_numeric(out[field], errors="coerce").astype("Int64")
+            elif dtype == "float":
+                out[field] = pd.to_numeric(out[field], errors="coerce")
+            elif dtype in ("date", "datetime"):
+                out[field] = pd.to_datetime(out[field], errors="coerce")
+        except Exception as e:
+            logger.warning(f"Failed to cast field '{field}' to {dtype}: {e}")
 
     return out
 
@@ -311,52 +263,6 @@ def build_variable_maps(
 # =============================================================================
 
 
-def create_processing_context(
-    data_df: pd.DataFrame,
-    instrument_list: list[str],
-    rules_cache: dict[str, Any],
-    primary_key_field: str,
-):
-    """
-    Create context object for data processing.
-
-    Args:
-        data_df: The main DataFrame containing all data.
-        instrument_list: The list of instruments to process.
-        rules_cache: A cache of loaded JSON rules.
-        primary_key_field: The name of the primary key field.
-
-    Returns:
-        ProcessingContext object for use in data processing.
-    """
-    # Import here to avoid circular dependencies
-    from ..io.context import ProcessingContext
-
-    return ProcessingContext(
-        data_df=data_df,
-        instrument_list=instrument_list,
-        rules_cache=rules_cache,
-        primary_key_field=primary_key_field,
-        config=get_config(),
-    )
-
-
-def prepare_instrument_cache_strategy(context):
-    """
-    Create cache strategy using context.
-
-    Args:
-        context: ProcessingContext object.
-
-    Returns:
-        InstrumentDataCache strategy instance.
-    """
-    # Import here to avoid circular dependencies
-    from ..processors.instrument_processors import InstrumentDataCache
-
-    return InstrumentDataCache(context)
-
-
 def prepare_instrument_data_cache(
     data_df: pd.DataFrame,
     instrument_list: list[str],
@@ -367,47 +273,39 @@ def prepare_instrument_data_cache(
     """
     Prepare cached dataframes for all instruments.
 
-    Orchestrates data preparation using the strategy pattern through InstrumentDataCache
-    for improved maintainability and reduced complexity.
-
     Args:
         data_df: The main DataFrame containing all data.
         instrument_list: The list of instruments to process.
-        instrument_variable_map: A map of instruments to their variables (legacy parameter).
+        instrument_variable_map: A map of instruments to their variables (not used).
         rules_cache: A cache of loaded JSON rules.
         primary_key_field: The name of the primary key field.
 
     Returns:
         A dictionary mapping each instrument name to its filtered DataFrame.
     """
+    from ..processors.instrument_processors import prepare_instrument_data
+
     try:
-        context = create_processing_context(
-            data_df, instrument_list, rules_cache, primary_key_field
-        )
-        cache_strategy = prepare_instrument_cache_strategy(context)
-        return cache_strategy.prepare_all()
+        instrument_cache = {}
+        
+        for instrument in instrument_list:
+            instrument_df, variables = prepare_instrument_data(
+                instrument, data_df, rules_cache, primary_key_field
+            )
+            instrument_cache[instrument] = instrument_df
+            
+            logger.debug(
+                "Prepared %d records for instrument '%s' with %d columns",
+                len(instrument_df),
+                instrument,
+                len(instrument_df.columns) if not instrument_df.empty else 0,
+            )
+        
+        return instrument_cache
 
     except Exception as e:
         logger.error(f"Failed to prepare instrument data cache: {e}")
         raise DataProcessingError(f"Instrument cache preparation failed: {e}") from e
 
 
-# =============================================================================
-# LEGACY COMPATIBILITY (DEPRECATED)
-# =============================================================================
 
-
-def _preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
-    """
-    DEPRECATED: Use preprocess_cast_types() instead.
-
-    Legacy function maintained for backward compatibility during refactoring.
-    """
-    import warnings
-
-    warnings.warn(
-        "_preprocess_cast_types is deprecated. Use preprocess_cast_types() instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return preprocess_cast_types(df, rules)

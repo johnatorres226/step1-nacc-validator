@@ -3977,7 +3977,7 @@
             {
                 "index": 0,
                 "if": {
-                    "anxiety": {
+                    "anxiet": {
                         "allowed": [
                             1
                         ]

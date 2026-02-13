@@ -174,9 +174,8 @@
                 "index": 2,
                 "if": {
                     "smokyrs": {
-                        "forbidden": [
-                            99
-                        ]
+                        "min": 0,
+                        "max": 87
                     }
                 },
                 "then": {
@@ -186,9 +185,8 @@
                                 "index": 0,
                                 "previous": {
                                     "smokyrs": {
-                                        "forbidden": [
-                                            99
-                                        ]
+                                        "min": 0,
+                                        "max": 87
                                     }
                                 },
                                 "current": {
@@ -213,8 +211,38 @@
             },
             {
                 "allowed": [
-                    99
+                    99,
+                    777
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "smokyrs": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 87
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "smokyrs": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -342,6 +370,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "quitsmok": {
+                        "min": 8,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "quitsmok": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "quitsmok": {
+                                        "min": 8,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "quitsmok": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "quitsmok",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -351,9 +412,39 @@
             },
             {
                 "allowed": [
+                    777,
                     888,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "quitsmok": {
+                        "noneof": [
+                            {
+                                "min": 8,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "quitsmok": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -502,6 +593,26 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "substpast": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "substpast": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cannabis": {
@@ -524,6 +635,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrtattack": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hrtattack": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hrtattmult": {
@@ -573,7 +705,7 @@
             {
                 "index": 0,
                 "previous": {
-                    "hattmult": {
+                    "hrtattmult": {
                         "allowed": [
                             1
                         ]
@@ -626,6 +758,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hrtattage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "hrtattage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hrtattage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "hrtattage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hrtattage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -635,8 +800,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrtattage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hrtattage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -648,6 +843,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cardarrest": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "cardarrest": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cardarrage": {
@@ -686,6 +902,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "cardarrage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "cardarrage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "cardarrage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "cardarrage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "cardarrage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -695,8 +944,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cardarrage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "cardarrage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -829,6 +1108,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "bypassage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "bypassage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "bypassage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "bypassage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "bypassage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -838,8 +1150,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bypassage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "bypassage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -910,6 +1252,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "pacdefage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "pacdefage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "pacdefage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "pacdefage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "pacdefage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -919,8 +1294,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pacdefage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "pacdefage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1022,6 +1427,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "valveage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "valveage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "valveage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "valveage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "valveage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1031,8 +1469,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "valveage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "valveage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1236,6 +1704,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "strokage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "strokage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "strokage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "strokage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "strokage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1245,8 +1746,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "strokage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "strokage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1337,6 +1868,27 @@
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "angiocp": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "angiocp": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "carotidage": {
@@ -1364,14 +1916,46 @@
                     "angiocp": {
                         "forbidden": [
                             1
-                        ],
-                        "nullable": true
+                        ]
                     }
                 },
                 "then": {
                     "carotidage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "carotidage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "carotidage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "carotidage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "carotidage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "carotidage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -1383,8 +1967,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "carotidage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "carotidage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1455,6 +2069,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "tiaage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "tiaage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "tiaage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "tiaage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "tiaage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1464,8 +2111,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "tiaage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "tiaage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1533,6 +2210,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "pdage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "pdage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "pdage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "pdage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "pdage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1542,8 +2252,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pdage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "pdage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1611,6 +2351,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "pdothrage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "pdothrage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "pdothrage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "pdothrage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "pdothrage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1620,8 +2393,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pdothrage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "pdothrage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1756,6 +2559,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "seizage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "seizage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "seizage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "seizage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "seizage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -1765,8 +2601,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "seizage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "seizage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -1778,6 +2644,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "headache": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "headache": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "ms": {
@@ -1788,6 +2675,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "ms": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "ms": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hydroceph": {
@@ -1814,6 +2722,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hydroceph": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hydroceph": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -1933,6 +2862,27 @@
                     "impother": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "headimp": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "headimp": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -2072,6 +3022,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "impyears": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "impyears": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "impyears": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "impyears": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "impyears",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -2081,8 +3064,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "impyears": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "impyears": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -2098,10 +3111,9 @@
             {
                 "index": 0,
                 "previous": {
-                    "tbi": {
+                    "headinjury": {
                         "allowed": [
-                            1,
-                            2
+                            1
                         ]
                     }
                 },
@@ -2300,8 +3312,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "firsttbi": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "firsttbi": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -2349,8 +3391,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "lasttbi": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "lasttbi": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -2593,6 +3665,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "diabage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "diabage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "diabage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "diabage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "diabage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -2602,8 +3707,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "diabage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "diabage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -2674,6 +3809,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hypertage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "hypertage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hypertage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "hypertage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hypertage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -2683,8 +3851,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hypertage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hypertage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -2755,6 +3953,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hyperchage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "hyperchage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hyperchage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "hyperchage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hyperchage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -2764,8 +3995,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hyperchage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hyperchage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -3700,6 +4961,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "canceractv": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "canceractv": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "cancerprim": {
@@ -3981,6 +5263,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "cancerage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "cancerage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "cancerage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "cancerage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "cancerage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -3990,8 +5305,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cancerage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "cancerage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -4019,6 +5364,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "covid19": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "covid19": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -4076,6 +5442,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pulmonary": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "pulmonary": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "kidney": {
@@ -4086,6 +5473,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "kidney": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "kidney": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "kidneyage": {
@@ -4124,6 +5532,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "kidneyage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "kidneyage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "kidneyage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "kidneyage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "kidneyage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -4133,8 +5574,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "kidneyage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "kidneyage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -4146,6 +5617,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "liver": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "liver": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "liverage": {
@@ -4184,6 +5676,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "liverage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "liverage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "liverage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "liverage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "liverage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -4193,8 +5718,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "liverage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "liverage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -4206,6 +5761,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pvd": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "pvd": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "pvdage": {
@@ -4244,6 +5820,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "pvdage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "pvdage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "pvdage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "pvdage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "pvdage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -4253,8 +5862,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "pvdage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "pvdage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -4282,6 +5921,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hivdiag": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hivdiag": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -4323,6 +5983,39 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hivage": {
+                        "min": 0,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "hivage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hivage": {
+                                        "min": 0,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "hivage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hivage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
         "anyof": [
@@ -4332,8 +6025,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hivage": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hivage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -4410,6 +6133,27 @@
                         "allowed": [
                             1
                         ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "majordep": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "majordep": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -4711,6 +6455,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "generalanx": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "generalanx": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "panicdis": {
@@ -4773,6 +6538,27 @@
             1,
             2,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "panicdis": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "panicdis": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "ocd": {
@@ -4929,7 +6715,8 @@
                 "if": {
                     "othanxdis": {
                         "allowed": [
-                            1
+                            1,
+                            2
                         ]
                     }
                 },
@@ -4943,8 +6730,11 @@
                 "index": 1,
                 "if": {
                     "othanxdis": {
-                        "nullable": true,
-                        "filled": false
+                        "allowed": [
+                            0,
+                            9
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
@@ -5033,6 +6823,27 @@
                     }
                 }
             }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "npsydev": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "npsydev": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "psycdis": {
@@ -5073,7 +6884,8 @@
                 "if": {
                     "psycdis": {
                         "allowed": [
-                            1
+                            1,
+                            2
                         ]
                     }
                 },
@@ -5087,8 +6899,11 @@
                 "index": 1,
                 "if": {
                     "psycdis": {
-                        "nullable": true,
-                        "filled": false
+                        "allowed": [
+                            0,
+                            9
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
@@ -5100,16 +6915,17 @@
             }
         ]
     },
-    "menarche": {
+    "nomensage": {
         "nullable": true,
         "type": "integer",
         "anyof": [
             {
-                "min": 5,
-                "max": 25
+                "min": 10,
+                "max": 70
             },
             {
                 "allowed": [
+                    777,
                     888,
                     999
                 ]
@@ -5118,67 +6934,6 @@
         "compatibility": [
             {
                 "index": 0,
-                "if": {
-                    "birthsex": {
-                        "allowed": [
-                            2
-                        ]
-                    }
-                },
-                "then": {
-                    "menarche": {
-                        "nullable": false
-                    }
-                }
-            }
-        ]
-    },
-    "nomensage": {
-        "nullable": true,
-        "type": "integer",
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "menarche": {
-                        "anyof": [
-                            {
-                                "min": 5,
-                                "max": 25
-                            },
-                            {
-                                "allowed": [
-                                    999
-                                ]
-                            }
-                        ]
-                    }
-                },
-                "then": {
-                    "nomensage": {
-                        "nullable": false
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "menarche": {
-                        "allowed": [
-                            888
-                        ],
-                        "nullable": true
-                    }
-                },
-                "then": {
-                    "nomensage": {
-                        "nullable": true,
-                        "filled": false
-                    }
-                }
-            },
-            {
-                "index": 2,
                 "if": {
                     "nomensage": {
                         "anyof": [
@@ -5244,7 +6999,7 @@
                 }
             },
             {
-                "index": 3,
+                "index": 1,
                 "if": {
                     "nomensage": {
                         "allowed": [
@@ -5292,18 +7047,68 @@
                         "filled": false
                     }
                 }
-            }
-        ],
-        "anyof": [
-            {
-                "min": 10,
-                "max": 70
             },
             {
-                "allowed": [
-                    888,
-                    999
-                ]
+                "index": 2,
+                "if": {
+                    "nomensage": {
+                        "min": 10,
+                        "max": 70
+                    }
+                },
+                "then": {
+                    "nomensage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "nomensage": {
+                                        "min": 10,
+                                        "max": 70
+                                    }
+                                },
+                                "current": {
+                                    "nomensage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "nomensage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "nomensage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 70
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "nomensage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -5409,40 +7214,30 @@
     "hrt": {
         "nullable": true,
         "type": "integer",
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "menarche": {
-                        "nullable": false
-                    }
-                },
-                "then": {
-                    "hrt": {
-                        "nullable": false
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "menarche": {
-                        "nullable": true,
-                        "filled": false
-                    }
-                },
-                "then": {
-                    "hrt": {
-                        "nullable": true,
-                        "filled": false
-                    }
-                }
-            }
-        ],
         "allowed": [
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrt": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "hrt": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "hrtyears": {
@@ -5471,13 +7266,47 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
                     "hrtyears": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hrtyears": {
+                        "min": 0,
+                        "max": 90
+                    }
+                },
+                "then": {
+                    "hrtyears": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hrtyears": {
+                                        "min": 0,
+                                        "max": 90
+                                    }
+                                },
+                                "current": {
+                                    "hrtyears": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hrtyears",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -5489,8 +7318,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrtyears": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 90
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hrtyears": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -5520,7 +7379,8 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
@@ -5538,8 +7398,57 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrtstrtage": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "current": {
+                    "hrtstrtage": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "previous": {
+                    "hrtstrtage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hrtstrtage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -5569,13 +7478,47 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
                     "hrtendage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "hrtendage": {
+                        "min": 10,
+                        "max": 110
+                    }
+                },
+                "then": {
+                    "hrtendage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "hrtendage": {
+                                        "min": 10,
+                                        "max": 110
+                                    }
+                                },
+                                "current": {
+                                    "hrtendage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "hrtendage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -5587,49 +7530,69 @@
             },
             {
                 "allowed": [
+                    777,
                     888,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "hrtendage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "hrtendage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
     "bcpills": {
         "nullable": true,
         "type": "integer",
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "menarche": {
-                        "nullable": false
-                    }
-                },
-                "then": {
-                    "bcpills": {
-                        "nullable": false
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "menarche": {
-                        "nullable": true,
-                        "filled": false
-                    }
-                },
-                "then": {
-                    "bcpills": {
-                        "nullable": true,
-                        "filled": false
-                    }
-                }
-            }
-        ],
         "allowed": [
             0,
             1,
             9
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bcpills": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "current": {
+                    "bcpills": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
         ]
     },
     "bcpillsyr": {
@@ -5658,13 +7621,47 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
                     "bcpillsyr": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "bcpillsyr": {
+                        "min": 0,
+                        "max": 50
+                    }
+                },
+                "then": {
+                    "bcpillsyr": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "bcpillsyr": {
+                                        "min": 0,
+                                        "max": 50
+                                    }
+                                },
+                                "current": {
+                                    "bcpillsyr": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "bcpillsyr",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -5676,8 +7673,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bcpillsyr": {
+                        "noneof": [
+                            {
+                                "min": 0,
+                                "max": 50
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "bcpillsyr": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -5707,13 +7734,47 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
                     "bcstartage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "bcstartage": {
+                        "min": 10,
+                        "max": 70
+                    }
+                },
+                "then": {
+                    "bcstartage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "bcstartage": {
+                                        "min": 10,
+                                        "max": 70
+                                    }
+                                },
+                                "current": {
+                                    "bcstartage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "bcstartage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -5725,8 +7786,38 @@
             },
             {
                 "allowed": [
+                    777,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bcstartage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 70
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "bcstartage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },
@@ -5756,13 +7847,47 @@
                         "allowed": [
                             0,
                             9
-                        ]
+                        ],
+                        "nullable": true
                     }
                 },
                 "then": {
                     "bcendage": {
                         "nullable": true,
                         "filled": false
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "bcendage": {
+                        "min": 10,
+                        "max": 70
+                    }
+                },
+                "then": {
+                    "bcendage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "bcendage": {
+                                        "min": 10,
+                                        "max": 70
+                                    }
+                                },
+                                "current": {
+                                    "bcendage": {
+                                        "compare_with": {
+                                            "comparator": ">=",
+                                            "base": "bcendage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
             }
@@ -5774,9 +7899,39 @@
             },
             {
                 "allowed": [
+                    777,
                     888,
                     999
                 ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "bcendage": {
+                        "noneof": [
+                            {
+                                "min": 10,
+                                "max": 70
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "bcendage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
             }
         ]
     },

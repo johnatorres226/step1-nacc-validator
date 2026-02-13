@@ -1,0 +1,46 @@
+{
+    "naccid": {
+        "required": true,
+        "type": "string"
+    },
+    "module": {
+        "required": true,
+        "type": "string"
+    },
+    "ptid": {
+        "required": true,
+        "type": "string"
+    },
+    "adcid": {
+        "required": true,
+        "type": "integer",
+        "function": {
+            "name": "check_adcid"
+        }
+    },
+    "visitnum": {
+        "required": true,
+        "type": "string"
+    },
+    "packet": {
+        "required": true,
+        "type": "string",
+        "allowed": [
+            "F"
+        ]
+    },
+    "formver": {
+        "required": true,
+        "type": "float",
+        "allowed": [
+            4.0
+        ]
+    },
+    "visitdate": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)",
+        "min": "2025-01-01"
+    }
+}

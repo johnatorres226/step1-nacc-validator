@@ -1,0 +1,628 @@
+{
+    "frmdatea4": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langa4": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modea4": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "rmreasa4": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea4": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa4": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea4": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa4": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodea4": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea4": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea4": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea4": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea4": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "anymeds": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "anymeds": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then_op": "or",
+                "then": {
+                    "rxnormid1": {
+                        "nullable": false
+                    },
+                    "rxnormid2": {
+                        "nullable": false
+                    },
+                    "rxnormid3": {
+                        "nullable": false
+                    },
+                    "rxnormid4": {
+                        "nullable": false
+                    },
+                    "rxnormid5": {
+                        "nullable": false
+                    },
+                    "rxnormid6": {
+                        "nullable": false
+                    },
+                    "rxnormid7": {
+                        "nullable": false
+                    },
+                    "rxnormid8": {
+                        "nullable": false
+                    },
+                    "rxnormid9": {
+                        "nullable": false
+                    },
+                    "rxnormid10": {
+                        "nullable": false
+                    },
+                    "rxnormid11": {
+                        "nullable": false
+                    },
+                    "rxnormid12": {
+                        "nullable": false
+                    },
+                    "rxnormid13": {
+                        "nullable": false
+                    },
+                    "rxnormid14": {
+                        "nullable": false
+                    },
+                    "rxnormid15": {
+                        "nullable": false
+                    },
+                    "rxnormid16": {
+                        "nullable": false
+                    },
+                    "rxnormid17": {
+                        "nullable": false
+                    },
+                    "rxnormid18": {
+                        "nullable": false
+                    },
+                    "rxnormid19": {
+                        "nullable": false
+                    },
+                    "rxnormid20": {
+                        "nullable": false
+                    },
+                    "rxnormid21": {
+                        "nullable": false
+                    },
+                    "rxnormid22": {
+                        "nullable": false
+                    },
+                    "rxnormid23": {
+                        "nullable": false
+                    },
+                    "rxnormid24": {
+                        "nullable": false
+                    },
+                    "rxnormid25": {
+                        "nullable": false
+                    },
+                    "rxnormid26": {
+                        "nullable": false
+                    },
+                    "rxnormid27": {
+                        "nullable": false
+                    },
+                    "rxnormid28": {
+                        "nullable": false
+                    },
+                    "rxnormid29": {
+                        "nullable": false
+                    },
+                    "rxnormid30": {
+                        "nullable": false
+                    },
+                    "rxnormid31": {
+                        "nullable": false
+                    },
+                    "rxnormid32": {
+                        "nullable": false
+                    },
+                    "rxnormid33": {
+                        "nullable": false
+                    },
+                    "rxnormid34": {
+                        "nullable": false
+                    },
+                    "rxnormid35": {
+                        "nullable": false
+                    },
+                    "rxnormid36": {
+                        "nullable": false
+                    },
+                    "rxnormid37": {
+                        "nullable": false
+                    },
+                    "rxnormid38": {
+                        "nullable": false
+                    },
+                    "rxnormid39": {
+                        "nullable": false
+                    },
+                    "rxnormid40": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "anymeds": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then_op": "and",
+                "then": {
+                    "rxnormid1": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid2": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid3": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid4": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid5": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid6": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid7": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid8": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid9": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid10": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid11": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid12": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid13": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid14": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid15": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid16": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid17": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid18": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid19": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid20": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid21": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid22": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid23": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid24": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid25": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid26": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid27": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid28": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid29": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid30": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid31": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid32": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid33": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid34": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid35": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid36": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid37": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid38": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid39": {
+                        "nullable": true,
+                        "filled": false
+                    },
+                    "rxnormid40": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "rxnormid1": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid2": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid3": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid4": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid5": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid6": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid7": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid8": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid9": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid10": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid11": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid12": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid13": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid14": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid15": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid16": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid17": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid18": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid19": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid20": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid21": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid22": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid23": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid24": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid25": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid26": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid27": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid28": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid29": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid30": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid31": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid32": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid33": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid34": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid35": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid36": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid37": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid38": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid39": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "rxnormid40": {
+        "nullable": true,
+        "type": "integer",
+        "check_with": "rxnorm"
+    },
+    "initialsa4": {
+        "nullable": true
+    }
+}

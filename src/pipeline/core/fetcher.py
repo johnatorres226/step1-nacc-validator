@@ -86,19 +86,13 @@ class ETLResult:
 # =============================================================================
 
 
-class DataContract:
-    """Defines the expected data structure and validation rules."""
+REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 
-    REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 
-    @staticmethod
-    def validate_required_fields(df: pd.DataFrame) -> list[str]:
-        """Validate that required fields are present in the dataframe."""
-        errors = []
-        for field in DataContract.REQUIRED_FIELDS:
-            if field not in df.columns:
-                errors.append(f"Required field '{field}' is missing from data")
-        return errors
+def validate_required_fields(df: pd.DataFrame) -> list[str]:
+    """Validate that required fields are present in the dataframe."""
+    return [f"Required field '{field}' is missing from data" 
+            for field in REQUIRED_FIELDS if field not in df.columns]
 
 
 # =============================================================================
@@ -139,21 +133,9 @@ class RedcapApiClient:
             logger.error(error_msg)
             raise RuntimeError(error_msg)
         except requests.exceptions.RequestException as e:
-            # If the response object is available, include its text for
-            # clearer diagnostics (tests mock a 403 with text="Forbidden").
-            resp_text = None
-            try:
-                resp = getattr(e, "response", None)
-                if resp is not None:
-                    resp_text = getattr(resp, "text", None)
-            except Exception:
-                resp_text = None
-
-            if resp_text:
-                error_msg = f"REDCap API request failed: {resp_text}"
-            else:
-                error_msg = f"REDCap API request failed: {e!s}"
-
+            # Include response text if available for clearer diagnostics
+            resp_text = getattr(getattr(e, "response", None), "text", None)
+            error_msg = f"REDCap API request failed: {resp_text or e!s}"
             logger.error(error_msg)
             raise RuntimeError(error_msg)
         except (ValueError, json.JSONDecodeError) as e:
@@ -162,47 +144,41 @@ class RedcapApiClient:
             raise RuntimeError(error_msg)
 
 
-class DataValidator:
-    """Handles data validation and quality checks."""
+def handle_column_mapping(df: pd.DataFrame) -> pd.DataFrame:
+    """Handle column mapping and required field creation."""
+    # Map record_id to ptid if needed
+    if "record_id" in df.columns and "ptid" not in df.columns:
+        df = df.rename(columns={"record_id": "ptid"})
+        logger.debug("Mapped 'record_id' to 'ptid' column")
 
-    @staticmethod
-    def validate_and_process(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
-        """Validate and process raw REDCap data into structured DataFrame."""
-        if not raw_data:
-            logger.warning("No data to process")
-            return pd.DataFrame()
+    # Handle missing ptid - this is now an error condition
+    if "ptid" not in df.columns:
+        raise ValueError("Critical error: 'ptid' column missing from REDCap data")
 
-        df = pd.DataFrame(raw_data)
+    # Handle missing redcap_event_name
+    if "redcap_event_name" not in df.columns and not df.empty:
+        raise ValueError("Critical error: 'redcap_event_name' column missing from REDCap data")
 
-        # Handle column mapping
-        df = DataValidator._handle_column_mapping(df)
+    return df
 
-        # Validate required fields
-        validation_errors = DataContract.validate_required_fields(df)
-        if validation_errors:
-            error_msg = "Data validation failed: " + "; ".join(validation_errors)
-            logger.error(error_msg)
-            raise ValueError(error_msg)
 
-        return df
+def validate_and_process(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
+    """Validate and process raw REDCap data into structured DataFrame."""
+    if not raw_data:
+        logger.warning("No data to process")
+        return pd.DataFrame()
 
-    @staticmethod
-    def _handle_column_mapping(df: pd.DataFrame) -> pd.DataFrame:
-        """Handle column mapping and required field creation."""
-        # Map record_id to ptid if needed
-        if "record_id" in df.columns and "ptid" not in df.columns:
-            df = df.rename(columns={"record_id": "ptid"})
-            logger.debug("Mapped 'record_id' to 'ptid' column")
+    df = pd.DataFrame(raw_data)
+    df = handle_column_mapping(df)
 
-        # Handle missing ptid - this is now an error condition
-        if "ptid" not in df.columns:
-            raise ValueError("Critical error: 'ptid' column missing from REDCap data")
+    # Validate required fields
+    validation_errors = validate_required_fields(df)
+    if validation_errors:
+        error_msg = "Data validation failed: " + "; ".join(validation_errors)
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
-        # Handle missing redcap_event_name
-        if "redcap_event_name" not in df.columns and not df.empty:
-            raise ValueError("Critical error: 'redcap_event_name' column missing from REDCap data")
-
-        return df
+    return df
 
 
 class DataTransformer:
@@ -287,7 +263,6 @@ class DataSaver:
 
     def __init__(self, context: ETLContext):
         self.context = context
-        self.saved_files: list[Path] = []
 
     def save_etl_output(self, df: pd.DataFrame, filename_prefix: str) -> Path | None:
         """
@@ -309,12 +284,11 @@ class DataSaver:
         Returns:
             Path to saved file or None if DataFrame is empty or no output path configured
         """
-        if df.empty:
-            logger.warning(f"Empty DataFrame, skipping save for {filename_prefix}")
-            return None
-
-        if not self.context.output_path:
-            logger.warning("No output path configured, skipping save")
+        if df.empty or not self.context.output_path:
+            if df.empty:
+                logger.warning(f"Empty DataFrame, skipping save for {filename_prefix}")
+            else:
+                logger.warning("No output path configured, skipping save")
             return None
 
         # Create Data_Fetched subdirectory
@@ -325,40 +299,34 @@ class DataSaver:
         file_path = etl_dir / filename
 
         df.to_csv(file_path, index=False)
-        self.saved_files.append(file_path)
-
         logger.debug(f"Saved ETL output: {file_path} ({len(df)} records)")
         return file_path
 
 
 # =============================================================================
-# FILTER LOGIC MANAGER
+# FILTER LOGIC HELPER
 # =============================================================================
 
 
-class FilterLogicManager:
-    """Manages REDCap filter logic based on configuration."""
+def get_filter_logic(config: QCConfig) -> str | None:
+    """Determine appropriate REDCap filter logic based on config mode."""
+    mode_filters = {
+        "complete_events": complete_events_with_incomplete_qc_filter_logic,
+        "complete_visits": complete_events_with_incomplete_qc_filter_logic,
+        "complete_instruments": qc_filterer_logic,
+        "none": None,
+    }
 
-    @staticmethod
-    def get_filter_logic(config: QCConfig) -> str | None:
-        """Determine appropriate REDCap filter logic based on config mode."""
-        mode_filters = {
-            "complete_events": complete_events_with_incomplete_qc_filter_logic,
-            "complete_visits": complete_events_with_incomplete_qc_filter_logic,
-            "complete_instruments": qc_filterer_logic,
-            "none": None,
-        }
+    if config.mode in mode_filters:
+        filter_logic = mode_filters[config.mode]
+        if filter_logic:
+            logger.info(f"Using '{config.mode}' filter logic")
+        else:
+            logger.warning("No filtering enabled. Fetching all records")
+        return filter_logic
 
-        if config.mode in mode_filters:
-            filter_logic = mode_filters[config.mode]
-            if filter_logic:
-                logger.info(f"Using '{config.mode}' filter logic")
-            else:
-                logger.warning("No filtering enabled. Fetching all records")
-            return filter_logic
-
-        logger.info("Defaulting to QC status check filter logic")
-        return qc_filterer_logic
+    logger.info("Defaulting to QC status check filter logic")
+    return qc_filterer_logic
 
 
 # =============================================================================
@@ -450,8 +418,7 @@ class RedcapETLPipeline:
 
     def _fetch_data(self) -> list[dict[str, Any]]:
         """Fetch data from REDCap API."""
-        # Determine filter logic
-        filter_logic = FilterLogicManager.get_filter_logic(self.config)
+        filter_logic = get_filter_logic(self.config)
 
         # Prepare instruments list
         fetch_instruments = self.config.instruments.copy()
@@ -459,33 +426,23 @@ class RedcapETLPipeline:
             fetch_instruments.append("quality_control_check")
             logger.info("Added 'quality_control_check' form for filtering")
 
-        # Build API payload
+        # Build API payload and fetch
         payload = self._build_api_payload(fetch_instruments, filter_logic)
+        raw_data = self.api_client.fetch_data(payload)
+        
+        if not raw_data and filter_logic:
+            # Attempt fallback without filtering
+            logger.warning("Initial fetch returned no data")
+            logger.info("Attempting fallback fetch without filters")
+            fallback_payload = self._build_api_payload(
+                [inst for inst in fetch_instruments if inst != "quality_control_check"],
+                None,
+            )
+            raw_data = self.api_client.fetch_data(fallback_payload)
+            if raw_data:
+                logger.info("Fallback fetch successful")
 
-        # Fetch data with fallback handling
-        try:
-            # Ensure components are initialized
-            assert self.api_client is not None, "API client not initialized"
-
-            raw_data = self.api_client.fetch_data(payload)
-            if not raw_data:
-                logger.warning("Initial fetch returned no data")
-                # Attempt fallback without filtering if original had filters
-                if filter_logic:
-                    logger.info("Attempting fallback fetch without filters")
-                    fallback_payload = self._build_api_payload(
-                        [inst for inst in fetch_instruments if inst != "quality_control_check"],
-                        None,
-                    )
-                    raw_data = self.api_client.fetch_data(fallback_payload)
-                    if raw_data:
-                        logger.info("Fallback fetch successful")
-
-            return raw_data
-
-        except Exception as e:
-            logger.error(f"Data fetch failed: {e!s}")
-            raise
+        return raw_data
 
     def _build_api_payload(
         self, instruments: list[str], filter_logic: str | None
@@ -519,16 +476,13 @@ class RedcapETLPipeline:
 
     def _validate_data(self, raw_data: list[dict[str, Any]]) -> pd.DataFrame:
         """Validate and process raw data."""
-        return DataValidator.validate_and_process(raw_data)
+        return validate_and_process(raw_data)
 
     def _transform_data(self, data: pd.DataFrame) -> pd.DataFrame:
         """Transform data based on configuration mode."""
         if data.empty:
             logger.warning("No data to transform")
             return data
-
-        # Ensure transformer is initialized
-        assert self.transformer is not None, "Transformer not initialized"
 
         if self.config.mode == "complete_instruments":
             logger.info("Applying instrument subset transformation")
@@ -540,15 +494,7 @@ class RedcapETLPipeline:
 
     def _save_data(self, data: pd.DataFrame) -> list[Path]:
         """Save processed data."""
-        saved_files = []
-
-        # Ensure context and saver are initialized
-        assert self.context is not None, "Context not initialized"
-        assert self.saver is not None, "Saver not initialized"
-
         if not data.empty and self.context.output_path:
             file_path = self.saver.save_etl_output(data, "ETL_ProcessedData")
-            if file_path:
-                saved_files.append(file_path)
-
-        return saved_files
+            return [file_path] if file_path else []
+        return []
