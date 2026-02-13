@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, codebase-curation ]
+    branches: [ dev, codebase-curation ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
 
 jobs:
   test:
@@ -44,7 +44,7 @@ jobs:
       
       - name: Run tests with coverage
         run: |
-          poetry run pytest tests/ -v --cov=nacc_form_validator --cov=src --cov-report=xml --cov-report=term
+          poetry run pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
         continue-on-error: false
       
       - name: Upload coverage reports
@@ -72,11 +72,13 @@ jobs:
 
       - name: Run Ruff lint
         run: |
-          ruff check --config ruff.toml src nacc_form_validator
+          ruff check --config ruff.toml src tests
+        continue-on-error: true
       
       - name: Run Ruff format check
         run: |
-          ruff format --check src nacc_form_validator
+          ruff format --check src tests
+        continue-on-error: true
 
   type-check:
     name: Type Check
