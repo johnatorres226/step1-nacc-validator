@@ -1,0 +1,523 @@
+{
+    "frmdatea2": {
+        "required": true,
+        "type": "string",
+        "formatting": "date",
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+    },
+    "langa2": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "modea2": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2
+        ]
+    },
+    "rmreasa2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            0,
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmreasa2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "rmmodea2": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea2": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            0,
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "rmmodea2": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2
+        ]
+    },
+    "a2not": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "a2not": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modea2": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "a2not": {
+                        "nullable": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            92,
+            95,
+            96,
+            97,
+            98
+        ]
+    },
+    "newinf": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "inrelto": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "newinf": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "inrelto": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "inrelto": {
+                                        "allowed": [
+                                            2
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "inrelto": {
+                                        "allowed": [
+                                            2
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "newinf": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "inrelto": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "inrelto": {
+                                        "allowed": [
+                                            3
+                                        ]
+                                    }
+                                },
+                                "current": {
+                                    "inrelto": {
+                                        "allowed": [
+                                            3
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "inknown": {
+        "required": true,
+        "type": "integer",
+        "anyof": [
+            {
+                "min": 0,
+                "max": 120
+            },
+            {
+                "allowed": [
+                    999
+                ]
+            }
+        ]
+    },
+    "inlivwth": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "inrelto": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "inlivwth": {
+                        "forbidden": [
+                            0
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "livsitua": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "inlivwth": {
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
+    },
+    "incntmod": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "incntmod": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "incntmod": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ]
+    },
+    "incntmdx": {
+        "nullable": true,
+        "type": "string",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "incntmod": {
+                        "allowed": [
+                            6
+                        ]
+                    }
+                },
+                "then": {
+                    "incntmdx": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "incntmod": {
+                        "forbidden": [
+                            6
+                        ],
+                        "nullable": true
+                    }
+                },
+                "then": {
+                    "incntmdx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ]
+    },
+    "incntfrq": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "incntfrq": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "incntfrq": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ]
+    },
+    "incnttim": {
+        "nullable": true,
+        "type": "integer",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "incnttim": {
+                        "nullable": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "inlivwth": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "incnttim": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            }
+        ],
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    },
+    "inrely": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1
+        ]
+    },
+    "inmemwors": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            2,
+            9
+        ]
+    },
+    "inmemtroub": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            9
+        ]
+    },
+    "inmemten": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            9
+        ]
+    },
+    "initialsa2": {
+        "nullable": true
+    }
+}

@@ -295,7 +295,6 @@ class ReportFactory:
                     result_df.loc[mask, row["instrument_name"]] = "Fail"
 
         # Add QC status columns
-        result_df["qc_status_complete"] = 0
         result_df["qc_run_by"] = report_config.qc_run_by
         result_df["qc_last_run"] = datetime.now().strftime("%Y-%m-%d")
 
@@ -311,7 +310,15 @@ class ReportFactory:
             return "Pass"
 
         result_df["qc_status"] = result_df.apply(get_qc_status, axis=1)
-        result_df["quality_control_check_complete"] = 0
+        
+        # Set qc_status_complete based on verdict: 1 if Pass, 0 if Failed
+        result_df["qc_status_complete"] = result_df["qc_status"].apply(
+            lambda status: 1 if status == "Pass" else 0
+        )
+        # Set quality_control_check_complete based on verdict: 2 if Pass, 0 if Failed
+        result_df["quality_control_check_complete"] = result_df["qc_status"].apply(
+            lambda status: 2 if status == "Pass" else 0
+        )
 
         # Sort by ptid and event
         result_df = result_df.sort_values([report_config.primary_key_field, "redcap_event_name"])
@@ -492,12 +499,28 @@ class ReportFactory:
         }
 
         for _, row in status_df.iterrows():
+            # Set qc_status_complete based on verdict if not in CSV
+            if "qc_status_complete" in row:
+                qc_status_complete = str(row["qc_status_complete"])
+            else:
+                # Fallback: determine from qc_status
+                qc_status_complete = "1" if row["qc_status"] == "Pass" else "0"
+            
+            # Set quality_control_check_complete based on verdict if not in CSV
+            if "quality_control_check_complete" in row:
+                quality_control_check_complete = str(row["quality_control_check_complete"])
+            else:
+                # Fallback: determine from qc_status
+                quality_control_check_complete = "2" if row["qc_status"] == "Pass" else "0"
+            
             participant_data = {
                 "ptid": row["ptid"],
                 "redcap_event_name": row["redcap_event_name"],
+                "qc_status_complete": qc_status_complete,
                 "qc_status": row["qc_status"],
                 "qc_run_by": row["qc_run_by"],
                 "qc_last_run": row["qc_last_run"],
+                "quality_control_check_complete": quality_control_check_complete,
             }
 
             json_data["participant_status"].append(participant_data)
@@ -635,8 +658,12 @@ class ReportFactory:
                 # Determine QC status based on failed instruments
                 if failed_instruments:
                     qc_status = f"Failed in instruments: {', '.join(failed_instruments)}"
+                    qc_status_complete = "0"  # Failed = 0
+                    quality_control_check_complete = "0"  # Failed = 0
                 else:
                     qc_status = "PASSED"
+                    qc_status_complete = "1"  # Passed = 1
+                    quality_control_check_complete = "2"  # Passed = 2
                 
                 # Get current date and initials
                 config = get_config()
@@ -645,11 +672,11 @@ class ReportFactory:
                 record = {
                     "ptid": row["ptid"],
                     "redcap_event_name": row["redcap_event_name"],
-                    "qc_status_complete": "0",
+                    "qc_status_complete": qc_status_complete,
                     "qc_run_by": qc_run_by,
                     "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
                     "qc_status": qc_status,
-                    "quality_control_check_complete": "0",
+                    "quality_control_check_complete": quality_control_check_complete,
                 }
                 json_data.append(record)
 

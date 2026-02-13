@@ -200,7 +200,13 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemwors": {
                         "allowed": [
                             1,
@@ -218,7 +224,13 @@
             },
             {
                 "index": 1,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemtroub": {
                         "allowed": [
                             4,
@@ -236,7 +248,13 @@
             },
             {
                 "index": 2,
+                "if_op": "and",
                 "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
                     "inmemten": {
                         "allowed": [
                             4,
@@ -925,10 +943,85 @@
                         "nullable": false
                     }
                 }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "cogage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "cogage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "cogage": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "cogage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "cogage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 9,
-        "max": 110
+        "anyof": [
+            {
+                "min": 9,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "cogage": {
+                        "noneof": [
+                            {
+                                "min": 9,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "cogage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "cogmode": {
         "nullable": true,
@@ -1518,10 +1611,85 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "behage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "behage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "behage": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "behage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "behage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 5,
-        "max": 110
+        "anyof": [
+            {
+                "min": 5,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "behage": {
+                        "noneof": [
+                            {
+                                "min": 9,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "behage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "bevhall": {
         "nullable": true,
@@ -1934,10 +2102,85 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "psychage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "psychage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "psychage": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "psychage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "psychage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 5,
-        "max": 110
+        "anyof": [
+            {
+                "min": 5,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "psychage": {
+                        "noneof": [
+                            {
+                                "min": 9,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "psychage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "bedisin": {
         "nullable": true,
@@ -2429,10 +2672,85 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "perchage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "perchage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "perchage": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "perchage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "perchage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 5,
-        "max": 110
+        "anyof": [
+            {
+                "min": 5,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "perchage": {
+                        "noneof": [
+                            {
+                                "min": 9,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "perchage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "berem": {
         "nullable": true,
@@ -2511,10 +2829,85 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "beremago": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "beremago": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "beremago": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "beremago": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "beremago",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 5,
-        "max": 110
+        "anyof": [
+            {
+                "min": 5,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "beremago": {
+                        "noneof": [
+                            {
+                                "min": 9,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "beremago": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "beremconf": {
         "nullable": true,
@@ -3285,10 +3678,85 @@
                         "filled": false
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "motorage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": false
+                    }
+                },
+                "then": {
+                    "motorage": {
+                        "temporalrules": [
+                            {
+                                "index": 0,
+                                "previous": {
+                                    "motorage": {
+                                        "forbidden": [
+                                            777
+                                        ],
+                                        "nullable": false
+                                    }
+                                },
+                                "current": {
+                                    "motorage": {
+                                        "compare_with": {
+                                            "comparator": "==",
+                                            "base": "motorage",
+                                            "previous_record": true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
             }
         ],
-        "min": 15,
-        "max": 110
+        "anyof": [
+            {
+                "min": 15,
+                "max": 110
+            },
+            {
+                "allowed": [
+                    777
+                ]
+            }
+        ],
+        "temporalrules": [
+            {
+                "index": 0,
+                "previous": {
+                    "motorage": {
+                        "noneof": [
+                            {
+                                "min": 15,
+                                "max": 110
+                            },
+                            {
+                                "allowed": [
+                                    777
+                                ]
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "current": {
+                    "motorage": {
+                        "forbidden": [
+                            777
+                        ],
+                        "nullable": true
+                    }
+                }
+            }
+        ]
     },
     "momode": {
         "nullable": true,
@@ -3557,6 +4025,7 @@
             }
         ],
         "allowed": [
+            0,
             1,
             2,
             3,

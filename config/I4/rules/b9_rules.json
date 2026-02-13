@@ -303,14 +303,14 @@
                 "if": {
                     "normcog": {
                         "allowed": [
-                            0
+                            1
                         ]
                     }
                 },
                 "then": {
                     "decclin": {
                         "allowed": [
-                            1
+                            0
                         ]
                     }
                 }
@@ -320,16 +320,15 @@
                 "if": {
                     "normcog": {
                         "allowed": [
-                            1
+                            0
                         ]
                     }
                 },
                 "then": {
                     "decclin": {
-                        "forbidden": [
+                        "allowed": [
                             1
-                        ],
-                        "nullable": true
+                        ]
                     }
                 }
             }
@@ -959,6 +958,9 @@
                                 "index": 0,
                                 "previous": {
                                     "decage": {
+                                        "forbidden": [
+                                            777  
+                                        ],
                                         "nullable": false
                                     }
                                 },
@@ -1583,6 +1585,9 @@
                                 "index": 0,
                                 "previous": {
                                     "beage": {
+                                        "forbidden": [
+                                            777
+                                        ],
                                         "nullable": false
                                     }
                                 },
@@ -3381,6 +3386,9 @@
                                 "index": 0,
                                 "previous": {
                                     "moage": {
+                                        "forbidden": [
+                                            777
+                                        ],
                                         "nullable": false
                                     }
                                 },
@@ -3521,23 +3529,6 @@
             },
             {
                 "index": 2,
-                "if": {
-                    "parksign": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                },
-                "then": {
-                    "momopark": {
-                        "allowed": [
-                            1
-                        ]
-                    }
-                }
-            },
-            {
-                "index": 3,
                 "if": {
                     "parksign": {
                         "allowed": [

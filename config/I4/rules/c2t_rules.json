@@ -1612,10 +1612,6 @@
                         "nullable": true,
                         "filled": false
                     },
-                    "cerad1read": {
-                        "nullable": true,
-                        "filled": false
-                    },
                     "cerad1int": {
                         "nullable": true,
                         "filled": false
@@ -1624,19 +1620,11 @@
                         "nullable": true,
                         "filled": false
                     },
-                    "cerad2read": {
-                        "nullable": true,
-                        "filled": false
-                    },
                     "cerad2int": {
                         "nullable": true,
                         "filled": false
                     },
                     "cerad3rec": {
-                        "nullable": true,
-                        "filled": false
-                    },
-                    "cerad3read": {
                         "nullable": true,
                         "filled": false
                     },
