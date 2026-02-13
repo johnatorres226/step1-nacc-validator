@@ -37,6 +37,11 @@ jobs:
     - name: Install dependencies
       run: poetry install --with dev
     
+    - name: Clean build artifacts
+      run: |
+        rm -rf dist/ build/ *.egg-info
+        echo "Cleaned previous build artifacts"
+    
     - name: Build package
       run: poetry build
     
