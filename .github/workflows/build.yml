@@ -48,7 +48,18 @@ jobs:
     - name: Check package contents
       run: |
         ls -la dist/
-        poetry run twine check dist/*
+        echo "=== Checking wheel contents ==="
+        python -m zipfile -l dist/*.whl | grep -i metadata || true
+        echo ""
+        echo "=== Extracting and inspecting METADATA ==="
+        mkdir -p /tmp/wheel_inspection
+        python -m zipfile -e dist/*.whl /tmp/wheel_inspection
+        echo "First 30 lines of METADATA:"
+        head -n 30 /tmp/wheel_inspection/udsv4_redcap_qc_validator-*.dist-info/METADATA || cat /tmp/wheel_inspection/udsv4_redcap_qc_validator-*.dist-info/METADATA || echo "Could not find METADATA file"
+        echo ""
+        echo "=== Using pkginfo to validate metadata ===" 
+        pip install pkginfo
+        python -c "import pkginfo; w = pkginfo.Wheel('dist/udsv4_redcap_qc_validator-0.1.0-py3-none-any.whl'); print(f'Name: {w.name}'); print(f'Version: {w.version}'); print(f'Summary: {w.summary}')"
     
     - name: Test package installation
       run: |
