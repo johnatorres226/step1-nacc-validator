@@ -1,11 +1,28 @@
 [tool.poetry]
 name = "udsv4-redcap-qc-validator"
-version = "0.1.0"
+version = "0.1.0"  # SINGLE SOURCE OF TRUTH - Update via: python scripts/update_version.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"
+authors = ["UDSv4 Team"]
+homepage = "https://github.com/johnatorres226/step1-nacc-validator"
+repository = "https://github.com/johnatorres226/step1-nacc-validator"
+documentation = "https://github.com/johnatorres226/step1-nacc-validator/tree/main/docs"
+keywords = ["udsv4", "redcap", "validation", "qc", "nacc"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL-2.0)",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+# Package includes
+# NOTE: nacc_form_validator is an EXTERNAL package (DO NOT MODIFY)
+# See docs/external-package-policy.md for details
 packages = [
-    { include = "nacc_form_validator" },
+    { include = "nacc_form_validator" },  # External validation engine (READ-ONLY)
     { include = "pipeline", from = "src" },
     { include = "cli", from = "src" },
 ]
@@ -48,6 +65,15 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff]
 line-length = 100
 target-version = "py313"
+# Exclude external packages from linting
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "dist",
+    "build",
+    "nacc_form_validator",  # External package - DO NOT LINT
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "S", "SIM", "PL"]
@@ -61,6 +87,10 @@ python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+# Exclude external packages from type checking
+exclude = [
+    "^nacc_form_validator/.*$",  # External package - DO NOT TYPE CHECK
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
