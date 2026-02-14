@@ -453,16 +453,16 @@ def build_cerberus_schema_for_record(record: dict) -> dict:
 - ✅ Performance is comparable or better
 - ✅ Error messages include instrument context
 
-### Phase 3: Configuration Cleanup (1 day)
+### ~~Phase 3: Configuration Cleanup (1 day)~~ ✅ COMPLETE
 
 **Objective**: Remove obsolete instrument configuration
 
 #### Tasks
-- [ ] Generate variable-to-instrument mapping
-- [ ] Create migration utility
-- [ ] Update configuration defaults
-- [ ] Add deprecation warnings
-- [ ] Update documentation
+- [x] Generate variable-to-instrument mapping
+- [x] Create migration utility
+- [x] Update configuration defaults
+- [x] Add deprecation warnings
+- [x] Update documentation
 
 **Files to Modify**:
 - `src/pipeline/config/config_manager.py`
@@ -475,6 +475,50 @@ def build_cerberus_schema_for_record(record: dict) -> dict:
 - ✅ `instrument_json_mapping` marked deprecated
 - ✅ Variable mapping auto-generated
 - ✅ Old code still works with warnings
+
+#### **Execution Summary: Phase 3**
+
+**Completed**: 2025-01-13
+
+**What Was Built**:
+
+1. **Variable Mapping Generation Script** (`scripts/generate_variable_mapping.py`, 96 lines)
+   - Scans all rule files in config/I/rules, config/I4/rules, config/F/rules
+   - Extracts variable names from rule JSON files
+   - Maps each variable to its source instrument
+   - Generates sorted JSON mapping file for reference
+
+2. **Variable-to-Instrument Mapping** (`config/variable_instrument_mapping.json`)
+   - Contains 1415 variable-to-instrument mappings
+   - Organized alphabetically for easy lookup
+   - One collision detected: `totalupdrs` appears in both `b3_updrs` and `b3_rules` (acceptable)
+   - Used for reporting context when validating with unified approach
+
+3. **Configuration Deprecation Warnings** (Modified `src/pipeline/config/config_manager.py`)
+   - Added `warnings` import to config_manager.py
+   - Added deprecation comment block to `instruments` list declaration
+   - Added deprecation comment to `instrument_json_mapping` list declaration  
+   - Modified `get_instruments()` method to emit DeprecationWarning with migration guidance
+   - Modified `get_instrument_json_mapping()` method to emit DeprecationWarning with migration guidance
+   - All warnings include clear message pointing developers to UnifiedRuleLoader
+
+**Technical Details**:
+- Script execution: Generated mapping in ~2 seconds
+- Warning implementation: Uses `warnings.warn()` with `stacklevel=2` for proper caller attribution
+- Backward compatibility: All 19 configuration tests pass (with warnings suppressed in test runs)
+- Documentation: Deprecation comments reference UnifiedRuleLoader as replacement
+
+**Impact**:
+- Developers using old instrument-based configuration methods now receive clear deprecation warnings
+- Variable mapping enables instrument context inference for reporting in unified validation
+- No breaking changes - existing code continues to work with warnings
+- Clear migration path established for future code removal
+
+**Validation**:
+- All configuration tests pass (19/19)
+- Deprecation warnings emit correctly when deprecated methods called
+- Variable mapping file successfully created and verified
+- No regressions in existing functionality
 
 ### Phase 4: Update Tests (2-3 days)
 
