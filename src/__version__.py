@@ -5,8 +5,9 @@ This module provides a single source of truth for the package version.
 All version references should import from this module.
 
 Usage:
-    from version import __version__
-    print(__version__)
+    from src import __version__
+    # or
+    from __version__ import __version__
 """
 
 __version__ = "0.1.0"

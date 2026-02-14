@@ -11,7 +11,7 @@ import pandas as pd
 import pytest
 
 from nacc_form_validator.models import ValidationResult
-from nacc_form_validator.nacc_validator import NACCValidator
+from nacc_form_validator.nacc_validator import NACCValidator, ValidationException
 
 # Import the modules we're testing
 from nacc_form_validator.quality_check import QualityCheck, QualityCheckException
@@ -29,7 +29,7 @@ class TestQualityCheckInitialization:
 
         assert qc.pk_field == pk_field
         assert qc.schema == schema
-        assert qc.datastore is None
+        assert qc.validator.datastore is None
         assert isinstance(qc.validator, NACCValidator)
 
     def test_quality_check_creation_with_datastore(self):
@@ -43,7 +43,7 @@ class TestQualityCheckInitialization:
 
         qc = QualityCheck(schema=schema, pk_field=pk_field, datastore=mock_datastore)
 
-        assert qc.datastore == mock_datastore
+        assert qc.validator.datastore == mock_datastore
 
     def test_quality_check_creation_with_invalid_schema(self):
         """Test QualityCheck creation with invalid schema."""
@@ -89,12 +89,12 @@ class TestValidationExecution:
 
         valid_record = {"ptid": "TEST001", "age": 65}
 
-        result = qc.validate_record(valid_record)
+        passed, sys_failure, errors, error_tree = qc.validate_record(valid_record)
 
-        assert isinstance(result, ValidationResult)
-        assert result.passed is True
-        assert result.sys_failure is False
-        assert len(result.errors) == 0
+        assert isinstance(passed, bool)
+        assert passed is True
+        assert sys_failure is False
+        assert len(errors) == 0
 
     def test_validate_record_with_errors(self):
         """Test record validation with validation errors."""
@@ -111,13 +111,13 @@ class TestValidationExecution:
             "age": 150,  # Invalid age > 120
         }
 
-        result = qc.validate_record(invalid_record)
+        passed, sys_failure, errors, error_tree = qc.validate_record(invalid_record)
 
-        assert isinstance(result, ValidationResult)
-        assert result.passed is False
-        assert result.sys_failure is False
-        assert len(result.errors) > 0
-        assert "age" in result.errors
+        assert isinstance(passed, bool)
+        assert passed is False
+        assert sys_failure is False
+        assert len(errors) > 0
+        assert "age" in errors
 
     def test_validate_record_with_missing_required_field(self):
         """Test record validation with missing required field."""
@@ -134,11 +134,11 @@ class TestValidationExecution:
             # Missing required_field
         }
 
-        result = qc.validate_record(incomplete_record)
+        passed, sys_failure, errors, error_tree = qc.validate_record(incomplete_record)
 
-        assert isinstance(result, ValidationResult)
-        assert result.passed is False
-        assert "required_field" in result.errors
+        assert isinstance(passed, bool)
+        assert passed is False
+        assert "required_field" in errors
 
     def test_validate_record_with_system_error(self):
         """Test record validation with system error."""
@@ -147,15 +147,15 @@ class TestValidationExecution:
 
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
-        # Mock validator to raise an exception; the QualityCheck should handle
-        # validator errors and return a ValidationResult with sys_failure=True.
-        with patch.object(qc.validator, "validate", side_effect=Exception("System error")):
+        # Mock validator to raise a ValidationException; the QualityCheck should handle
+        # this and return a tuple with sys_failure=True.
+        with patch.object(qc.validator, "validate", side_effect=ValidationException("System error")):
             record = {"ptid": "TEST001"}
 
-            result = qc.validate_record(record)
+            passed, sys_failure, errors, error_tree = qc.validate_record(record)
 
-            assert isinstance(result, ValidationResult)
-            assert result.sys_failure is True
+            assert isinstance(sys_failure, bool)
+            assert sys_failure is True
 
 
 class TestValidationResult:
@@ -260,18 +260,18 @@ class TestValidationRules:
 
         # Valid string
         valid_record = {"ptid": "TEST001"}
-        result = qc.validate_record(valid_record)
-        assert result.passed is True
+        passed, sys_failure, errors, error_tree = qc.validate_record(valid_record)
+        assert passed is True
 
         # Too short
         short_record = {"ptid": "AB"}
-        result = qc.validate_record(short_record)
-        assert result.passed is False
+        passed, sys_failure, errors, error_tree = qc.validate_record(short_record)
+        assert passed is False
 
         # Too long
         long_record = {"ptid": "VERYLONGPTID123"}
-        result = qc.validate_record(long_record)
-        assert result.passed is False
+        passed, sys_failure, errors, error_tree = qc.validate_record(long_record)
+        assert passed is False
 
     def test_integer_validation_rules(self):
         """Test integer validation rules."""
@@ -285,18 +285,18 @@ class TestValidationRules:
 
         # Valid integer
         valid_record = {"ptid": "TEST001", "age": 65}
-        result = qc.validate_record(valid_record)
-        assert result.passed is True
+        passed, sys_failure, errors, error_tree = qc.validate_record(valid_record)
+        assert passed is True
 
         # Below minimum
         below_min_record = {"ptid": "TEST001", "age": -1}
-        result = qc.validate_record(below_min_record)
-        assert result.passed is False
+        passed, sys_failure, errors, error_tree = qc.validate_record(below_min_record)
+        assert passed is False
 
         # Above maximum
         above_max_record = {"ptid": "TEST001", "age": 150}
-        result = qc.validate_record(above_max_record)
-        assert result.passed is False
+        passed, sys_failure, errors, error_tree = qc.validate_record(above_max_record)
+        assert passed is False
 
     def test_allowed_values_validation(self):
         """Test allowed values validation."""
@@ -310,13 +310,13 @@ class TestValidationRules:
 
         # Valid value
         valid_record = {"ptid": "TEST001", "status": "active"}
-        result = qc.validate_record(valid_record)
-        assert result.passed is True
+        passed, sys_failure, errors, error_tree = qc.validate_record(valid_record)
+        assert passed is True
 
         # Invalid value
         invalid_record = {"ptid": "TEST001", "status": "invalid_status"}
-        result = qc.validate_record(invalid_record)
-        assert result.passed is False
+        passed, sys_failure, errors, error_tree = qc.validate_record(invalid_record)
+        assert passed is False
 
 
 class TestValidationWithDataframes:
@@ -345,8 +345,8 @@ class TestValidationWithDataframes:
         all_passed = True
         for _, record in data.iterrows():
             record_dict = record.to_dict()
-            result = qc.validate_record(record_dict)
-            if not result.passed:
+            passed, sys_failure, errors, error_tree = qc.validate_record(record_dict)
+            if not passed:
                 all_passed = False
                 break
 
@@ -375,12 +375,12 @@ class TestValidationWithDataframes:
         results = []
         for _, record in data.iterrows():
             record_dict = record.to_dict()
-            result = qc.validate_record(record_dict)
-            results.append(result)
+            passed, sys_failure, errors, error_tree = qc.validate_record(record_dict)
+            results.append((passed, sys_failure, errors, error_tree))
 
-        assert results[0].passed is True  # First record should pass
-        assert results[1].passed is False  # Second record should fail
-        assert results[2].passed is False  # Third record should fail
+        assert results[0][0] is True  # First record should pass
+        assert results[1][0] is False  # Second record should fail
+        assert results[2][0] is False  # Third record should fail
 
 
 class TestValidationRobustness:
@@ -394,10 +394,10 @@ class TestValidationRobustness:
         qc = QualityCheck(schema=schema, pk_field=pk_field)
 
         empty_record = {}
-        result = qc.validate_record(empty_record)
+        passed, sys_failure, errors, error_tree = qc.validate_record(empty_record)
 
-        assert result.passed is False
-        assert "ptid" in result.errors
+        assert passed is False
+        assert "ptid" in errors
 
     def test_validation_with_none_values(self):
         """Test validation with None values."""
@@ -411,10 +411,10 @@ class TestValidationRobustness:
 
         record_with_none = {"ptid": "TEST001", "optional_field": None}
 
-        result = qc.validate_record(record_with_none)
+        passed, sys_failure, errors, error_tree = qc.validate_record(record_with_none)
 
         # Should handle None values appropriately based on schema
-        assert isinstance(result, ValidationResult)
+        assert isinstance(passed, bool)
 
     def test_validation_with_unexpected_fields(self):
         """Test validation with unexpected fields."""
@@ -425,10 +425,10 @@ class TestValidationRobustness:
 
         record_with_extra = {"ptid": "TEST001", "unexpected_field": "some_value"}
 
-        result = qc.validate_record(record_with_extra)
+        passed, sys_failure, errors, error_tree = qc.validate_record(record_with_extra)
 
         # Should handle unexpected fields based on strict mode
-        assert isinstance(result, ValidationResult)
+        assert isinstance(passed, bool)
 
     def test_validation_with_malformed_data_types(self):
         """Test validation with malformed data types."""
@@ -439,10 +439,10 @@ class TestValidationRobustness:
 
         malformed_record = {"ptid": "TEST001", "age": "not_a_number"}
 
-        result = qc.validate_record(malformed_record)
+        passed, sys_failure, errors, error_tree = qc.validate_record(malformed_record)
 
-        assert result.passed is False
-        assert "age" in result.errors
+        assert passed is False
+        assert "age" in errors
 
 
 class TestValidationIntegration:
@@ -451,8 +451,8 @@ class TestValidationIntegration:
     @patch("nacc_form_validator.quality_check.QualityCheck.validate_record")
     def test_validation_pipeline_integration(self, mock_validate):
         """Test validation integration within pipeline."""
-        # Mock validation result
-        mock_result = ValidationResult(passed=True, errors={}, sys_failure=False, error_tree=None)
+        # Mock validation result as tuple
+        mock_result = (True, False, {}, None)
         mock_validate.return_value = mock_result
 
         schema = {"ptid": {"type": "string", "required": True}}

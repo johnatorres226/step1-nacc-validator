@@ -18,6 +18,7 @@ from pipeline.config.config_manager import (
 )
 from pipeline.logging.logging_config import get_logger, setup_logging
 from pipeline.reports.report_pipeline import operation_context, run_report_pipeline
+from src.__version__ import __version__
 
 # Initialize console and logger
 console = Console()
@@ -25,7 +26,7 @@ logger = get_logger("cli")
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
-@click.version_option(version="0.1.0")
+@click.version_option(version=__version__)
 @click.option(
     "--log-level",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),

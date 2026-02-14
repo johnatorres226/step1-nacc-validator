@@ -4,6 +4,54 @@
 
 The Data Routing and Workflow System is the orchestration engine of the UDSv4 REDCap QC Validator, responsible for intelligently directing data through appropriate processing pathways based on configuration modes, packet types, and data characteristics. This system implements a sophisticated multi-stage pipeline that ensures each record receives the correct validation rules and processing logic based on its attributes and the system's operational context.
 
+## Validation Approaches
+
+The system supports two validation approaches for backward compatibility and progressive enhancement:
+
+### Unified Variable-Based Validation (NEW - Recommended)
+
+**File Location**: `src/pipeline/reports/report_pipeline.py`
+**Function**: `validate_data_unified()`
+**Class**: `src/pipeline/io/unified_rule_loader.py` - `UnifiedRuleLoader`
+
+The unified approach simplifies validation by loading all rules for a packet type at once:
+
+```python
+# New unified approach
+unified_loader = UnifiedRuleLoader(config)
+packet_rules = unified_loader.load_packet_rules("I")  # Loads all I packet rules
+errors, logs, passed = validate_data_unified(
+    data=dataframe,
+    primary_key_field="ptid",
+    instrument_name=None  # Optional, for logging only
+)
+```
+
+**Benefits**:
+- **Simpler Architecture**: Two-level routing (Packet → Variable) instead of three (Packet → Instrument → Variable)
+- **Better Performance**: Load rules once per packet, not once per instrument per record
+- **Eliminates Coupling**: No instrument-level routing needed - rules are variable-based
+- **Maintains Compatibility**: Error formats include instrument context inferred from variable names
+
+**How It Works**:
+1. Determine packet type from record (I, I4, or F)
+2. Load and merge all JSON rule files for that packet
+3. Validate record against merged rule set with `allow_unknown=True`
+4. Infer instrument context from variable name prefixes (e.g., `a1_birthyr` → `a1`)
+5. Return errors with instrument context for reporting
+
+### Hierarchical Instrument-Based Validation (DEPRECATED - Legacy)
+
+**File Location**: `src/pipeline/io/hierarchical_router.py`
+**Status**: Maintained for backward compatibility, will be removed in future version
+
+The legacy approach uses three-level routing:
+1. **Level 1**: Packet routing (I, I4, F)
+2. **Level 2**: Instrument routing (A1, B1, C2, etc.)
+3. **Level 3**: Dynamic routing (C2 vs C2T based on discriminant variable)
+
+**Deprecation Notice**: Code using `HierarchicalRuleResolver` or `PacketRouter` should migrate to `UnifiedRuleLoader`. See `config_manager.py` deprecation warnings.
+
 ## System Architecture
 
 ### Design Philosophy
@@ -20,21 +68,39 @@ The routing system is built on several key architectural principles:
 
 The routing system consists of several interconnected components:
 
+**Unified Validation Architecture (NEW)**:
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Data Routing and Workflow System                 │
+│              Unified Variable-Based Validation System               │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Processing Mode Router                                             │
 │  • Complete Visits • Incomplete Visits                             │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Packet Classification System                                       │
+│  Packet Classification (Level 1)                                    │
 │  • Initial Visit (I) • Initial Visit Form 4 (I4) • Follow-up (F)    │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Hierarchical Rule Resolution                                       │
-│  • Packet-Based Routing • Dynamic Instrument Routing                │
+│  Unified Rule Loading (Level 2)                                     │
+│  • Load all rules for packet  • Merge into single schema            │
+│  • Validate with allow_unknown=True                                 │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Pipeline Orchestration Engine                                      │
-│  • Stage Management • Context Preservation • Error Handling         │
+│  Instrument Context Inference                                       │
+│  • Infer from variable prefix  • Use for reporting only            │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Legacy Hierarchical Architecture (DEPRECATED)**:
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│           Hierarchical Instrument-Based Validation (OLD)            │
+├─────────────────────────────────────────────────────────────────────┤
+│  Packet Classification (Level 1)                                    │
+│  • Initial Visit (I) • Initial Visit Form 4 (I4) • Follow-up (F)    │
+├─────────────────────────────────────────────────────────────────────┤
+│  Instrument Routing (Level 2)                                       │
+│  • A1, B1, C2, D1... per record per visit                           │
+├─────────────────────────────────────────────────────────────────────┤
+│  Dynamic Routing (Level 3)                                          │
+│  • C2 vs C2T based on discriminant variable                         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 

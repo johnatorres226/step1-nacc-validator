@@ -4,6 +4,7 @@ Enhanced Configuration Management for UDSv4 QC Validator.
 
 import json
 import os
+import warnings
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
@@ -44,10 +45,16 @@ upload_ready_path = os.getenv("UPLOAD_READY_PATH")
 # INSTRUMENTS AND MAPPING CONFIGURATION
 # This section defines the instruments and their JSON mapping for validation rules.
 #
+# DEPRECATION WARNING: Instrument-based routing is being phased out in favor of
+# unified variable-based validation. These lists are maintained for backward
+# compatibility but will be removed in a future version. New code should use
+# UnifiedRuleLoader which loads rules by packet type instead of by instrument.
+#
 # Use "UPDATE_MARKER" to search what items need to be updated in this section
 # =============================================================================
 
 # UPDATE more instrument details -- HERE -- as they are needed
+# DEPRECATED: Use UnifiedRuleLoader for new code
 instruments = [
     # I and I4 packets instruments
     "form_header",
@@ -72,6 +79,7 @@ instruments = [
     # UPDATE_MARKER Insert F packet instruments here as they are needed
 ]
 
+# DEPRECATED: Use UnifiedRuleLoader for new code
 instrument_json_mapping = {
     # I and I4 packets instruments
     "form_header": ["header_rules.json"],
@@ -382,11 +390,39 @@ class QCConfig:
         return cls(**data)
 
     def get_instruments(self) -> list[str]:
-        """Returns the list of UDS visit instruments."""
+        """
+        Returns the list of UDS visit instruments.
+        
+        .. deprecated:: 1.0
+            Instrument-based routing is deprecated in favor of unified
+            variable-based validation. Use UnifiedRuleLoader instead.
+            This method will be removed in a future version.
+        """
+        warnings.warn(
+            "get_instruments() is deprecated. Instrument-based routing is being "
+            "replaced with unified variable-based validation using UnifiedRuleLoader. "
+            "This method will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.instruments
 
     def get_instrument_json_mapping(self) -> dict[str, list[str]]:
-        """Returns the mapping of instruments to JSON rule files."""
+        """
+        Returns the mapping of instruments to JSON rule files.
+        
+        .. deprecated:: 1.0
+            Instrument-based routing is deprecated in favor of unified
+            variable-based validation. Use UnifiedRuleLoader instead.
+            This method will be removed in a future version.
+        """
+        warnings.warn(
+            "get_instrument_json_mapping() is deprecated. Instrument-based routing is "
+            "being replaced with unified variable-based validation using UnifiedRuleLoader. "
+            "This method will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.instrument_json_mapping
 
     def get_rules_path_for_packet(self, packet: str) -> str:

@@ -4,6 +4,50 @@
 
 The QC Validation Engine is the core validation component of the UDSv4 REDCap QC Validator system. Built upon the Cerberus validation library and extended with custom NACC-specific validation methods, it provides comprehensive data quality checking for neurological assessment forms. The engine processes individual records through a multi-stage validation pipeline, applying packet-specific rules and generating detailed validation results.
 
+## Validation Approaches
+
+The system supports two approaches for loading and applying validation rules:
+
+### Unified Variable-Based Validation (NEW - Recommended)
+
+**Implementation**: `src/pipeline/io/unified_rule_loader.py` + `src/pipeline/reports/report_pipeline.py`
+
+The unified approach eliminates instrument-level routing by loading all validation rules for a packet type at once:
+
+**Key Features**:
+- Single rule load per packet type (improved performance)
+- Variable-based rule matching (no instrument routing needed)
+- Automatic instrument inference for reporting (from variable prefixes)
+- Maintains backward-compatible error formats
+- Validates with `allow_unknown=True` (ignores variables without rules)
+
+**Usage**:
+```python
+from src.pipeline.io.unified_rule_loader import UnifiedRuleLoader
+from src.pipeline.reports.report_pipeline import validate_data_unified
+
+# Load all rules for a packet
+loader = UnifiedRuleLoader()
+rules = loader.load_packet_rules("I")  # Loads & merges all I packet rules
+
+# Validate data
+errors, logs, passed_records = validate_data_unified(
+    data=dataframe,
+    primary_key_field="ptid",
+    instrument_name=None
+)
+```
+
+### Hierarchical Instrument-Based Validation (DEPRECATED)
+
+**Implementation**: `src/pipeline/io/hierarchical_router.py` + `nacc_form_validator/quality_check.py`
+
+The legacy approach loads rules per-instrument for each record:
+
+**Deprecation Notice**: This approach will be removed in a future version. Use `UnifiedRuleLoader` for new code. See `config_manager.py` for deprecation warnings on instrument-based methods.
+
+---
+
 ## System Architecture
 
 ### Core Components
