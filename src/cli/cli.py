@@ -12,6 +12,7 @@ from pathlib import Path
 import click
 from rich.console import Console
 
+from ..__version__ import __version__
 from pipeline.config.config_manager import (
     QCConfig,
     get_config,
@@ -25,7 +26,7 @@ logger = get_logger("cli")
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
-@click.version_option(version="0.1.0")
+@click.version_option(version=__version__)
 @click.option(
     "--log-level",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
