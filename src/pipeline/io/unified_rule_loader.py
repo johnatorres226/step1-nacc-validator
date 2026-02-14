@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..config.config_manager import QCConfig, get_config, is_dynamic_rule_instrument
+from ..config.config_manager import QCConfig, get_config
 from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)

@@ -11,6 +11,7 @@ This module contains the core data processing pipeline including:
 from src.__version__ import __version__
 
 __all__ = [
+    "__version__",
     "core",
     "processors",
     "io",

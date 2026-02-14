@@ -12,13 +12,13 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from src.__version__ import __version__
 from pipeline.config.config_manager import (
     QCConfig,
     get_config,
 )
 from pipeline.logging.logging_config import get_logger, setup_logging
 from pipeline.reports.report_pipeline import operation_context, run_report_pipeline
+from src.__version__ import __version__
 
 # Initialize console and logger
 console = Console()
