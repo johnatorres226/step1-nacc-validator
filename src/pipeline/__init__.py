@@ -8,7 +8,7 @@ This module contains the core data processing pipeline including:
 - Logging and monitoring
 """
 
-from ..__version__ import __version__
+from src.__version__ import __version__
 
 __all__ = [
     "core",

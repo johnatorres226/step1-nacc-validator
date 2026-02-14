@@ -12,7 +12,7 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from ..__version__ import __version__
+from src.__version__ import __version__
 from pipeline.config.config_manager import (
     QCConfig,
     get_config,
