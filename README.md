@@ -41,11 +41,21 @@ A comprehensive Quality Control (QC) validation system for NACC UDSv4 (Uniform D
 The UDSv4 REDCap QC Validator is designed to:
 
 - **Extract REDCap Data**: Securely connects to REDCap via API to retrieve UDSv4 form data
-- **Apply Quality Control Rules**: Validates data using comprehensive NACC-specific validation rules stored in JSON format
+- **Apply Quality Control Rules**: Validates data using comprehensive NACC-specific validation rules with modern unified variable-based validation (NEW) or legacy instrument-based routing
 - **Generate Detailed Reports**: Creates CSV reports, validation logs, and quality dashboards for data review
 - **Support Multiple Processing Modes**: Handles complete visits and incomplete visits scenarios
 - **Ensure Data Integrity**: Performs schema validation, custom field validation, and cross-field logic checks
 - **Provide Audit Trails**: Comprehensive logging and monitoring for regulatory compliance and troubleshooting
+
+### ✨ New: Unified Validation Architecture
+
+The system now features a modernized unified validation approach that:
+- **Simplifies Rule Loading**: Loads all rules for a packet type at once (improved performance)
+- **Eliminates Instrument Routing**: Variable-based validation without intermediate instrument routing
+- **Maintains Compatibility**: Backward-compatible error formats and reporting
+- **Improves Maintainability**: Cleaner architecture with less coupling
+
+See [docs/data-routing-workflow.md](docs/data-routing-workflow.md) for details on unified vs. legacy validation approaches.
 
 ## 🛠 Technologies and Dependencies
 
@@ -78,7 +88,8 @@ The UDSv4 REDCap QC Validator is designed to:
 
 - **Configuration Management**: Environment-aware settings with type safety
 - **ETL Pipeline**: Extract, Transform, Load pipeline for data processing
-- **Quality Control Engine**: Core validation engine with packet-specific rules
+- **Unified Rule Loader** ✨ NEW: Packet-level rule loading with variable-based validation
+- **Quality Control Engine**: Core validation engine with custom NACC validators
 - **Output Management**: Multi-format report generation (CSV, JSON, HTML)
 - **Logging System**: Comprehensive audit trails and performance monitoring
 
