@@ -9,57 +9,7 @@ variable in the data.
 
 from typing import Any
 
-from ..config.config_manager import KEY_MAP, is_dynamic_rule_instrument
-from ..io.rules import (
-    load_dynamic_rules_for_instrument,
-    load_json_rules_for_instrument,
-)
-
-
-def build_cerberus_schema_for_instrument(
-    instrument_name: str,
-    include_temporal_rules: bool = True,
-    include_compatibility_rules: bool = True,
-) -> dict[str, Any]:
-    """
-    Loads JSON rules and builds a Cerberus schema for a given instrument.
-
-    - For standard instruments, it returns a single schema dictionary.
-    - For dynamic instruments (e.g., C2/C2T), it returns a nested dictionary
-      where keys are variants (e.g., 'C2', 'C2T') and values are their
-      corresponding schemas.
-
-    Args:
-        instrument_name: The name of the instrument.
-        include_temporal_rules: Whether to include temporal rules in the schema.
-                               Set to False when datastore is not available.
-        include_compatibility_rules: Whether to include compatibility rules.
-                                   Set to False for simple validation only.
-
-    Returns:
-        A dictionary representing the Cerberus schema. For dynamic instruments,
-        this will be a dictionary of schemas.
-    """
-    if is_dynamic_rule_instrument(instrument_name):
-        # Load all rule variants for the dynamic instrument
-        raw_rule_map = load_dynamic_rules_for_instrument(instrument_name)
-        # Build a schema for each variant
-        return {
-            variant: _build_schema_from_raw(
-                raw_rules,
-                include_temporal_rules=include_temporal_rules,
-                include_compatibility_rules=include_compatibility_rules,
-            )
-            for variant, raw_rules in raw_rule_map.items()
-        }
-
-    # For standard instruments, load rules and build a single schema
-    raw_rules = load_json_rules_for_instrument(instrument_name)
-    return _build_schema_from_raw(
-        raw_rules,
-        include_temporal_rules=include_temporal_rules,
-        include_compatibility_rules=include_compatibility_rules,
-    )
+from ..config.config_manager import KEY_MAP
 
 
 def _build_schema_from_raw(

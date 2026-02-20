@@ -84,62 +84,6 @@ class ExportConfiguration:
 
 
 @dataclass
-class ValidationContext:
-    """
-    Context object for validation operations.
-
-    This provides validation-specific configuration and utilities.
-    """
-
-    instrument_name: str
-    primary_key_field: str
-    validation_rules: dict[str, Any]
-    event_name: str | None = None
-    include_temporal_rules: bool = False
-    include_compatibility_rules: bool = True
-
-    @property
-    def is_dynamic_instrument(self) -> bool:
-        """Check if this is a dynamic rule instrument."""
-        from ..config.config_manager import is_dynamic_rule_instrument
-
-        return is_dynamic_rule_instrument(self.instrument_name)
-
-    def get_discriminant_variable(self) -> str | None:
-        """Get discriminant variable for dynamic instruments."""
-        if self.is_dynamic_instrument:
-            from ..config.config_manager import get_discriminant_variable
-
-            return get_discriminant_variable(self.instrument_name)
-        return None
-
-
-@dataclass
-class AnalyticsConfiguration:
-    """
-    Configuration for data quality analytics and debugging.
-
-    This provides structured configuration for analysis operations.
-    """
-
-    verbosity_level: str = "normal"  # "minimal", "normal", "detailed", "debug"
-    include_coverage_analysis: bool = True
-    include_orphaned_columns: bool = True
-    include_missing_variables: bool = True
-    max_variables_to_show: int = 10
-
-    @property
-    def is_debug_mode(self) -> bool:
-        """Check if debug mode is enabled."""
-        return self.verbosity_level == "debug"
-
-    @property
-    def is_minimal_mode(self) -> bool:
-        """Check if minimal output mode is enabled."""
-        return self.verbosity_level == "minimal"
-
-
-@dataclass
 class ReportConfiguration:
     """
     Configuration for unified report generation.

@@ -26,10 +26,6 @@ class DataProcessingError(Exception):
     """Error during data processing step."""
 
 
-class ValidationError(Exception):
-    """Error during validation step."""
-
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
