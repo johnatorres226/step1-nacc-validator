@@ -21,7 +21,7 @@ except Exception:
     hierarchical_router_module = None
 
 try:
-    import src.pipeline.utils.instrument_mapping as instrument_mapping_module
+    import src.pipeline.io.rules as instrument_mapping_module
 except Exception:
     instrument_mapping_module = None
 

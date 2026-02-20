@@ -111,7 +111,13 @@ def resolve_rule_file_paths(instrument_name: str) -> list[Path]:
         RulesLoadingError: If no rule files are configured for the instrument.
     """
     config = get_config()
-    json_rules_path = Path(config.json_rules_path)
+    # Use I packet path as default for general rule loading
+    json_rules_dir = config.json_rules_path_i
+    if not json_rules_dir:
+        msg = "JSON_RULES_PATH_I is not configured. Please check your environment settings."
+        raise RulesLoadingError(msg)
+
+    json_rules_path = Path(json_rules_dir)
 
     # Get the list of JSON files for the instrument
     rule_files = instrument_json_mapping.get(instrument_name, [])
