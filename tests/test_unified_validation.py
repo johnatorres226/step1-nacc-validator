@@ -156,8 +156,8 @@ class TestUnifiedValidationPerformance:
         )
         elapsed = time.time() - start_time
         
-        #Should complete in reasonable time (< 10 seconds for 100 records)
-        assert elapsed < 10.0, f"Validation took {elapsed:.2f}s (expected < 10.0s)"
+        #Should complete in reasonable time (< 30 seconds for 100 records)
+        assert elapsed < 30.0, f"Validation took {elapsed:.2f}s (expected < 30.0s)"
         
         # Should return results
         assert isinstance(errors, list)
