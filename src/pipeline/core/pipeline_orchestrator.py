@@ -15,16 +15,11 @@ from ..config.config_manager import QCConfig
 from ..logging.logging_config import get_logger
 from .pipeline_results import (
     CompleteVisitsResult,
-    DataFetchError,
     DataFetchResult,
-    DataPreparationError,
     DataPreparationResult,
     PipelineExecutionResult,
-    ReportGenerationError,
     ReportGenerationResult,
-    RulesLoadingError,
     RulesLoadingResult,
-    ValidationError,
     ValidationResult,
 )
 
@@ -219,7 +214,7 @@ class PipelineOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Data fetch stage failed: {e}")
-            raise DataFetchError(f"Failed to fetch data: {e}", e)
+            raise RuntimeError(f"Data fetch stage failed: {e}") from e
 
     def _execute_rules_loading_stage(self) -> RulesLoadingResult:
         """Execute the rules loading stage using packet-based routing."""
@@ -285,7 +280,7 @@ class PipelineOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Rules loading stage failed: {e}")
-            raise RulesLoadingError(f"Failed to load validation rules: {e}", e)
+            raise RuntimeError(f"Rules loading stage failed: {e}") from e
 
     def _execute_data_preparation_stage(
         self, data_fetch_result: DataFetchResult, rules_loading_result: RulesLoadingResult
@@ -374,7 +369,7 @@ class PipelineOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Data preparation stage failed: {e}")
-            raise DataPreparationError(f"Failed to prepare data: {e}", e)
+            raise RuntimeError(f"Data preparation stage failed: {e}") from e
 
     def _execute_validation_stage(
         self, data_prep_result: DataPreparationResult, rules_loading_result: RulesLoadingResult
@@ -490,7 +485,7 @@ class PipelineOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Validation stage failed: {e}")
-            raise ValidationError(f"Failed to validate data: {e}", e)
+            raise RuntimeError(f"Validation stage failed: {e}") from e
 
     def _execute_report_generation_stage(
         self,
@@ -580,7 +575,7 @@ class PipelineOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Report generation stage failed: {e}")
-            raise ReportGenerationError(f"Failed to generate reports: {e}", e)
+            raise RuntimeError(f"Report generation stage failed: {e}") from e
 
     def _create_run_metadata(self) -> dict:
         """Create run metadata for the pipeline execution."""
