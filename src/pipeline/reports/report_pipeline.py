@@ -12,8 +12,7 @@ The pipeline operates in clear stages:
 5. **Report Generation**: Generate all reports with unified interface
 
 MAIN ENTRY POINTS:
-- `run_report_pipeline()` - Main pipeline entry point (calls run_improved_report_pipeline)
-- `run_improved_report_pipeline()` - Structured pipeline with result objects
+- `run_report_pipeline()` - Main pipeline entry point
 - `validate_data()` - Production validation using hierarchical packet routing
 - `validate_data_unified()` - Unified validation using packet-level rule loading
 """
@@ -41,7 +40,6 @@ from ..config.config_manager import (
 
 # Import pipeline components directly
 from ..core.pipeline_orchestrator import PipelineOrchestrator
-from ..core.pipeline_results import PipelineExecutionResult
 from ..io.hierarchical_router import HierarchicalRuleResolver
 from ..io.unified_rule_loader import UnifiedRuleLoader
 
@@ -72,32 +70,6 @@ def operation_context(operation_name: str, details: str = "") -> Generator[None]
 # =============================================================================
 
 
-def run_improved_report_pipeline(config: QCConfig) -> PipelineExecutionResult:
-    """
-    Main entry point for the improved QC report pipeline.
-
-    This function provides a structured, stage-based approach to pipeline execution
-    with proper error handling, result objects, and clear data flow.
-
-    Args:
-        config: The configuration object for the pipeline.
-
-    Returns:
-        Complete pipeline execution result with all stage results.
-    """
-    try:
-        with operation_context("pipeline_execute", "Running QC pipeline stages"):
-            orchestrator = PipelineOrchestrator(config)
-            return orchestrator.run_pipeline()
-
-    except Exception:
-        logger.exception("Pipeline execution failed")
-        raise
-
-
-
-
-
 def run_report_pipeline(config: QCConfig) -> None:
     """
     Main entry point for the QC report pipeline.
@@ -111,8 +83,8 @@ def run_report_pipeline(config: QCConfig) -> None:
 
     try:
         with operation_context("data_fetch", "Fetching REDCap data"):
-            # Use the improved pipeline implementation
-            result = run_improved_report_pipeline(config)
+            orchestrator = PipelineOrchestrator(config)
+            result = orchestrator.run_pipeline()
 
             if not result.success:
                 _err_msg = f"Pipeline execution failed: {result.pipeline_error}"
