@@ -6,7 +6,6 @@ that were previously in helpers.py, but now broken down into smaller, single-pur
 functions following SOLID principles.
 """
 
-from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
@@ -24,31 +23,6 @@ logger = get_logger(__name__)
 
 class DataProcessingError(Exception):
     """Error during data processing step."""
-
-
-# =============================================================================
-# DATA MODELS
-# =============================================================================
-
-
-@dataclass
-class CompleteVisitsData:
-    """Data model for complete visits processing results."""
-
-    summary_dataframe: pd.DataFrame
-    complete_visits_tuples: list[tuple[str, str]]
-    total_visits_processed: int
-    complete_visits_count: int
-
-
-@dataclass
-class ValidationLogsData:
-    """Data model for validation logs."""
-
-    log_entries: list[dict[str, Any]]
-    total_records_processed: int
-    pass_count: int
-    fail_count: int
 
 
 # =============================================================================

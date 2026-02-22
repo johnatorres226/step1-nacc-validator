@@ -42,8 +42,7 @@ def run_pipeline(
         prepare_instrument_data_cache,
         preprocess_cast_types,
     )
-    from ..core.validation_logging import build_detailed_validation_logs
-    from ..core.visit_processing import build_complete_visits_df
+    from ..core.validation_utils import build_validation_log, find_complete_visits
     from ..io.reports import (
         export_data_fetched,
         export_error_report,
@@ -93,7 +92,7 @@ def run_pipeline(
         t0 = time.time()
 
         if config.mode == "complete_visits" and not data_df.empty:
-            cv_df, cv_tuples = build_complete_visits_df(data_df, config.instruments)
+            cv_df, cv_tuples = find_complete_visits(data_df, config.instruments, config.primary_key_field)
             if not cv_df.empty:
                 idx = data_df.set_index([config.primary_key_field, "redcap_event_name"]).index
                 cv_idx = cv_df.set_index([config.primary_key_field, "redcap_event_name"]).index
@@ -125,7 +124,7 @@ def run_pipeline(
             logger.info("Validating %s (%d/%d)", instrument, i, len(config.instruments))
 
             # Completeness logs
-            detail_logs = build_detailed_validation_logs(df_inst, instrument, config.primary_key_field)
+            detail_logs = build_validation_log(df_inst, instrument, config.primary_key_field)
 
             # Cast types then validate
             inst_rules = rules_cache.get(instrument, {})
