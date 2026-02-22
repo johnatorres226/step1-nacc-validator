@@ -25,9 +25,7 @@ class DataProcessingError(Exception):
 # ---------------------------------------------------------------------------
 
 
-def _get_variables_for_instrument(
-    instrument: str, rules_cache: dict[str, Any]
-) -> list[str]:
+def _get_variables_for_instrument(instrument: str, rules_cache: dict[str, Any]) -> list[str]:
     """Return variable names for *instrument*."""
     if is_dynamic_rule_instrument(instrument):
         variant_rules = load_rules_for_instrument(instrument)
@@ -40,9 +38,7 @@ def _get_variables_for_instrument(
 # ---------------------------------------------------------------------------
 
 
-def preprocess_cast_types(
-    df: pd.DataFrame, rules: dict[str, dict[str, Any]]
-) -> pd.DataFrame:
+def preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
     """Cast DataFrame columns according to rule-defined types."""
     out = df.copy()
     for field, cfg in rules.items():
@@ -111,9 +107,7 @@ def _prepare_single_instrument(
         return pd.DataFrame()
 
     df = data_df[cols].copy()
-    non_core = [
-        c for c in cols if c not in core_cols and not c.endswith("_complete")
-    ]
+    non_core = [c for c in cols if c not in core_cols and not c.endswith("_complete")]
     if non_core:
         df = df[df[non_core].notna().any(axis=1)].reset_index(drop=True)
     return df
@@ -129,9 +123,7 @@ def prepare_instrument_data_cache(
     """Prepare per-instrument DataFrames for all instruments."""
     cache: dict[str, pd.DataFrame] = {}
     for instrument in instrument_list:
-        df = _prepare_single_instrument(
-            instrument, data_df, rules_cache, primary_key_field
-        )
+        df = _prepare_single_instrument(instrument, data_df, rules_cache, primary_key_field)
         cache[instrument] = df
         logger.debug("Prepared %d rows for '%s'", len(df), instrument)
     return cache

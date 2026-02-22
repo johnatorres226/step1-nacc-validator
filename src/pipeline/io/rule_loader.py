@@ -85,9 +85,7 @@ def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
     return merged
 
 
-def load_rules_for_instrument(
-    instrument_name: str, config: QCConfig | None = None
-) -> dict:
+def load_rules_for_instrument(instrument_name: str, config: QCConfig | None = None) -> dict:
     """Load rules for a specific instrument from its JSON rule files.
 
     For dynamic instruments, returns nested {variant: {rules}} structure.
@@ -128,9 +126,7 @@ def load_rules_for_instrument(
     return combined
 
 
-def resolve_dynamic_rules(
-    record: dict, base_rules: dict, instrument_name: str
-) -> dict:
+def resolve_dynamic_rules(record: dict, base_rules: dict, instrument_name: str) -> dict:
     """Handle C2/C2T discrimination.
 
     If the instrument is not dynamic, returns base_rules unchanged.
@@ -152,21 +148,22 @@ def resolve_dynamic_rules(
     if not value:
         logger.warning(
             "Missing %s in record for %s. Falling back to first variant.",
-            discriminant_var, instrument_name,
+            discriminant_var,
+            instrument_name,
         )
     else:
         logger.warning(
             "No variant rules for %s=%s in %s. Falling back to first variant.",
-            discriminant_var, value, instrument_name,
+            discriminant_var,
+            value,
+            instrument_name,
         )
 
     # Default: return first variant
     return next(iter(base_rules.values())) if base_rules else {}
 
 
-def _load_dynamic_variant_rules(
-    instrument_name: str, config: QCConfig | None = None
-) -> dict:
+def _load_dynamic_variant_rules(instrument_name: str, config: QCConfig | None = None) -> dict:
     """Load the nested {variant: {rules}} structure for a dynamic instrument
     using the I-packet rules directory."""
     cfg = _get_config(config)

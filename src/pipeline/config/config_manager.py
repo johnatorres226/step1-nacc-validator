@@ -372,7 +372,7 @@ class QCConfig:
     def get_instruments(self) -> list[str]:
         """
         Returns the list of UDS visit instruments.
-        
+
         .. deprecated:: 1.0
             Instrument-based routing is deprecated in favor of unified
             variable-based validation. Use UnifiedRuleLoader instead.
@@ -390,7 +390,7 @@ class QCConfig:
     def get_instrument_json_mapping(self) -> dict[str, list[str]]:
         """
         Returns the mapping of instruments to JSON rule files.
-        
+
         .. deprecated:: 1.0
             Instrument-based routing is deprecated in favor of unified
             variable-based validation. Use UnifiedRuleLoader instead.
@@ -550,4 +550,3 @@ def get_completion_columns() -> list[str]:
     """Returns the completion columns for all instruments."""
     config = get_config()
     return [f"{inst}_complete" for inst in config.get_instruments()]
-

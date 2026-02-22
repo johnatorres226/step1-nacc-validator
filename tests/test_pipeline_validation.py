@@ -149,7 +149,11 @@ class TestValidationExecution:
 
         # Mock validator to raise a ValidationException; the QualityCheck should handle
         # this and return a tuple with sys_failure=True.
-        with patch.object(qc.validator, "validate", side_effect=ValidationException("System error")):
+        with patch.object(
+            qc.validator,
+            "validate",
+            side_effect=ValidationException("System error"),
+        ):
             record = {"ptid": "TEST001"}
 
             passed, sys_failure, errors, error_tree = qc.validate_record(record)

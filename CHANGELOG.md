@@ -3,6 +3,20 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Refactoring] - 2026-02-21
+
+### Phases 7-15: Structural Consolidation
+
+- **Rule routing** (4 files → 1): Collapsed `rules.py`, `packet_router.py`, `hierarchical_router.py`, `unified_rule_loader.py` into `rule_loader.py`
+- **Reports** (732 lines → 110): Replaced `ReportFactory` class with 4 export functions
+- **Orchestrator** (700 lines → 171): Replaced `PipelineOrchestrator` class + 7 dataclasses with single `run_pipeline()` function
+- **Fetcher** (397 lines → 145): Replaced 6 ETL classes with single `fetch_redcap_data()` function
+- **Validation utils** (380 lines → 99): Merged `validation_logging.py` + `visit_processing.py` into `validation_utils.py`
+- **Report pipeline** (342 lines → 154): Removed indirection layer, inlined validation loop
+- **Config tests**: Simplified from 297 → 91 lines, removed deprecated tests
+- **Data processing** (512 lines → 109): Merged `instrument_processors.py`, deleted `processors/` package and `io/context.py`
+- **Net reduction**: ~4,854 → ~1,690 pipeline source lines (65% reduction), 116 tests passing
+
 ## [0.3.0] - 2026-01-13
 
 ### Fixed

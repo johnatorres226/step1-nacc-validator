@@ -14,7 +14,6 @@ from src.pipeline.config.config_manager import QCConfig
 from src.pipeline.io.rule_loader import (
     clear_cache,
     get_rules_for_record,
-    load_rules_for_instrument,
     load_rules_for_instruments,
     load_rules_for_packet,
     resolve_dynamic_rules,
@@ -118,9 +117,7 @@ class TestLoadRulesForPacket:
 class TestResolveDynamicRules:
     def test_non_dynamic_instrument_returns_base(self):
         base = {"var1": {"type": "string"}}
-        result = resolve_dynamic_rules(
-            {"packet": "I"}, base, "a1_participant_demographics"
-        )
+        result = resolve_dynamic_rules({"packet": "I"}, base, "a1_participant_demographics")
         assert result == base
 
     @patch("src.pipeline.io.rule_loader.is_dynamic_rule_instrument", return_value=True)

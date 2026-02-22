@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from typing import Any
 
 import pandas as pd
+
 from nacc_form_validator.quality_check import QualityCheck
 
 from ..config.config_manager import (
@@ -85,10 +86,17 @@ def validate_data(
             schema = _build_schema_from_raw(
                 resolved_rules, include_temporal_rules=False, include_compatibility_rules=True
             )
-            qc = QualityCheck(pk_field=primary_key_field, schema=schema, strict=False, datastore=None)
+            qc = QualityCheck(
+                pk_field=primary_key_field,
+                schema=schema,
+                strict=False,
+                datastore=None,
+            )
             passed, sys_failure, record_errors, _error_tree = qc.validate_record(record_dict)
 
-            rules_path = config.get_rules_path_for_packet(packet_value) if packet_value else "unknown"
+            rules_path = (
+                config.get_rules_path_for_packet(packet_value) if packet_value else "unknown"
+            )
 
             discriminant_info = ""
             if is_dynamic_rule_instrument(instrument_name):
@@ -98,57 +106,70 @@ def validate_data(
             if not passed or sys_failure:
                 for field_name, field_errors in record_errors.items():
                     for msg in field_errors:
-                        errors.append({
-                            primary_key_field: pk_value,
-                            "instrument_name": instrument_name,
-                            "variable": field_name,
-                            "error_message": msg,
-                            "current_value": record_dict.get(field_name, ""),
-                            "packet": packet_value,
-                            "json_rule_path": rules_path,
-                            "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                            "discriminant": discriminant_info,
-                        })
-                logs.append({
-                    primary_key_field: pk_value,
-                    "instrument_name": instrument_name,
-                    "validation_status": "FAILED",
-                    "error_count": sum(len(e) for e in record_errors.values()),
-                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                    "packet": packet_value,
-                    "discriminant": discriminant_info,
-                })
+                        errors.append(
+                            {
+                                primary_key_field: pk_value,
+                                "instrument_name": instrument_name,
+                                "variable": field_name,
+                                "error_message": msg,
+                                "current_value": record_dict.get(field_name, ""),
+                                "packet": packet_value,
+                                "json_rule_path": rules_path,
+                                "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                                "discriminant": discriminant_info,
+                            }
+                        )
+                logs.append(
+                    {
+                        primary_key_field: pk_value,
+                        "instrument_name": instrument_name,
+                        "validation_status": "FAILED",
+                        "error_count": sum(len(e) for e in record_errors.values()),
+                        "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                        "packet": packet_value,
+                        "discriminant": discriminant_info,
+                    }
+                )
             else:
-                passed_records.append({
-                    primary_key_field: pk_value,
-                    "instrument_name": instrument_name,
-                    "packet": packet_value,
-                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                    "discriminant": discriminant_info,
-                })
-                logs.append({
-                    primary_key_field: pk_value,
-                    "instrument_name": instrument_name,
-                    "validation_status": "PASSED",
-                    "error_count": 0,
-                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                    "packet": packet_value,
-                    "discriminant": discriminant_info,
-                })
+                passed_records.append(
+                    {
+                        primary_key_field: pk_value,
+                        "instrument_name": instrument_name,
+                        "packet": packet_value,
+                        "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                        "discriminant": discriminant_info,
+                    }
+                )
+                logs.append(
+                    {
+                        primary_key_field: pk_value,
+                        "instrument_name": instrument_name,
+                        "validation_status": "PASSED",
+                        "error_count": 0,
+                        "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                        "packet": packet_value,
+                        "discriminant": discriminant_info,
+                    }
+                )
 
         except Exception as e:
             logger.exception("Validation error for record %s", pk_value)
-            errors.append({
-                primary_key_field: pk_value,
-                "instrument_name": instrument_name,
-                "variable": "system_error",
-                "error_message": f"System validation error: {e}",
-                "current_value": "",
-                "packet": packet_value,
-                "json_rule_path": config.get_rules_path_for_packet(packet_value) if packet_value else "unknown",
-                "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                "discriminant": "",
-            })
+            errors.append(
+                {
+                    primary_key_field: pk_value,
+                    "instrument_name": instrument_name,
+                    "variable": "system_error",
+                    "error_message": f"System validation error: {e}",
+                    "current_value": "",
+                    "packet": packet_value,
+                    "json_rule_path": (
+                        config.get_rules_path_for_packet(packet_value)
+                        if packet_value
+                        else "unknown"
+                    ),
+                    "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "discriminant": "",
+                }
+            )
 
     return errors, logs, passed_records
-

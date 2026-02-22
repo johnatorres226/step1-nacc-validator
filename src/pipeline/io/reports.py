@@ -41,7 +41,8 @@ def export_validation_logs(
         logger.info("No validation logs — skipping logs report")
         return None
 
-    path = output_dir / "Validation_Logs" / f"Log_EventCompletenessScreening_{date_tag}_{time_tag}.csv"
+    filename = f"Log_EventCompletenessScreening_{date_tag}_{time_tag}.csv"
+    path = output_dir / "Validation_Logs" / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     df_logs.to_csv(path, index=False)
     logger.info("Exported %d log entries to %s", len(df_logs), path.name)
@@ -94,15 +95,17 @@ def export_json_tracking(
                 qc_status = "PASSED"
                 qc_complete, qcc_complete = "1", "2"
 
-            records.append({
-                "ptid": ptid,
-                "redcap_event_name": event,
-                "qc_status_complete": qc_complete,
-                "qc_run_by": user_initials,
-                "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
-                "qc_status": qc_status,
-                "quality_control_check_complete": qcc_complete,
-            })
+            records.append(
+                {
+                    "ptid": ptid,
+                    "redcap_event_name": event,
+                    "qc_status_complete": qc_complete,
+                    "qc_run_by": user_initials,
+                    "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
+                    "qc_status": qc_status,
+                    "quality_control_check_complete": qcc_complete,
+                }
+            )
 
     filename = f"QC_Status_Report_{date_tag}_{time_tag}.json"
 
@@ -118,6 +121,3 @@ def export_json_tracking(
 
     logger.info("Exported JSON tracking (%d participants) to %s", len(records), path.name)
     return path
-
-
-

@@ -64,7 +64,11 @@ def run_pipeline(
     output_dir = base / f"QC_{run_type}_{date_tag}_{time_tag}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Starting QC pipeline  —  %d instruments, mode=%s", len(config.instruments), config.mode)
+    logger.info(
+        "Starting QC pipeline  —  %d instruments, mode=%s",
+        len(config.instruments),
+        config.mode,
+    )
     logger.info("Output: %s", output_dir)
 
     try:
@@ -86,13 +90,22 @@ def run_pipeline(
                 logger.warning("No rules for instrument %s", instrument)
 
         variable_to_inst, inst_to_vars = build_variable_maps(config.instruments, rules_cache)
-        logger.info("Loaded rules for %d/%d instruments (%.1fs)", len(rules_cache), len(config.instruments), time.time() - t0)
+        logger.info(
+            "Loaded rules for %d/%d instruments (%.1fs)",
+            len(rules_cache),
+            len(config.instruments),
+            time.time() - t0,
+        )
 
         # ── Stage 3: Data Preparation ─────────────────────────────────────
         t0 = time.time()
 
         if config.mode == "complete_visits" and not data_df.empty:
-            cv_df, cv_tuples = find_complete_visits(data_df, config.instruments, config.primary_key_field)
+            cv_df, cv_tuples = find_complete_visits(
+                data_df,
+                config.instruments,
+                config.primary_key_field,
+            )
             if not cv_df.empty:
                 idx = data_df.set_index([config.primary_key_field, "redcap_event_name"]).index
                 cv_idx = cv_df.set_index([config.primary_key_field, "redcap_event_name"]).index
@@ -105,7 +118,11 @@ def run_pipeline(
         instrument_cache: dict[str, pd.DataFrame] = {}
         if not data_df.empty:
             instrument_cache = prepare_instrument_data_cache(
-                data_df, config.instruments, inst_to_vars, rules_cache, config.primary_key_field,
+                data_df,
+                config.instruments,
+                inst_to_vars,
+                rules_cache,
+                config.primary_key_field,
             )
         logger.info("Data preparation done (%.1fs)", time.time() - t0)
 
@@ -124,13 +141,16 @@ def run_pipeline(
             logger.info("Validating %s (%d/%d)", instrument, i, len(config.instruments))
 
             # Completeness logs
-            detail_logs = build_validation_log(df_inst, instrument, config.primary_key_field)
+            build_validation_log(df_inst, instrument, config.primary_key_field)
 
             # Cast types then validate
             inst_rules = rules_cache.get(instrument, {})
             df_inst = preprocess_cast_types(df_inst, inst_rules)
             errors, logs, passed = validate_data(
-                df_inst, inst_rules, instrument_name=instrument, primary_key_field=config.primary_key_field,
+                df_inst,
+                inst_rules,
+                instrument_name=instrument,
+                primary_key_field=config.primary_key_field,
             )
             all_errors.extend(errors)
             all_logs.extend(logs)

@@ -38,8 +38,10 @@ def build_validation_log(
             target = col
             status = "Complete" if is_complete else "Incomplete"
             pf = "Pass" if is_complete else "Fail"
-            err: Any = np.nan if is_complete else (
-                f"Instrument not marked as complete. Value is '{row.get(col)}'."
+            err: Any = (
+                np.nan
+                if is_complete
+                else (f"Instrument not marked as complete. Value is '{row.get(col)}'.")
             )
         else:
             target = "N/A"
@@ -47,16 +49,18 @@ def build_validation_log(
             pf = "Fail"
             err = "Instrument completeness variable not found in data."
 
-        logs.append({
-            primary_key_field: pk,
-            "redcap_event_name": event,
-            "instrument_name": instrument,
-            "target_variable": target,
-            "completeness_status": status,
-            "processing_status": "Processed",
-            "pass_fail": pf,
-            "error": err,
-        })
+        logs.append(
+            {
+                primary_key_field: pk,
+                "redcap_event_name": event,
+                "instrument_name": instrument,
+                "target_variable": target,
+                "completeness_status": status,
+                "processing_status": "Processed",
+                "pass_fail": pf,
+                "error": err,
+            }
+        )
 
     return logs
 
@@ -96,12 +100,14 @@ def find_complete_visits(
     packets = work.groupby([primary_key_field, "redcap_event_name"])["packet"].first()
 
     rows = []
-    for (pk, ev) in complete.index:
+    for pk, ev in complete.index:
         rows.append((pk, ev, packets.get((pk, ev), "unknown")))
 
     summary = pd.DataFrame(rows, columns=[primary_key_field, "redcap_event_name", "packet"])
     summary["complete_instruments_count"] = len(comp_cols)
     summary["completion_status"] = "All Complete"
 
-    tuples = list(summary[[primary_key_field, "redcap_event_name"]].itertuples(index=False, name=None))
+    tuples = list(
+        summary[[primary_key_field, "redcap_event_name"]].itertuples(index=False, name=None)
+    )
     return summary, tuples

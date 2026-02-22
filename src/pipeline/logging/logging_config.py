@@ -249,8 +249,6 @@ def _parse_file_size(size_str: str) -> int:
     return int(size_str)
 
 
-
-
 def configure_third_party_logging():
     """Configure logging for third-party libraries to reduce noise."""
     # Reduce logging level for common noisy libraries

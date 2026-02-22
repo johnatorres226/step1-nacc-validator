@@ -31,6 +31,7 @@ REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def fetch_redcap_data(
     config: QCConfig,
     output_path: Path | None = None,
@@ -86,6 +87,7 @@ def fetch_redcap_data(
 # ---------------------------------------------------------------------------
 # Internals
 # ---------------------------------------------------------------------------
+
 
 def _build_api_payload(
     config: QCConfig, instruments: list[str], filter_logic: str | None

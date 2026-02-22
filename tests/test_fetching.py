@@ -137,7 +137,12 @@ class TestFetchRedcapData:
         requests_mock.post("https://test.redcap.url", json=mock_data)
 
         with tempfile.TemporaryDirectory() as tmp:
-            df, _ = fetch_redcap_data(config, output_path=Path(tmp), date_tag="01JAN", time_tag="1200")
+            df, _ = fetch_redcap_data(
+                config,
+                output_path=Path(tmp),
+                date_tag="01JAN",
+                time_tag="1200",
+            )
             csv_files = list(Path(tmp).rglob("*.csv"))
             assert len(csv_files) == 1
             assert "ETL_ProcessedData" in csv_files[0].name
