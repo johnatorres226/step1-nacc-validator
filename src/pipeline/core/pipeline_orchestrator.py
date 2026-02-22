@@ -489,74 +489,64 @@ class PipelineOrchestrator:
     ) -> ReportGenerationResult:
         """Execute the report generation stage."""
         try:
-            from ..io.context import (
-                ExportConfiguration,
-                ProcessingContext,
-                ReportConfiguration,
+            from ..io.reports import (
+                export_data_fetched,
+                export_error_report,
+                export_json_tracking,
+                export_validation_logs,
             )
-            from ..io.reports import ReportFactory
 
             stage_start = time.time()
 
-            # Create processing context
-            processing_context = ProcessingContext(
-                data_df=validation_result.all_records_df,
-                instrument_list=self.config.instruments,
-                rules_cache={},  # Not needed for export
-                primary_key_field=self.config.primary_key_field,
-                config=self.config,
-            )
-
-            # Create export configuration
             # Ensure we have proper date and time tags
             if date_tag is None or time_tag is None:
                 current_datetime = datetime.now()
                 date_tag = date_tag or current_datetime.strftime("%d%b%Y").upper()
                 time_tag = time_tag or current_datetime.strftime("%H%M%S")
 
-            export_config = ExportConfiguration(
-                output_dir=output_dir, date_tag=date_tag, time_tag=time_tag
-            )
-
-            # Create report configuration
-            report_config = ReportConfiguration(
-                qc_run_by=self.config.user_initials or "N/A",
-                primary_key_field=self.config.primary_key_field,
-                instruments=self.config.instruments,
-            )
-
-            # Generate reports
             self.logger.info("Generating reports...")
-            report_factory = ReportFactory(processing_context)
+            generated_files: list[Path] = []
+            reports_created: dict[str, Path] = {}
 
-            complete_visits_df = pd.DataFrame()
-            if data_prep_result.complete_visits_data:
-                complete_visits_df = data_prep_result.complete_visits_data.summary_dataframe
-
-            generated_files = report_factory.export_all_reports(
-                df_errors=validation_result.errors_df,
-                df_logs=validation_result.logs_df,
-                df_passed=validation_result.passed_df,
-                all_records_df=validation_result.all_records_df,
-                complete_visits_df=complete_visits_df,
-                detailed_validation_logs_df=validation_result.validation_logs_df,
-                export_config=export_config,
-                report_config=report_config,
+            # 1. Error report
+            path = export_error_report(
+                validation_result.errors_df, output_dir, date_tag, time_tag
             )
+            if path:
+                generated_files.append(path)
+                reports_created["errors"] = path
+
+            # 2. Validation logs
+            path = export_validation_logs(
+                validation_result.logs_df, output_dir, date_tag, time_tag
+            )
+            if path:
+                generated_files.append(path)
+                reports_created["logs"] = path
+
+            # 3. Data fetched (audit trail)
+            path = export_data_fetched(
+                validation_result.all_records_df, output_dir, date_tag, time_tag
+            )
+            if path:
+                generated_files.append(path)
+                reports_created["data_fetched"] = path
+
+            # 4. JSON tracking
+            upload_ready = getattr(self.config, "upload_ready_path", None)
+            json_path = export_json_tracking(
+                df_all=validation_result.all_records_df,
+                df_errors=validation_result.errors_df,
+                output_dir=output_dir,
+                date_tag=date_tag,
+                time_tag=time_tag,
+                user_initials=self.config.user_initials or "N/A",
+                upload_ready_path=upload_ready,
+            )
+            generated_files.append(json_path)
+            reports_created["status"] = json_path
 
             execution_time = time.time() - stage_start
-
-            # Map generated files to report types
-            reports_created = {}
-            for file_path in generated_files:
-                if "errors" in file_path.name.lower():
-                    reports_created["errors"] = file_path
-                elif "logs" in file_path.name.lower():
-                    reports_created["logs"] = file_path
-                elif "status" in file_path.name.lower():
-                    reports_created["status"] = file_path
-                elif "visits" in file_path.name.lower():
-                    reports_created["complete_visits"] = file_path
 
             return ReportGenerationResult(
                 generated_files=generated_files,
