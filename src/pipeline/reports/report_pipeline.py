@@ -38,7 +38,7 @@ from ..config.config_manager import (
 )
 
 # Import pipeline components directly
-from ..core.pipeline_orchestrator import PipelineOrchestrator
+from ..core.pipeline import run_pipeline
 from ..io.rule_loader import get_rules_for_record
 
 logger = logging.getLogger(__name__)
@@ -72,36 +72,20 @@ def run_report_pipeline(config: QCConfig) -> None:
     """
     Main entry point for the QC report pipeline.
 
-    This function orchestrates the entire process, from fetching data to
-    generating the final reports using streamlined production logging.
+    Delegates to ``core.pipeline.run_pipeline()`` and logs a brief summary.
 
     Args:
         config: The configuration object for the pipeline.
     """
-
     try:
-        with operation_context("data_fetch", "Fetching REDCap data"):
-            orchestrator = PipelineOrchestrator(config)
-            result = orchestrator.run_pipeline()
+        result = run_pipeline(config)
 
-            if not result.success:
-                _err_msg = f"Pipeline execution failed: {result.pipeline_error}"
-                raise RuntimeError(_err_msg)
+        if not result["success"]:
+            raise RuntimeError(f"Pipeline execution failed: {result['error']}")
 
-        # Log success with metrics in production format
-        records_processed = f"{result.data_fetch.records_processed:,}"
-        logger.info("Data retrieved: %s records", records_processed)
-
-        # Log rules loading information
-        rules_count = len(result.rules_loading.instruments_processed)
-        logger.info("Rules loaded: %d rule sets for 3 packets", rules_count)
-
-        # Log validation completion
-        logger.info("Validation complete: %s records processed", records_processed)
-
-        # Extract output directory information
-        output_name = result.output_directory.name
-        logger.info("Reports saved to: output/%s/", output_name)
+        logger.info("Data retrieved: %s records", f"{result['records_fetched']:,}")
+        logger.info("Validation complete: %s records processed", f"{result['records_fetched']:,}")
+        logger.info("Reports saved to: %s", result["output_dir"].name)
 
     except Exception:
         logger.exception("Pipeline execution failed")
