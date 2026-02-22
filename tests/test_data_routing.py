@@ -156,6 +156,19 @@ class TestGetRulesForRecord:
         rules = get_rules_for_record(record, "a1_participant_demographics", config=mock_config)
         assert isinstance(rules, dict)
 
+    def test_returns_only_instrument_scoped_rules(self, mock_config, sample_rules_dir):
+        """Verify that get_rules_for_record returns ONLY the rules mapped to
+        the requested instrument, not all rules in the packet directory."""
+        record = {"packet": "I", "ptid": "TEST001"}
+        rules = get_rules_for_record(
+            record, "a1_participant_demographics", config=mock_config
+        )
+        # a1 rules should contain birthmo (from a1_rules.json)
+        assert "birthmo" in rules
+        # Should NOT contain b1 variables (height/weight) or header variables
+        assert "height" not in rules
+        assert "weight" not in rules
+
     def test_missing_packet_raises(self, mock_config):
         with pytest.raises(ValueError, match="Invalid packet"):
             get_rules_for_record({"ptid": "TEST001"}, "a1", config=mock_config)

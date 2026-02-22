@@ -181,18 +181,58 @@ def _load_dynamic_variant_rules(instrument_name: str, config: QCConfig | None = 
     return variant_rules
 
 
+def _load_instrument_rules_for_packet(
+    instrument_name: str, packet: str, config: QCConfig | None = None
+) -> dict:
+    """Load rules for a specific instrument from a specific packet directory.
+
+    Unlike load_rules_for_packet (which loads ALL rules in the directory),
+    this loads only the JSON files mapped to the given instrument.
+    Uses a cache keyed by (packet, instrument_name).
+    """
+    cache_key = f"{packet}_{instrument_name}"
+    if cache_key in _packet_cache:
+        return _packet_cache[cache_key]
+
+    cfg = _get_config(config)
+    rules_dir = Path(cfg.get_rules_path_for_packet(packet))
+
+    file_list = instrument_json_mapping.get(instrument_name, [])
+    if not file_list:
+        logger.warning("No rule files configured for instrument: %s", instrument_name)
+        _packet_cache[cache_key] = {}
+        return {}
+
+    combined: dict[str, Any] = {}
+    for filename in file_list:
+        path = rules_dir / filename
+        if not path.exists():
+            logger.debug("Rule file not found for packet %s: %s", packet, path)
+            continue
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                combined.update(json.load(f))
+        except json.JSONDecodeError:
+            logger.warning("Invalid JSON in %s, skipping", path)
+
+    logger.debug(
+        "Loaded %d rules for %s (packet %s)", len(combined), instrument_name, packet
+    )
+    _packet_cache[cache_key] = combined
+    return combined
+
+
 def get_rules_for_record(
     record: dict, instrument_name: str, config: QCConfig | None = None
 ) -> dict:
-    """Main entry point: determine packet from record, load rules, apply dynamic resolution."""
+    """Main entry point: determine packet from record, load instrument-scoped rules."""
     packet = _validate_packet(record.get("packet", ""))
-    rules = load_rules_for_packet(packet, config)
 
     if is_dynamic_rule_instrument(instrument_name):
         variant_rules = _load_dynamic_variant_rules(instrument_name, config)
         return resolve_dynamic_rules(record, variant_rules, instrument_name)
 
-    return rules
+    return _load_instrument_rules_for_packet(instrument_name, packet, config)
 
 
 def load_rules_for_instruments(

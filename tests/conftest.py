@@ -5,10 +5,8 @@ This module provides common fixtures, test utilities, and configuration
 that can be used across all test modules in the project.
 """
 
-import os
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -67,140 +65,6 @@ def sample_dataframe():
     )
 
 
-@pytest.fixture
-def mock_redcap_api_response():
-    """Provide a mock REDCap API response."""
-    return [
-        {
-            "ptid": "TEST001",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": "1950",
-            "a1_sex": "1",
-            "packet": "I",
-            "form_header_complete": "2",
-        },
-        {
-            "ptid": "TEST002",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "a1_birthyr": "1965",
-            "a1_sex": "2",
-            "packet": "I4",
-            "form_header_complete": "2",
-        },
-    ]
-
-
-@pytest.fixture
-def mock_validation_rules():
-    """Provide mock validation rules for testing."""
-    return {
-        "I": {
-            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
-            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
-        },
-        "I4": {
-            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
-            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
-        },
-        "F": {
-            "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
-            "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
-        },
-    }
-
-
-@pytest.fixture
-def mock_environment_variables():
-    """Provide mock environment variables for testing."""
-    env_vars = {
-        "REDCAP_API_TOKEN": "mock_token_12345",
-        "REDCAP_API_URL": "https://mock.redcap.url",
-        "PROJECT_ID": "mock_project_123",
-        "OUTPUT_PATH": "/tmp/mock_output",
-        "JSON_RULES_PATH_I": "/mock/rules/I",
-        "JSON_RULES_PATH_I4": "/mock/rules/I4",
-        "JSON_RULES_PATH_F": "/mock/rules/F",
-    }
-
-    with patch.dict(os.environ, env_vars):
-        yield env_vars
-
-
-@pytest.fixture
-def sample_error_data():
-    """Provide sample error data for testing reports."""
-    return [
-        {
-            "ptid": "TEST001",
-            "instrument_name": "a1_participant_demographics",
-            "variable": "a1_birthyr",
-            "error_message": "Value is too high",
-            "current_value": "2050",
-            "packet": "I",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-        },
-        {
-            "ptid": "TEST002",
-            "instrument_name": "a1_participant_demographics",
-            "variable": "a1_sex",
-            "error_message": "Invalid value",
-            "current_value": "5",
-            "packet": "I4",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-        },
-    ]
-
-
-@pytest.fixture
-def sample_passed_data():
-    """Provide sample passed validation data for testing reports."""
-    return [
-        {
-            "ptid": "TEST001",
-            "variable": "a1_birthyr",
-            "current_value": "1950",
-            "json_rule": '{"type": "integer", "min": 1900, "max": 2023}',
-            "rule_file": "a1_rules.json",
-            "packet": "I",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "instrument_name": "a1_participant_demographics",
-        },
-        {
-            "ptid": "TEST003",
-            "variable": "a1_sex",
-            "current_value": "2",
-            "json_rule": '{"type": "integer", "allowed": [1, 2, 9]}',
-            "rule_file": "a1_rules.json",
-            "packet": "F",
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "instrument_name": "a1_participant_demographics",
-        },
-    ]
-
-
-@pytest.fixture
-def sample_log_data():
-    """Provide sample log data for testing reports."""
-    return [
-        {
-            "ptid": "TEST001",
-            "instrument_name": "a1_participant_demographics",
-            "validation_status": "PASSED",
-            "error_count": 0,
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "packet": "I",
-        },
-        {
-            "ptid": "TEST002",
-            "instrument_name": "a1_participant_demographics",
-            "validation_status": "FAILED",
-            "error_count": 2,
-            "redcap_event_name": "udsv4_ivp_1_arm_1",
-            "packet": "I4",
-        },
-    ]
-
-
 # Pytest hooks for better test reporting
 def pytest_configure(config):
     """Configure pytest."""
@@ -226,13 +90,3 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.validation)
         elif "test_outputs" in item.nodeid:
             item.add_marker(pytest.mark.output)
-
-
-def pytest_report_header(config):
-    """Add custom header to pytest report."""
-    version = config.getoption("--version") if hasattr(config, "getoption") else "Unknown"
-    return [
-        "UDSv4 REDCap QC Validator - Essential Test Suite",
-        "Testing configuration, fetching, routing, validation, and outputs",
-        f"Python version: {version}",
-    ]
