@@ -8,13 +8,10 @@ that can be used across all test modules in the project.
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
-
-from nacc_form_validator.models import ValidationResult
 
 # Import project modules
 from src.pipeline.config.config_manager import QCConfig
@@ -38,42 +35,6 @@ def sample_config(temp_directory):
         instruments=["a1_participant_demographics", "b1_vital_signs_and_anthropometrics"],
     )
     return config
-
-
-@pytest.fixture
-def sample_validation_schema():
-    """Provide a sample validation schema for testing."""
-    return {
-        "ptid": {"type": "string", "required": True, "minlength": 3, "maxlength": 20},
-        "redcap_event_name": {"type": "string", "required": True},
-        "a1_birthyr": {"type": "integer", "min": 1900, "max": 2023},
-        "a1_sex": {"type": "integer", "allowed": [1, 2, 9]},
-        "packet": {"type": "string", "allowed": ["I", "I4", "F"]},
-    }
-
-
-@pytest.fixture
-def sample_valid_record():
-    """Provide a sample valid record for testing."""
-    return {
-        "ptid": "TEST001",
-        "redcap_event_name": "udsv4_ivp_1_arm_1",
-        "a1_birthyr": 1950,
-        "a1_sex": 1,
-        "packet": "I",
-    }
-
-
-@pytest.fixture
-def sample_invalid_record():
-    """Provide a sample invalid record for testing."""
-    return {
-        "ptid": "T",  # Too short
-        "redcap_event_name": "udsv4_ivp_1_arm_1",
-        "a1_birthyr": 2050,  # Future year
-        "a1_sex": 5,  # Invalid value
-        "packet": "X",  # Invalid packet
-    }
 
 
 @pytest.fixture
@@ -103,34 +64,6 @@ def sample_dataframe():
                 "packet": "F",
             },
         ]
-    )
-
-
-@pytest.fixture
-def sample_validation_result_passed():
-    """Provide a sample passed ValidationResult."""
-    return ValidationResult(passed=True, sys_failure=False, errors={}, error_tree=None)
-
-
-@pytest.fixture
-def sample_validation_result_failed():
-    """Provide a sample failed ValidationResult."""
-    return ValidationResult(
-        passed=False,
-        sys_failure=False,
-        errors={"a1_birthyr": ["Value is too high"], "a1_sex": ["Invalid value"]},
-        error_tree=None,
-    )
-
-
-@pytest.fixture
-def sample_validation_result_system_error():
-    """Provide a sample system error ValidationResult."""
-    return ValidationResult(
-        passed=False,
-        sys_failure=True,
-        errors={"system": ["Database connection failed"]},
-        error_tree=None,
     )
 
 
@@ -266,56 +199,6 @@ def sample_log_data():
             "packet": "I4",
         },
     ]
-
-
-# Test utilities
-class TestUtils:
-    """Utility functions for tests."""
-
-    @staticmethod
-    def create_mock_datastore(pk_field: str = "ptid"):
-        """Create a mock datastore for testing."""
-        mock_datastore = Mock()
-        mock_datastore.pk_field = pk_field
-        mock_datastore.get_previous_record.return_value = None
-        return mock_datastore
-
-    @staticmethod
-    def create_temp_json_file(data: dict[str, Any], temp_dir: Path) -> Path:
-        """Create a temporary JSON file with test data."""
-        import json
-
-        temp_file = temp_dir / "test_rules.json"
-        with open(temp_file, "w") as f:
-            json.dump(data, f, indent=2)
-        return temp_file
-
-    @staticmethod
-    def create_temp_csv_file(
-        data: pd.DataFrame, temp_dir: Path, filename: str = "test_data.csv"
-    ) -> Path:
-        """Create a temporary CSV file with test data."""
-        temp_file = temp_dir / filename
-        data.to_csv(temp_file, index=False)
-        return temp_file
-
-    @staticmethod
-    def assert_file_exists_and_not_empty(file_path: Path):
-        """Assert that a file exists and is not empty."""
-        assert file_path.exists(), f"File does not exist: {file_path}"
-        assert file_path.stat().st_size > 0, f"File is empty: {file_path}"
-
-    @staticmethod
-    def assert_csv_has_expected_columns(csv_path: Path, expected_columns: list):
-        """Assert that a CSV file has the expected columns."""
-        df = pd.read_csv(csv_path)
-        assert list(df.columns) == expected_columns, f"Columns mismatch in {csv_path}"
-
-
-@pytest.fixture
-def test_utils():
-    """Provide test utilities."""
-    return TestUtils
 
 
 # Pytest hooks for better test reporting
