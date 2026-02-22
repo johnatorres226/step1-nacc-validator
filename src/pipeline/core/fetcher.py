@@ -23,7 +23,7 @@ from ..config.config_manager import (
     complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
 )
-from ..io.rules import load_rules_for_instruments
+from ..io.rule_loader import load_rules_for_instruments
 from ..logging.logging_config import get_logger
 from .data_processing import get_variables_for_instrument
 

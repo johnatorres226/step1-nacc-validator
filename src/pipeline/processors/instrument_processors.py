@@ -9,15 +9,15 @@ from typing import Any
 
 import pandas as pd
 
-from pipeline.config.config_manager import (
+from ..config.config_manager import (
     get_completion_columns,
     get_core_columns,
     get_discriminant_variable,
     get_rule_mappings,
     is_dynamic_rule_instrument,
 )
-from pipeline.io.rules import load_dynamic_rules_for_instrument
-from pipeline.logging.logging_config import get_logger
+from ..io.rule_loader import load_rules_for_instrument
+from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -156,7 +156,7 @@ class DynamicInstrumentProcessor:
     def _get_rule_map(self) -> dict[str, dict[str, Any]]:
         """Load and cache rule map for this instrument."""
         if self._rule_cache is None:
-            self._rule_cache = load_dynamic_rules_for_instrument(self.instrument_name)
+            self._rule_cache = load_rules_for_instrument(self.instrument_name)
         return self._rule_cache
 
 

@@ -220,8 +220,7 @@ class PipelineOrchestrator:
         """Execute the rules loading stage using packet-based routing."""
         try:
             from ..core.data_processing import build_variable_maps
-            from ..io.hierarchical_router import HierarchicalRuleResolver
-            from ..io.packet_router import PacketRuleRouter
+            from ..io.rule_loader import load_rules_for_instrument
 
             stage_start = time.time()
 
@@ -231,22 +230,15 @@ class PipelineOrchestrator:
                 len(self.config.instruments),
             )
 
-            # Initialize packet router for production rule loading
-            PacketRuleRouter(self.config)
-            hierarchical_resolver = HierarchicalRuleResolver(self.config)
-
-            # Load rules for all instruments using packet routing
+            # Load rules for all instruments
             rules_cache = {}
             failed_instruments = []
             error_messages = {}
 
             for instrument in self.config.instruments:
                 try:
-                    # Use the new rules loading method that handles dynamic instruments
-                    # properly
-                    instrument_rules = hierarchical_resolver.load_all_rules_for_instrument(
-                        instrument
-                    )
+                    # Use rule_loader which handles both standard and dynamic instruments
+                    instrument_rules = load_rules_for_instrument(instrument, self.config)
 
                     if instrument_rules:
                         rules_cache[instrument] = instrument_rules

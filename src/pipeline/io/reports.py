@@ -416,7 +416,7 @@ class ReportFactory:
             get_config,
             get_instruments,
         )
-        from .rules import load_json_rules_for_instrument
+        from .rule_loader import load_rules_for_instrument
 
         instruments = get_instruments()
         config = get_config()
@@ -429,7 +429,7 @@ class ReportFactory:
 
             for instrument in instruments:
                 try:
-                    rules = load_json_rules_for_instrument(instrument)
+                    rules = load_rules_for_instrument(instrument)
                     # Get the full rules path based on packet type
                     rules_path = (
                         config.get_rules_path_for_packet(packet_value)
