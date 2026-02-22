@@ -17,18 +17,17 @@ class TestQCConfig:
     def test_creation_with_defaults(self):
         config = QCConfig()
         assert isinstance(config.instruments, list)
-        assert isinstance(config.instrument_json_mapping, dict)
         assert isinstance(config.events, list)
 
     def test_creation_with_custom_values(self):
         config = QCConfig(
             instruments=["test_instrument"],
-            redcap_api_token="tok_123",
-            redcap_api_url="https://test.redcap.url",
+            api_token="tok_123",
+            api_url="https://test.redcap.url",
         )
         assert config.instruments == ["test_instrument"]
-        assert config.redcap_api_token == "tok_123"
-        assert config.redcap_api_url == "https://test.redcap.url"
+        assert config.api_token == "tok_123"
+        assert config.api_url == "https://test.redcap.url"
 
     @patch.dict(
         os.environ,
@@ -43,22 +42,18 @@ class TestQCConfig:
         import src.pipeline.config.config_manager
 
         importlib.reload(src.pipeline.config.config_manager)
-        from src.pipeline.config.config_manager import (
-            adrc_api_key,
-            adrc_redcap_url,
-            output_path,
-            project_id,
-        )
+        from src.pipeline.config.config_manager import QCConfig as ReloadedQCConfig
 
-        assert adrc_api_key == "env_token_123"
-        assert adrc_redcap_url == "https://env.redcap.url"
-        assert project_id == "env_project_123"
-        assert output_path == "/tmp/env_output"
+        config = ReloadedQCConfig()
+        assert config.api_token == "env_token_123"
+        assert config.api_url == "https://env.redcap.url"
+        assert config.project_id == "env_project_123"
+        assert config.output_path.endswith("env_output")
 
     def test_to_dict(self):
-        config = QCConfig(redcap_api_token="test_token", instruments=["test_instrument"])
+        config = QCConfig(api_token="test_token", instruments=["test_instrument"])
         d = config.to_dict()
-        assert d["redcap_api_token"] == "test_token"
+        assert d["api_token"] == "test_token"
         assert d["instruments"] == ["test_instrument"]
 
     def test_roundtrip_to_file_and_from_file(self):
@@ -66,11 +61,11 @@ class TestQCConfig:
             temp_path = f.name
         try:
             original = QCConfig(
-                redcap_api_token="file_test_token", instruments=["file_test_instrument"]
+                api_token="file_test_token", instruments=["file_test_instrument"]
             )
             original.to_file(temp_path)
             loaded = QCConfig.from_file(temp_path)
-            assert loaded.redcap_api_token == original.redcap_api_token
+            assert loaded.api_token == original.api_token
             assert loaded.instruments == original.instruments
         finally:
             if os.path.exists(temp_path):

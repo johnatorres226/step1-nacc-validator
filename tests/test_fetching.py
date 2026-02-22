@@ -96,8 +96,8 @@ class TestFetchRedcapData:
         ]
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token="tok",
-                redcap_api_url="https://test.redcap.url",
+                api_token="tok",
+                api_url="https://test.redcap.url",
             )
         requests_mock.post("https://test.redcap.url", json=mock_data)
 
@@ -108,8 +108,8 @@ class TestFetchRedcapData:
     def test_empty_fetch(self, requests_mock):
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token="tok",
-                redcap_api_url="https://test.redcap.url",
+                api_token="tok",
+                api_url="https://test.redcap.url",
             )
         requests_mock.post("https://test.redcap.url", json=[])
 
@@ -119,8 +119,8 @@ class TestFetchRedcapData:
 
     def test_api_error_handling(self, requests_mock):
         config = QCConfig(
-            redcap_api_token="bad",
-            redcap_api_url="https://test.redcap.url",
+            api_token="bad",
+            api_url="https://test.redcap.url",
         )
         requests_mock.post("https://test.redcap.url", status_code=403, text="Forbidden")
 
@@ -131,8 +131,8 @@ class TestFetchRedcapData:
         mock_data = [{"ptid": "T1", "redcap_event_name": "ev1"}]
         with patch.dict(os.environ, {}, clear=True):
             config = QCConfig(
-                redcap_api_token="tok",
-                redcap_api_url="https://test.redcap.url",
+                api_token="tok",
+                api_url="https://test.redcap.url",
             )
         requests_mock.post("https://test.redcap.url", json=mock_data)
 

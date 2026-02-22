@@ -26,8 +26,8 @@ def temp_directory():
 def sample_config(temp_directory):
     """Provide a sample QCConfig for testing."""
     config = QCConfig(
-        redcap_api_token="test_token_12345",
-        redcap_api_url="https://test.redcap.example.com",
+        api_token="test_token_12345",
+        api_url="https://test.redcap.example.com",
         project_id="test_project_123",
         output_path=str(temp_directory),
         instruments=["a1_participant_demographics", "b1_vital_signs_and_anthropometrics"],

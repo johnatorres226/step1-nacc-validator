@@ -1,10 +1,7 @@
-"""
-Enhanced Configuration Management for UDSv4 QC Validator.
-"""
+"""Configuration management for UDSv4 QC Validator."""
 
 import json
 import os
-import warnings
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
@@ -30,31 +27,12 @@ dotenv_path = project_root / ".env"
 # Load environment variables from .env file
 load_dotenv(dotenv_path)
 
-# Environment variable
-adrc_api_key = os.getenv("REDCAP_API_TOKEN")
-adrc_redcap_url = os.getenv("REDCAP_API_URL")
-project_id = os.getenv("PROJECT_ID")
-
-# Paths
-output_path = os.getenv("OUTPUT_PATH")
-status_path = os.getenv("STATUS_PATH")
-upload_ready_path = os.getenv("UPLOAD_READY_PATH")
-
 
 # =============================================================================
 # INSTRUMENTS AND MAPPING CONFIGURATION
-# This section defines the instruments and their JSON mapping for validation rules.
-#
-# DEPRECATION WARNING: Instrument-based routing is being phased out in favor of
-# unified variable-based validation. These lists are maintained for backward
-# compatibility but will be removed in a future version. New code should use
-# UnifiedRuleLoader which loads rules by packet type instead of by instrument.
-#
-# Use "UPDATE_MARKER" to search what items need to be updated in this section
 # =============================================================================
 
-# UPDATE more instrument details -- HERE -- as they are needed
-# DEPRECATED: Use UnifiedRuleLoader for new code
+# Instrument registry used for data fetch filtering and completion tracking
 instruments = [
     # I and I4 packets instruments
     "form_header",
@@ -76,10 +54,9 @@ instruments = [
     "d1a_clinical_syndrome",
     "d1b_etiological_diagnosis_and_biomarker_support",
     "c2c2t_neuropsychological_battery_scores",
-    # UPDATE_MARKER Insert F packet instruments here as they are needed
 ]
 
-# DEPRECATED: Use UnifiedRuleLoader for new code
+# Instrument-to-rule-file mapping for per-instrument rule loading
 instrument_json_mapping = {
     # I and I4 packets instruments
     "form_header": ["header_rules.json"],
@@ -104,38 +81,21 @@ instrument_json_mapping = {
         "c2_rules.json",
         "c2t_rules.json",
     ],
-    # UPDATE_MARKER Insert F packet instruments here as they are needed
 }
 
-# UPDATE_MARKER more events -- HERE -- as they are needed
 uds_events = ["udsv4_ivp_1_arm_1", "udsv4_fvp_2_arm_1"]
+
 
 # =============================================================================
 # DATA FETCHING AND FILTERING
 # =============================================================================
-"""
-Here are the configurations for fetching and filtering data from REDCap.
 
-complete_instruments_vars is a dict. of these elements:
-{instrument_name}_complete
-
-complete_events_with_incomplete_qc_filter_logic is a string to serve as the
-REDCap filter logic
-    This filter selects complete events that have NOT been QC'd yet
-    (qc_status_complete = 0 or empty)
-    Format: "([{instrument_name}_complete]=2 and [{instrument_name}_complete]=2
-    and ...) and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
-
-"""
 complete_instruments_vars = [f"{inst}_complete" for inst in instruments]
 complete_events_with_incomplete_qc_filter_logic = (
     "("
     + " and ".join(f"[{inst}]=2" for inst in complete_instruments_vars)
     + ') and ([qc_status_complete] = 0 or [qc_status_complete] = "")'
 )
-qc_status_form = ["quality_control_check"]
-instrument_filter = instruments + qc_status_form
-uds_event_filter = uds_events
 qc_filterer_logic = '[qc_status_complete] = 0 or [qc_status_complete] = ""'
 
 
@@ -158,46 +118,24 @@ KEY_MAP = {
     "temporalrules": "temporalrules",
 }
 
+
 # =============================================================================
 # DYNAMIC RULE SELECTION CONFIGURATION
 # =============================================================================
 
-"""
-This configuration section is designed to handle dynamic rule selection and
-to future-proof configuration for instruments with variable-based rule selection
-
-Configuration for instruments that use variable-based rule selection
-This allows for dynamic rule selection based on discriminant variables
-
-If more C2/C2T instruments are added, they should follow the same pattern,
-and add their configurations to the DYNAMIC_RULE_INSTRUMENTS dict here below.
-
-"""
+# Configuration for instruments that use variable-based rule selection.
+# This allows for dynamic rule selection based on discriminant variables.
+# If more C2/C2T instruments are added, they should follow the same pattern,
+# and add their configurations to the DYNAMIC_RULE_INSTRUMENTS dict below.
 
 DYNAMIC_RULE_INSTRUMENTS = {
     "c2c2t_neuropsychological_battery_scores": {
         "discriminant_variable": "loc_c2_or_c2t",
         "rule_mappings": {"C2": "c2_rules.json", "C2T": "c2t_rules.json"},
     },
-    # --- UPDATE_MARKER Future Discriminant Variables ---
+    # --- Future Discriminant Variables ---
     # (Add future instrument mappings here as needed)
 }
-
-# List of all discriminant variables used across the system
-# This helps with data fetching and filtering
-DISCRIMINANT_VARIABLES = list(
-    {config["discriminant_variable"] for config in DYNAMIC_RULE_INSTRUMENTS.values()}
-)
-
-# Helper function to get all instruments that use dynamic rule selection
-
-
-def get_dynamic_rule_instruments():
-    """Returns a list of all instruments that use dynamic rule selection."""
-    return list(DYNAMIC_RULE_INSTRUMENTS.keys())
-
-
-# Helper function to get discriminant variable for an instrument
 
 
 def get_discriminant_variable(instrument_name: str) -> str:
@@ -209,9 +147,6 @@ def get_discriminant_variable(instrument_name: str) -> str:
     return config["discriminant_variable"]
 
 
-# Helper function to get rule mappings for an instrument
-
-
 def get_rule_mappings(instrument_name: str) -> dict:
     """Returns the rule mappings for a given instrument."""
     config = DYNAMIC_RULE_INSTRUMENTS.get(instrument_name)
@@ -221,24 +156,20 @@ def get_rule_mappings(instrument_name: str) -> dict:
     return config["rule_mappings"]
 
 
-# Helper function to check if an instrument uses dynamic rule selection
-
-
 def is_dynamic_rule_instrument(instrument_name: str) -> bool:
     """Returns True if the instrument uses dynamic rule selection."""
     return instrument_name in DYNAMIC_RULE_INSTRUMENTS
 
 
 # =============================================================================
-# MODERN CONFIGURATION SECTION
-# Enhanced features while maintaining backward compatibility
+# QC CONFIGURATION DATACLASS
 # =============================================================================
 
 
 @dataclass
 class QCConfig:
     """
-    A modern, structured configuration class for the QC pipeline.
+    Structured configuration class for the QC pipeline.
 
     This class centralizes all configuration parameters, provides type hints,
     and allows for default values and environment variable overrides.
@@ -246,13 +177,7 @@ class QCConfig:
 
     # --- Core REDCap API Configuration ---
     api_token: str | None = field(default_factory=lambda: os.getenv("REDCAP_API_TOKEN") or None)
-    redcap_api_token: str | None = field(
-        default_factory=lambda: os.getenv("REDCAP_API_TOKEN") or None
-    )  # Alias for backward compatibility
     api_url: str | None = field(default_factory=lambda: os.getenv("REDCAP_API_URL") or None)
-    redcap_api_url: str | None = field(
-        default_factory=lambda: os.getenv("REDCAP_API_URL") or None
-    )  # Alias for backward compatibility
     project_id: str | None = field(default_factory=lambda: os.getenv("PROJECT_ID"))
 
     # --- Path Configuration ---
@@ -303,27 +228,10 @@ class QCConfig:
 
     # --- Instrument & Event Configuration ---
     instruments: list[str] = field(default_factory=lambda: instruments)
-    instrument_json_mapping: dict[str, list[str]] = field(
-        default_factory=lambda: instrument_json_mapping
-    )
     events: list[str] = field(default_factory=lambda: uds_events)
 
     def __post_init__(self):
-        """Post-initialization validation and path resolution."""
-        # Sync alias fields for backward compatibility.
-        # Prefer explicit `redcap_api_*` values when provided (tests instantiate
-        # QCConfig using the alias names). This ensures explicit constructor
-        # args override environment-derived defaults.
-        if self.redcap_api_token:
-            self.api_token = self.redcap_api_token
-        elif self.api_token:
-            self.redcap_api_token = self.api_token
-
-        if self.redcap_api_url:
-            self.api_url = self.redcap_api_url
-        elif self.api_url:
-            self.redcap_api_url = self.api_url
-
+        """Post-initialization path resolution."""
         # Resolve paths to be absolute
         if self.output_path:
             self.output_path = str(Path(self.output_path).resolve())
@@ -341,13 +249,6 @@ class QCConfig:
             self.json_rules_path_i4 = str(Path(self.json_rules_path_i4).resolve())
         if self.json_rules_path_f:
             self.json_rules_path_f = str(Path(self.json_rules_path_f).resolve())
-
-        self._validate_config()
-
-    def _validate_config(self):
-        """Performs validation checks on the configuration using modular validators."""
-        # Only validate during normal operation, not during testing
-        # Tests can call validate() method explicitly
 
     def to_dict(self) -> dict[str, Any]:
         """Converts the configuration to a dictionary."""
@@ -368,42 +269,6 @@ class QCConfig:
         with p.open(encoding="utf-8") as fh:
             data = json.loads(fh.read())
         return cls(**data)
-
-    def get_instruments(self) -> list[str]:
-        """
-        Returns the list of UDS visit instruments.
-
-        .. deprecated:: 1.0
-            Instrument-based routing is deprecated in favor of unified
-            variable-based validation. Use UnifiedRuleLoader instead.
-            This method will be removed in a future version.
-        """
-        warnings.warn(
-            "get_instruments() is deprecated. Instrument-based routing is being "
-            "replaced with unified variable-based validation using UnifiedRuleLoader. "
-            "This method will be removed in a future version.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.instruments
-
-    def get_instrument_json_mapping(self) -> dict[str, list[str]]:
-        """
-        Returns the mapping of instruments to JSON rule files.
-
-        .. deprecated:: 1.0
-            Instrument-based routing is deprecated in favor of unified
-            variable-based validation. Use UnifiedRuleLoader instead.
-            This method will be removed in a future version.
-        """
-        warnings.warn(
-            "get_instrument_json_mapping() is deprecated. Instrument-based routing is "
-            "being replaced with unified variable-based validation using UnifiedRuleLoader. "
-            "This method will be removed in a future version.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return self.instrument_json_mapping
 
     def get_rules_path_for_packet(self, packet: str) -> str:
         """Get the required rules path for a packet type."""
@@ -430,9 +295,9 @@ class QCConfig:
         errors = []
 
         # Validate required fields
-        if not self.api_token and not self.redcap_api_token:
+        if not self.api_token:
             errors.append("REDCAP_API_TOKEN is required")
-        if not self.api_url and not self.redcap_api_url:
+        if not self.api_url:
             errors.append("REDCAP_API_URL is required")
 
         # Require ALL packet rule paths
@@ -483,11 +348,6 @@ class QCConfig:
         if len(self.instruments) != len(set(self.instruments)):
             errors.append("Duplicate instruments found in configuration.")
 
-        # Validate instrument mapping consistency
-        for instrument in self.instruments:
-            if instrument not in self.instrument_json_mapping:
-                errors.append(f"Instrument '{instrument}' has no JSON mapping configured.")
-
         return errors
 
 
@@ -495,7 +355,6 @@ class QCConfig:
 # CONFIGURATION ACCESSOR FUNCTIONS
 # Provides a clean, consistent way to access configuration settings
 # =============================================================================
-
 
 # Singleton instance of the configuration
 _config_instance: QCConfig | None = None
@@ -530,16 +389,6 @@ def get_config(force_reload: bool = False, skip_validation: bool = False) -> QCC
     return _config_instance
 
 
-def get_instruments() -> list[str]:
-    """Returns the list of UDS visit instruments."""
-    return get_config().get_instruments()
-
-
-def get_instrument_json_mapping() -> dict[str, list[str]]:
-    """Returns the mapping of instruments to JSON rule files."""
-    return get_config().get_instrument_json_mapping()
-
-
 def get_core_columns() -> list[str]:
     """Returns the core REDCap columns."""
     config = get_config()
@@ -549,4 +398,4 @@ def get_core_columns() -> list[str]:
 def get_completion_columns() -> list[str]:
     """Returns the completion columns for all instruments."""
     config = get_config()
-    return [f"{inst}_complete" for inst in config.get_instruments()]
+    return [f"{inst}_complete" for inst in config.instruments]
