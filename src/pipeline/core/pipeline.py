@@ -51,7 +51,7 @@ def run_pipeline(
         export_validation_logs,
     )
     from ..reports.report_pipeline import validate_data
-    from .fetcher import RedcapETLPipeline
+    from .fetcher import fetch_redcap_data
 
     pipeline_start = time.time()
 
@@ -71,10 +71,7 @@ def run_pipeline(
     try:
         # ── Stage 1: Data Fetch ───────────────────────────────────────────
         t0 = time.time()
-        etl = RedcapETLPipeline(config)
-        etl_result = etl.run(output_dir, date_tag, time_tag)
-        data_df = etl_result.data
-        records_fetched = etl_result.records_processed
+        data_df, records_fetched = fetch_redcap_data(config, output_dir, date_tag, time_tag)
         logger.info("Fetched %d records (%.1fs)", records_fetched, time.time() - t0)
 
         # ── Stage 2: Load Rules ───────────────────────────────────────────

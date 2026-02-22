@@ -1,17 +1,14 @@
 """
-Modern REDCap ETL Pipeline Module
+REDCap data fetching.
 
-This module provides a clean, object-oriented ETL pipeline for fetching and processing
-REDCap data. It follows a linear pipeline: fetch → validate → transform → save.
-
-Main Entry Point:
-    RedcapETLPipeline.run() - Use this for all ETL operations
+Provides ``fetch_redcap_data(config, output_path)`` which executes the
+full fetch → validate → optional-save flow and returns
+``(dataframe, saved_files)``.
 """
 
 import json
+import logging
 import time
-from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,478 +20,144 @@ from ..config.config_manager import (
     complete_events_with_incomplete_qc_filter_logic,
     qc_filterer_logic,
 )
-from ..io.rule_loader import load_rules_for_instruments
-from ..logging.logging_config import get_logger
-from .data_processing import get_variables_for_instrument
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
-# =============================================================================
-# CONTEXT AND DATA STRUCTURES
-# =============================================================================
-
-
-@dataclass
-class ETLContext:
-    """Encapsulates ETL execution context with timestamps and configuration."""
-
-    config: QCConfig
-    run_date: str
-    time_stamp: str
-    output_path: Path | None = None
-
-    @classmethod
-    def create(
-        cls,
-        config: QCConfig,
-        output_path: str | Path | None = None,
-        date_tag: str | None = None,
-        time_tag: str | None = None,
-    ) -> "ETLContext":
-        """Create an ETL context with proper timestamp handling."""
-        if date_tag and time_tag:
-            run_date, time_stamp = date_tag, time_tag
-        else:
-            current_datetime = datetime.now()
-            run_date = current_datetime.strftime("%d%b%Y").upper()
-            time_stamp = current_datetime.strftime("%H%M%S")
-
-        output = (
-            Path(output_path)
-            if output_path
-            else (Path(config.output_path) if config.output_path else Path.cwd())
-        )
-        return cls(config, run_date, time_stamp, output)
-
-
-@dataclass
-class ETLResult:
-    """Encapsulates ETL execution results."""
-
-    data: pd.DataFrame
-    records_processed: int
-    execution_time: float
-    saved_files: list[Path]
-
-    @property
-    def is_empty(self) -> bool:
-        return self.data.empty or self.records_processed == 0
-
-
-# =============================================================================
-# DATA CONTRACTS AND VALIDATION
-# =============================================================================
-
-
+# Fields that must be present after fetch
 REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 
 
-def validate_required_fields(df: pd.DataFrame) -> list[str]:
-    """Validate that required fields are present in the dataframe."""
-    return [f"Required field '{field}' is missing from data" 
-            for field in REQUIRED_FIELDS if field not in df.columns]
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
+def fetch_redcap_data(
+    config: QCConfig,
+    output_path: Path | None = None,
+    date_tag: str | None = None,
+    time_tag: str | None = None,
+) -> tuple[pd.DataFrame, int]:
+    """Fetch data from REDCap, validate, filter, and optionally save.
 
-# =============================================================================
-# CORE ETL COMPONENTS
-# =============================================================================
+    Returns ``(dataframe, records_processed)``.
+    """
+    t0 = time.time()
+    filter_logic = _get_filter_logic(config)
 
+    # Build instruments list - include quality_control_check for filtering
+    instruments = config.instruments.copy()
+    if filter_logic and "quality_control_check" not in instruments:
+        instruments.append("quality_control_check")
 
-class RedcapApiClient:
-    """Handles REDCap API communication with proper error handling."""
+    payload = _build_api_payload(config, instruments, filter_logic)
+    raw = _post_api(config, payload)
 
-    def __init__(self, config: QCConfig):
-        self.config = config
-        self.session = requests.Session()
-        self.session.headers.update(
-            {"Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json"}
+    # Fallback fetch without filter if first attempt was empty
+    if not raw and filter_logic:
+        logger.warning("Fetch returned no data — retrying without filter")
+        fb_payload = _build_api_payload(
+            config,
+            [i for i in instruments if i != "quality_control_check"],
+            filter_logic=None,
         )
+        raw = _post_api(config, fb_payload)
 
-    def fetch_data(self, payload: dict[str, Any]) -> list[dict[str, Any]]:
-        """Fetch data from REDCap API with robust error handling."""
-        if not self.config.api_url:
-            raise ValueError("REDCap API URL is not configured")
+    if not raw:
+        logger.warning("No data returned from REDCap")
+        return pd.DataFrame(), 0
 
-        try:
-            response = self.session.post(
-                self.config.api_url, data=payload, timeout=self.config.timeout
-            )
-            response.raise_for_status()
+    df = _validate_and_map(raw)
+    df = _apply_ptid_filter(df, config)
 
-            data = response.json()
-            if not data:
-                logger.warning("REDCap API returned empty response")
-                return []
+    # Optional save (audit trail)
+    if output_path and not df.empty:
+        dt = date_tag or ""
+        tt = time_tag or ""
+        out_dir = Path(output_path) / "Data_Fetched"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        csv_path = out_dir / f"ETL_ProcessedData_{dt}_{tt}.csv"
+        df.to_csv(csv_path, index=False)
+        logger.debug("Saved ETL output: %s (%d records)", csv_path, len(df))
 
-            return data
-
-        except requests.exceptions.Timeout:
-            error_msg = f"API request timed out after {self.config.timeout} seconds"
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-        except requests.exceptions.RequestException as e:
-            # Include response text if available for clearer diagnostics
-            resp_text = getattr(getattr(e, "response", None), "text", None)
-            error_msg = f"REDCap API request failed: {resp_text or e!s}"
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
-        except (ValueError, json.JSONDecodeError) as e:
-            error_msg = f"Failed to parse JSON response: {e!s}"
-            logger.error(error_msg)
-            raise RuntimeError(error_msg)
+    logger.info("Fetched %d records in %.1fs", len(df), time.time() - t0)
+    return df, len(df)
 
 
-def handle_column_mapping(df: pd.DataFrame) -> pd.DataFrame:
-    """Handle column mapping and required field creation."""
-    # Map record_id to ptid if needed
+# ---------------------------------------------------------------------------
+# Internals
+# ---------------------------------------------------------------------------
+
+def _build_api_payload(
+    config: QCConfig, instruments: list[str], filter_logic: str | None
+) -> dict[str, Any]:
+    """Build the REDCap API POST payload."""
+    payload: dict[str, Any] = {
+        "token": config.api_token,
+        "content": "record",
+        "format": "json",
+        "type": "flat",
+        "rawOrLabel": "raw",
+        "rawOrLabelHeaders": "raw",
+        "exportCheckboxLabel": "false",
+        "exportSurveyFields": "false",
+        "exportDataAccessGroups": "false",
+        "returnFormat": "json",
+    }
+    if instruments:
+        payload["forms"] = ",".join(instruments)
+    if config.events:
+        payload["events"] = ",".join(config.events)
+    if filter_logic:
+        payload["filterLogic"] = filter_logic
+    return payload
+
+
+def _post_api(config: QCConfig, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """POST to REDCap and return parsed JSON list."""
+    if not config.api_url:
+        raise ValueError("REDCap API URL is not configured")
+    try:
+        resp = requests.post(config.api_url, data=payload, timeout=config.timeout)
+        resp.raise_for_status()
+        data = resp.json()
+        return data if data else []
+    except requests.exceptions.Timeout:
+        raise RuntimeError(f"API request timed out after {config.timeout}s")
+    except requests.exceptions.RequestException as exc:
+        text = getattr(getattr(exc, "response", None), "text", None)
+        raise RuntimeError(f"REDCap API request failed: {text or exc!s}")
+    except (ValueError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Failed to parse JSON response: {exc!s}")
+
+
+def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:
+    """Convert raw records to DataFrame, rename record_id → ptid, validate."""
+    df = pd.DataFrame(raw)
     if "record_id" in df.columns and "ptid" not in df.columns:
         df = df.rename(columns={"record_id": "ptid"})
-        logger.debug("Mapped 'record_id' to 'ptid' column")
-
-    # Handle missing ptid - this is now an error condition
-    if "ptid" not in df.columns:
-        raise ValueError("Critical error: 'ptid' column missing from REDCap data")
-
-    # Handle missing redcap_event_name
-    if "redcap_event_name" not in df.columns and not df.empty:
-        raise ValueError("Critical error: 'redcap_event_name' column missing from REDCap data")
-
+    missing = [f for f in REQUIRED_FIELDS if f not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required fields: {', '.join(missing)}")
     return df
 
 
-def validate_and_process(raw_data: list[dict[str, Any]]) -> pd.DataFrame:
-    """Validate and process raw REDCap data into structured DataFrame."""
-    if not raw_data:
-        logger.warning("No data to process")
-        return pd.DataFrame()
-
-    df = pd.DataFrame(raw_data)
-    df = handle_column_mapping(df)
-
-    # Validate required fields
-    validation_errors = validate_required_fields(df)
-    if validation_errors:
-        error_msg = "Data validation failed: " + "; ".join(validation_errors)
-        logger.error(error_msg)
-        raise ValueError(error_msg)
-
+def _apply_ptid_filter(df: pd.DataFrame, config: QCConfig) -> pd.DataFrame:
+    """Filter to specific PTIDs if ``config.ptid_list`` is set."""
+    if not config.ptid_list or "ptid" not in df.columns:
+        return df
+    before = len(df)
+    targets = [str(p) for p in config.ptid_list]
+    df = df[df["ptid"].isin(targets)].reset_index(drop=True)
+    logger.info("PTID filter: %d → %d records", before, len(df))
     return df
 
 
-class DataTransformer:
-    """Handles data transformation operations."""
-
-    def __init__(self, context: ETLContext):
-        self.context = context
-
-    def apply_instrument_subset_transformation(
-        self, data: pd.DataFrame, instrument_list: list[str]
-    ) -> pd.DataFrame:
-        """Transform data by nullifying fields of incomplete instruments."""
-        if data.empty:
-            logger.warning("Empty DataFrame provided for transformation")
-            return data
-
-        transformed_df = data.copy()
-
-        # Apply PTID filtering if specified
-        if self.context.config.ptid_list:
-            transformed_df = self._apply_ptid_filter(transformed_df)
-
-        # Load rules and apply instrument-based transformation
-        rules_cache = load_rules_for_instruments(instrument_list)
-        instrument_to_vars_map = {
-            instrument: get_variables_for_instrument(instrument, rules_cache)
-            for instrument in instrument_list
-        }
-
-        # Apply transformation logic
-        for index, row in transformed_df.iterrows():
-            for instrument in instrument_list:
-                completion_var = f"{instrument}_complete"
-
-                if (
-                    completion_var in row
-                    and pd.notna(row[completion_var])
-                    and str(row[completion_var]) != "2"
-                ):
-                    # Nullify all variables for incomplete instruments
-                    instrument_vars = instrument_to_vars_map.get(instrument, [])
-                    for var in instrument_vars:
-                        if var in transformed_df.columns:
-                            transformed_df.at[index, var] = pd.NA
-
-                logger.debug(
-                    f"Nullified data for incomplete instrument '{instrument}' "
-                    f"in record PTID {row.get('ptid', 'N/A')}"
-                )
-
-        logger.info("Instrument subset transformation complete")
-        return transformed_df
-
-    def apply_basic_filtering(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Apply basic PTID filtering for non-instrument modes."""
-        if self.context.config.ptid_list:
-            return self._apply_ptid_filter(data)
-        return data
-
-    def _apply_ptid_filter(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Apply PTID filtering to the data."""
-        if "ptid" not in data.columns:
-            logger.warning("'ptid' column not found, ignoring ptid_list filter")
-            return data
-
-        if not self.context.config.ptid_list:
-            return data
-
-        initial_count = len(data)
-        ptid_list_str = [str(p) for p in self.context.config.ptid_list]
-        filtered_data = data[data["ptid"].isin(ptid_list_str)].reset_index(drop=True)
-
-        logger.info(
-            f"Applied PTID filtering: {initial_count} → {len(filtered_data)} records "
-            f"(filtered for {len(ptid_list_str)} PTIDs)"
-        )
-        return filtered_data
-
-
-class DataSaver:
-    """Handles saving ETL outputs with consistent naming."""
-
-    def __init__(self, context: ETLContext):
-        self.context = context
-
-    def save_etl_output(self, df: pd.DataFrame, filename_prefix: str) -> Path | None:
-        """
-        Save ETL output with consistent naming.
-        
-        This creates a record-keeping/audit file that shows exactly which records 
-        were retrieved from REDCap during the ETL fetch stage. 
-        
-        Its value:
-        - Verify which participants and events were processed
-        - Audit trail for compliance
-        - Debug data fetching issues
-        - Track which instruments were included in the validation run
-        
-        Args:
-            df: DataFrame containing the ETL output data
-            filename_prefix: Prefix for the output filename
-            
-        Returns:
-            Path to saved file or None if DataFrame is empty or no output path configured
-        """
-        if df.empty or not self.context.output_path:
-            if df.empty:
-                logger.warning(f"Empty DataFrame, skipping save for {filename_prefix}")
-            else:
-                logger.warning("No output path configured, skipping save")
-            return None
-
-        # Create Data_Fetched subdirectory
-        etl_dir = self.context.output_path / "Data_Fetched"
-        etl_dir.mkdir(parents=True, exist_ok=True)
-
-        filename = f"{filename_prefix}_{self.context.run_date}_{self.context.time_stamp}.csv"
-        file_path = etl_dir / filename
-
-        df.to_csv(file_path, index=False)
-        logger.debug(f"Saved ETL output: {file_path} ({len(df)} records)")
-        return file_path
-
-
-# =============================================================================
-# FILTER LOGIC HELPER
-# =============================================================================
-
-
-def get_filter_logic(config: QCConfig) -> str | None:
-    """Determine appropriate REDCap filter logic based on config mode."""
-    mode_filters = {
+def _get_filter_logic(config: QCConfig) -> str | None:
+    """Return REDCap filterLogic string based on mode."""
+    mapping = {
         "complete_events": complete_events_with_incomplete_qc_filter_logic,
         "complete_visits": complete_events_with_incomplete_qc_filter_logic,
         "complete_instruments": qc_filterer_logic,
         "none": None,
     }
-
-    if config.mode in mode_filters:
-        filter_logic = mode_filters[config.mode]
-        if filter_logic:
-            logger.info(f"Using '{config.mode}' filter logic")
-        else:
-            logger.warning("No filtering enabled. Fetching all records")
-        return filter_logic
-
-    logger.info("Defaulting to QC status check filter logic")
-    return qc_filterer_logic
-
-
-# =============================================================================
-# MAIN ETL PIPELINE
-# =============================================================================
-
-
-class RedcapETLPipeline:
-    """
-    Main ETL Pipeline for REDCap data processing.
-
-    This is the primary entry point for all ETL operations.
-    Follows a clean linear pipeline: fetch → validate → transform → save.
-    """
-
-    def __init__(self, config: QCConfig):
-        self.config = config
-        # Components will be initialized in run()
-        self.context = None
-        self.api_client = None
-        self.transformer = None
-        self.saver = None
-
-    def run(
-        self,
-        output_path: str | Path | None = None,
-        date_tag: str | None = None,
-        time_tag: str | None = None,
-    ) -> ETLResult:
-        """
-        Execute the complete ETL pipeline.
-
-        Args:
-            output_path: Optional output directory path
-            date_tag: Optional date tag for consistent naming
-            time_tag: Optional time tag for consistent naming
-
-        Returns:
-            ETLResult containing processed data and execution metadata
-        """
-        start_time = time.time()
-
-        try:
-            # Initialize context and components
-            self._initialize_components(output_path, date_tag, time_tag)
-
-            logger.info(f"Starting ETL pipeline in '{self.config.mode}' mode")
-
-            # Step 1: Fetch data
-            raw_data = self._fetch_data()
-
-            # Step 2: Validate data
-            validated_data = self._validate_data(raw_data)
-
-            # Step 3: Transform data
-            transformed_data = self._transform_data(validated_data)
-
-            # Step 4: Save data
-            saved_files = self._save_data(transformed_data)
-
-            execution_time = time.time() - start_time
-
-            result = ETLResult(
-                data=transformed_data,
-                records_processed=len(transformed_data),
-                execution_time=execution_time,
-                saved_files=saved_files,
-            )
-
-            logger.info(
-                f"ETL pipeline completed: {result.records_processed} records "
-                f"processed in {execution_time:.2f} seconds"
-            )
-
-            return result
-
-        except Exception as e:
-            logger.error(f"ETL pipeline failed: {e!s}")
-            raise
-
-    def _initialize_components(
-        self, output_path: str | Path | None, date_tag: str | None, time_tag: str | None
-    ) -> None:
-        """Initialize ETL components with proper context."""
-        self.context = ETLContext.create(self.config, output_path, date_tag, time_tag)
-        self.api_client = RedcapApiClient(self.config)
-        self.transformer = DataTransformer(self.context)
-        self.saver = DataSaver(self.context)
-
-    def _fetch_data(self) -> list[dict[str, Any]]:
-        """Fetch data from REDCap API."""
-        filter_logic = get_filter_logic(self.config)
-
-        # Prepare instruments list
-        fetch_instruments = self.config.instruments.copy()
-        if filter_logic and "quality_control_check" not in fetch_instruments:
-            fetch_instruments.append("quality_control_check")
-            logger.info("Added 'quality_control_check' form for filtering")
-
-        # Build API payload and fetch
-        payload = self._build_api_payload(fetch_instruments, filter_logic)
-        raw_data = self.api_client.fetch_data(payload)
-        
-        if not raw_data and filter_logic:
-            # Attempt fallback without filtering
-            logger.warning("Initial fetch returned no data")
-            logger.info("Attempting fallback fetch without filters")
-            fallback_payload = self._build_api_payload(
-                [inst for inst in fetch_instruments if inst != "quality_control_check"],
-                None,
-            )
-            raw_data = self.api_client.fetch_data(fallback_payload)
-            if raw_data:
-                logger.info("Fallback fetch successful")
-
-        return raw_data
-
-    def _build_api_payload(
-        self, instruments: list[str], filter_logic: str | None
-    ) -> dict[str, Any]:
-        """Build REDCap API payload."""
-        payload = {
-            "token": self.config.api_token,
-            "content": "record",
-            "format": "json",
-            "type": "flat",
-            "rawOrLabel": "raw",
-            "rawOrLabelHeaders": "raw",
-            "exportCheckboxLabel": "false",
-            "exportSurveyFields": "false",
-            "exportDataAccessGroups": "false",
-            "returnFormat": "json",
-        }
-
-        if instruments:
-            payload["forms"] = ",".join(instruments)
-        if self.config.events:
-            payload["events"] = ",".join(self.config.events)
-        if filter_logic:
-            payload["filterLogic"] = filter_logic
-            logger.info(
-                "Applying filter logic (see complete_events_with_incomplete_qc_filter_logic "
-                "in config_manager.py)"
-            )
-
-        return payload
-
-    def _validate_data(self, raw_data: list[dict[str, Any]]) -> pd.DataFrame:
-        """Validate and process raw data."""
-        return validate_and_process(raw_data)
-
-    def _transform_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Transform data based on configuration mode."""
-        if data.empty:
-            logger.warning("No data to transform")
-            return data
-
-        if self.config.mode == "complete_instruments":
-            logger.info("Applying instrument subset transformation")
-            return self.transformer.apply_instrument_subset_transformation(
-                data, self.config.instruments
-            )
-        logger.info("Applying basic filtering")
-        return self.transformer.apply_basic_filtering(data)
-
-    def _save_data(self, data: pd.DataFrame) -> list[Path]:
-        """Save processed data."""
-        if not data.empty and self.context.output_path:
-            file_path = self.saver.save_etl_output(data, "ETL_ProcessedData")
-            return [file_path] if file_path else []
-        return []
+    return mapping.get(config.mode, qc_filterer_logic)
