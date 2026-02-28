@@ -22,7 +22,7 @@ from .branding import (
     display_banner,
     display_separator,
 )
-from .env_check import check_environment
+from .env_check import display_status
 
 
 # ─── Help Display ────────────────────────────────────────────────────────────
@@ -43,8 +43,7 @@ def display_help(console: Console) -> None:
         ("run", "Run QC validation (complete visits)"),
         ("run -dr", "Run with detailed reports"),
         ("run -dr -ps", "Run with detailed + passed rules log"),
-        ("check", "Verify environment & dependencies"),
-        ("config", "View current configuration"),
+        ("status", "View environment, config, and readiness"),
         ("help", "Show this command reference"),
         ("clear", "Clear screen and show banner"),
         ("exit", "Exit the interface"),
@@ -116,12 +115,8 @@ def run_interactive(console: Console | None = None) -> None:
             elif cmd == "help":
                 display_help(console)
 
-            elif cmd == "check":
-                console.print()
-                check_environment(console)
-
-            elif cmd == "config":
-                _show_config(console)
+            elif cmd in ("status", "check", "config"):
+                display_status(console)
 
             elif cmd == "clear":
                 console.clear()
@@ -147,61 +142,6 @@ def run_interactive(console: Console | None = None) -> None:
             break
         except EOFError:
             break
-
-
-# ─── Config Display ──────────────────────────────────────────────────────────
-
-
-def _show_config(console: Console) -> None:
-    """Display the current configuration in a table."""
-    try:
-        from pipeline.config.config_manager import get_config
-
-        config = get_config(force_reload=True, skip_validation=True)
-    except Exception:
-        console.print(f"  [{UNM_CHERRY}]Could not load configuration.[/]\n")
-        return
-
-    table = Table(
-        title="Configuration",
-        border_style=UNM_LOBO_GRAY,
-        title_style=f"bold {UNM_TURQUOISE}",
-        show_lines=False,
-        padding=(0, 1),
-    )
-    table.add_column("Setting", style=f"bold {UNM_SILVER}", min_width=14)
-    table.add_column("Value", style=UNM_LOBO_GRAY)
-
-    table.add_row("Mode", config.mode or "N/A")
-    table.add_row("API URL", config.api_url or "Not set")
-    table.add_row(
-        "API Token",
-        ("****" + config.api_token[-4:])
-        if config.api_token and len(config.api_token) > 4
-        else "Not set",
-    )
-    table.add_row("Output", config.output_path or "N/A")
-    table.add_row("Instruments", str(len(config.instruments)))
-    table.add_row(
-        "Events",
-        ", ".join(config.events) if config.events else "All",
-    )
-    table.add_row(
-        "I Rules",
-        Path(config.json_rules_path_i).name if config.json_rules_path_i else "Not set",
-    )
-    table.add_row(
-        "I4 Rules",
-        Path(config.json_rules_path_i4).name if config.json_rules_path_i4 else "Not set",
-    )
-    table.add_row(
-        "F Rules",
-        Path(config.json_rules_path_f).name if config.json_rules_path_f else "Not set",
-    )
-
-    console.print()
-    console.print(table)
-    console.print()
 
 
 # ─── QC Pipeline Execution ──────────────────────────────────────────────────

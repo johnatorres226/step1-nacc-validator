@@ -1,11 +1,10 @@
 """
-Environment validation for the ADRC Quality Control Interface.
+Unified status display for the ADRC Quality Control Interface.
 
-Checks that all required dependencies, credentials, and paths are
-properly configured before running the QC pipeline.
+Combines environment validation and configuration view into a single
+'status' command. All config values come from config_manager.
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -15,85 +14,115 @@ from rich.table import Table
 from .branding import UNM_CHERRY, UNM_LOBO_GRAY, UNM_SILVER, UNM_TURQUOISE
 
 
-def check_environment(console: Console) -> bool:
-    """Run environment checks and display results.
+def display_status(console: Console) -> bool:
+    """Show environment + configuration status in one view.
 
     Returns True if all critical checks pass.
     """
-    checks: list[tuple[str, str, bool]] = []
+    from pipeline.config.config_manager import QCConfig, project_root
 
-    # 1. Python version
-    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-    checks.append(("Python", py_ver, sys.version_info >= (3, 11)))
+    # Load config without exiting on errors
+    try:
+        config = QCConfig()  # fresh instance from env
+    except Exception:
+        console.print(f"  [{UNM_CHERRY}]Could not load configuration.[/]\n")
+        return False
 
-    # 2. .env file
-    from pipeline.config.config_manager import project_root
+    errors = config.validate()
+    all_ok = not errors
 
-    env_path = project_root / ".env"
-    checks.append((".env File", "Found" if env_path.exists() else "Missing", env_path.exists()))
-
-    # 3. REDCap API credentials
-    token = os.getenv("REDCAP_API_TOKEN", "")
-    token_ok = bool(token)
-    token_display = f"****{token[-4:]}" if len(token) > 4 else ("Set" if token else "Missing")
-    checks.append(("API Token", token_display, token_ok))
-
-    url = os.getenv("REDCAP_API_URL", "")
-    url_ok = bool(url)
-    url_display = url[:40] + "..." if len(url) > 40 else (url or "Missing")
-    checks.append(("API URL", url_display, url_ok))
-
-    # 4. Rule paths (I, I4, F packets)
-    rule_paths = [
-        ("I Rules", "JSON_RULES_PATH_I"),
-        ("I4 Rules", "JSON_RULES_PATH_I4"),
-        ("F Rules", "JSON_RULES_PATH_F"),
-    ]
-    for label, env_var in rule_paths:
-        path = os.getenv(env_var, "")
-        path_ok = bool(path) and Path(path).is_dir()
-        display = Path(path).name if path else "Not set"
-        checks.append((label, display, path_ok))
-
-    # 5. Output directory
-    out_path = os.getenv("OUTPUT_PATH", str(project_root / "output"))
-    out_ok = Path(out_path).exists() or Path(out_path).parent.exists()
-    checks.append(("Output Dir", Path(out_path).name, out_ok))
-
-    # 6. Key packages
-    for pkg_name in ("rich", "click", "pandas", "requests"):
-        try:
-            __import__(pkg_name)
-            checks.append((pkg_name, "Installed", True))
-        except ImportError:
-            checks.append((pkg_name, "Missing", False))
-
-    # Build results table
-    all_ok = True
-    table = Table(
-        title="Environment Check",
+    # ── Environment Section ──────────────────────────────────────────────
+    env_table = Table(
+        title="Environment",
         border_style=UNM_LOBO_GRAY,
         title_style=f"bold {UNM_TURQUOISE}",
         show_lines=False,
         padding=(0, 1),
     )
-    table.add_column("Component", style=f"bold {UNM_SILVER}", min_width=12)
-    table.add_column("Status", justify="center", min_width=3)
-    table.add_column("Value", style=UNM_LOBO_GRAY, max_width=50)
+    env_table.add_column("Component", style=f"bold {UNM_SILVER}", min_width=14)
+    env_table.add_column("Status", justify="center", min_width=3)
+    env_table.add_column("Value", style=UNM_LOBO_GRAY, max_width=50)
 
-    for name, detail, ok in checks:
-        status = f"[green]✓[/]" if ok else f"[{UNM_CHERRY}]✗[/]"
-        if not ok:
-            all_ok = False
-        table.add_row(name, status, detail)
+    # Python version
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    py_ok = sys.version_info >= (3, 11)
+    env_table.add_row("Python", _icon(py_ok), py_ver)
 
-    console.print(table)
+    # .env file
+    env_path = project_root / ".env"
+    env_table.add_row(".env File", _icon(env_path.exists()), "Found" if env_path.exists() else "Missing")
 
+    # Key packages
+    for pkg in ("rich", "click", "pandas", "requests"):
+        try:
+            __import__(pkg)
+            env_table.add_row(pkg, _icon(True), "Installed")
+        except ImportError:
+            env_table.add_row(pkg, _icon(False), "Missing")
+
+    console.print()
+    console.print(env_table)
+
+    # ── Configuration Section ────────────────────────────────────────────
+    cfg_table = Table(
+        title="Configuration",
+        border_style=UNM_LOBO_GRAY,
+        title_style=f"bold {UNM_TURQUOISE}",
+        show_lines=False,
+        padding=(0, 1),
+    )
+    cfg_table.add_column("Setting", style=f"bold {UNM_SILVER}", min_width=14)
+    cfg_table.add_column("Status", justify="center", min_width=3)
+    cfg_table.add_column("Value", style=UNM_LOBO_GRAY, max_width=50)
+
+    # API credentials
+    token = config.api_token or ""
+    token_display = f"****{token[-4:]}" if len(token) > 4 else ("Set" if token else "Missing")
+    cfg_table.add_row("API Token", _icon(bool(token)), token_display)
+
+    url = config.api_url or ""
+    url_display = url[:40] + "..." if len(url) > 40 else (url or "Missing")
+    cfg_table.add_row("API URL", _icon(bool(url)), url_display)
+
+    # Rule paths
+    rule_entries = [
+        ("I Rules", config.json_rules_path_i),
+        ("I4 Rules", config.json_rules_path_i4),
+        ("F Rules", config.json_rules_path_f),
+    ]
+    for label, path in rule_entries:
+        ok = bool(path) and Path(path).is_dir()
+        display = Path(path).name if path else "Not set"
+        cfg_table.add_row(label, _icon(ok), display)
+
+    # Output directory
+    out_ok = bool(config.output_path) and (
+        Path(config.output_path).exists() or Path(config.output_path).parent.exists()
+    )
+    cfg_table.add_row("Output Dir", _icon(out_ok), Path(config.output_path).name if config.output_path else "N/A")
+
+    # Pipeline settings
+    cfg_table.add_row("Mode", _icon(True), config.mode or "N/A")
+    cfg_table.add_row("Instruments", _icon(True), str(len(config.instruments)))
+    cfg_table.add_row(
+        "Events", _icon(True),
+        ", ".join(config.events) if config.events else "All",
+    )
+
+    console.print(cfg_table)
+
+    # ── Summary ──────────────────────────────────────────────────────────
     if all_ok:
         console.print(f"\n  [{UNM_TURQUOISE}]✓ All checks passed — ready to run.[/]\n")
     else:
-        console.print(
-            f"\n  [{UNM_CHERRY}]⚠ Some checks failed. Review your .env configuration.[/]\n"
-        )
+        console.print(f"\n  [{UNM_CHERRY}]Issues found:[/]")
+        for err in errors:
+            console.print(f"    [{UNM_CHERRY}]✗[/] [{UNM_SILVER}]{err}[/]")
+        console.print(f"\n  [{UNM_LOBO_GRAY}]Review your .env configuration.[/]\n")
 
     return all_ok
+
+
+def _icon(ok: bool) -> str:
+    """Return a styled check/cross icon."""
+    return f"[green]✓[/]" if ok else f"[{UNM_CHERRY}]✗[/]"

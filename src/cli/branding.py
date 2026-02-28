@@ -23,24 +23,35 @@ UNM_SANDIA_SUNSET = "#ED8B00"
 
 
 def get_lobo_art() -> str:
-    """Return the UNM Lobo ASCII art with Rich markup coloring.
+    """Return the UNM Lobo + wordmark ASCII art with Rich markup coloring.
 
-    Front-facing Lobo (wolf) rendered in Unicode block characters.
-    Body in Cherry, eyes in Turquoise for contrast.
+    Front-facing Lobo (wolf) with pointed ears, snout, and the UNM
+    wordmark beside it. Cherry body, Turquoise eyes, Silver lettering.
     """
     c = UNM_CHERRY
     t = UNM_TURQUOISE
+    s = UNM_SILVER
+    g = UNM_LOBO_GRAY
+    # ── Lobo face (left) + UNM wordmark (right) ──
     return (
-        f"[{c}]       ▄▀▀▄              ▄▀▀▄[/]\n"
-        f"[{c}]      █    ▀▄   ▄▄▄▄   ▄▀    █[/]\n"
-        f"[{c}]      █      ▀▀▀    ▀▀▀      █[/]\n"
-        f"[{c}]      █    [/][bold {t}]●[/]"
-        f"[{c}]            [/][bold {t}]●[/]"
-        f"[{c}]    █[/]\n"
-        f"[{c}]       █       ▄▄▄▄▄▄       █[/]\n"
-        f"[{c}]        █      ▀    ▀      █[/]\n"
-        f"[{c}]         ▀▄              ▄▀[/]\n"
-        f"[{c}]           ▀▀▀▀▀▀▀▀▀▀▀▀▀▀[/]"
+        f"[{c}]    ▄▀▀▀▄                         ▄▀▀▀▄[/]\n"
+        f"[{c}]   █▌    ▀▄      ▄▄▄▄▄▄▄▄      ▄▀    ▐█[/]\n"
+        f"[{c}]   █▌      ▀▄▄▀▀▀        ▀▀▀▄▄▀      ▐█[/]\n"
+        f"[{c}]   █▌       ▐                ▌        ▐█[/]"
+        f"   [bold {s}]██    ██  ███   ██  ██   ██[/]\n"
+        f"[{c}]    █▌     [/][bold {t}]◆[/]"
+        f"[{c}]                [/][bold {t}]◆[/]"
+        f"[{c}]      ▐█[/]"
+        f"   [bold {s}]██    ██  ████  ██  ███ ███[/]\n"
+        f"[{c}]    █▌       ▐      ▄▄      ▌        ▐█[/]"
+        f"   [bold {s}]██    ██  ██ ██ ██  ██ █ ██[/]\n"
+        f"[{c}]     █▌      ▐     ▀██▀     ▌       ▐█[/]"
+        f"    [bold {s}]██    ██  ██  ████  ██   ██[/]\n"
+        f"[{c}]      █▌      ▀▄          ▄▀       ▐█[/]"
+        f"     [bold {s}] ██████   ██   ███  ██   ██[/]\n"
+        f"[{c}]       ▀█▄       ▀▄▄▄▄▄▀        ▄█▀[/]\n"
+        f"[{c}]         ▀▀█▄▄               ▄▄█▀▀[/]\n"
+        f"[{c}]             ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀[/]"
     )
 
 
