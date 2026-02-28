@@ -6,6 +6,7 @@ A professional command-line tool for running quality control validation
 on UDSv4 REDCap data with comprehensive reporting and configuration management.
 """
 
+import sys
 import warnings
 from pathlib import Path
 
@@ -87,11 +88,19 @@ def cli(
     detailed_run: bool,
     passed_rules: bool,
 ) -> None:
-    """UDSv4 REDCap QC Validator - A comprehensive CLI for data quality control.
+    """UDSv4 REDCap QC Validator — ADRC Quality Control Interface.
 
-    When invoked without a subcommand, the tool runs the QC pipeline. Use
-    the `config` subcommand to inspect configuration.
+    When invoked without arguments, opens the interactive ADRC interface.
+    When invoked with options (e.g. -i INITIALS), runs the QC pipeline
+    directly. Use the `config` subcommand to inspect configuration.
     """
+    # Launch interactive interface when no CLI arguments are provided
+    if len(sys.argv) == 1 and not ctx.invoked_subcommand:
+        from cli.interface import run_interactive
+
+        run_interactive(console)
+        return
+
     # Minimal startup logging - detailed logging configured later
     setup_logging(log_level="ERROR")
     warnings.filterwarnings(

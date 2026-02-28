@@ -23,14 +23,15 @@ from typing import ClassVar
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color support for terminal output."""
 
-    # ANSI color codes for different log levels
+    # ANSI color codes mapped to UNM brand palette
+    # Reference: https://brand.unm.edu/brand-style/color-palette/index.html
     COLORS: ClassVar[dict[str, str]] = {
-        "DEBUG": "\033[36m",  # Cyan
-        "INFO": "\033[32m",  # Green
-        "WARNING": "\033[33m",  # Yellow
-        "ERROR": "\033[31m",  # Red
-        "CRITICAL": "\033[35m",  # Magenta
-        "RESET": "\033[0m",  # Reset
+        "DEBUG": "\033[38;2;99;102;106m",      # UNM Lobo Gray
+        "INFO": "\033[38;2;0;122;134m",        # UNM Turquoise
+        "WARNING": "\033[38;2;255;198;0m",     # UNM High Noon
+        "ERROR": "\033[38;2;186;12;47m",       # UNM Cherry
+        "CRITICAL": "\033[1;38;2;186;12;47m",  # Bold UNM Cherry
+        "RESET": "\033[0m",
     }
 
     # Icons for different log levels - simplified and professional
@@ -71,9 +72,11 @@ class ColoredFormatter(logging.Formatter):
 
         # Check for Windows terminal color support
         if os.name == "nt":
-            return os.getenv("ANSICON") is not None or "ON" in os.getenv("CONEMUANSI", "OFF")
+            # Windows 10+ terminals (Windows Terminal, VS Code, PowerShell 7+)
+            # support ANSI colors when running in a TTY
+            return True
 
-        return False
+        return True  # Assume color support for TTY sessions
 
     def format(self, record):
         """Format log record with colors and icons."""
