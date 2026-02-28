@@ -1,29 +1,42 @@
 """
 Consolidated rule loading for the QC pipeline.
 
-Replaces: rules.py, packet_router.py, hierarchical_router.py, unified_rule_loader.py.
-Provides packet-based rule loading with caching and dynamic instrument resolution.
+Delegates to :class:`NamespacedRulePool` for auto-discovered, O(1) per-variable
+rule lookup.  Maintains backward-compatible public API (``load_rules_for_packet``,
+``get_rules_for_record``, ``clear_cache``).
 """
 
 import json
 from pathlib import Path
 from typing import Any
 
-from ..config.config_manager import (
-    QCConfig,
-    get_config,
-    get_discriminant_variable,
-    get_rule_mappings,
-    instrument_json_mapping,
-    is_dynamic_rule_instrument,
-)
+from ..config.config_manager import QCConfig, get_config
 from ..logging.logging_config import get_logger
+from .rule_pool import get_pool, reset_pool
 
 logger = get_logger(__name__)
 
 _packet_cache: dict[str, dict] = {}
 
 _VALID_PACKETS = {"I", "I4", "F"}
+
+# ---------------------------------------------------------------------------
+# Minimal discriminant config — replaces DYNAMIC_RULE_INSTRUMENTS
+# ---------------------------------------------------------------------------
+
+_NAMESPACE_DISCRIMINANTS: dict[str, str] = {
+    "c2c2t_neuropsychological_battery_scores": "loc_c2_or_c2t",
+}
+
+_DISCRIMINANT_VALUE_TO_NAMESPACE: dict[str, str] = {
+    "C2": "c2",
+    "C2T": "c2t",
+}
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
 
 
 def _validate_packet(packet: str) -> str:
@@ -38,6 +51,20 @@ def _validate_packet(packet: str) -> str:
 
 def _get_config(config: QCConfig | None) -> QCConfig:
     return config if config is not None else get_config()
+
+
+def _resolve_namespace(record: dict, instrument_name: str) -> str | None:
+    """Resolve namespace for instruments with conflicting variables."""
+    disc_var = _NAMESPACE_DISCRIMINANTS.get(instrument_name)
+    if not disc_var:
+        return None
+    value = str(record.get(disc_var, "")).upper().strip()
+    return _DISCRIMINANT_VALUE_TO_NAMESPACE.get(value)
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
 
 def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
@@ -85,167 +112,23 @@ def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
     return merged
 
 
-def load_rules_for_instrument(instrument_name: str, config: QCConfig | None = None) -> dict:
-    """Load rules for a specific instrument from its JSON rule files.
-
-    For dynamic instruments, returns nested {variant: {rules}} structure.
-    For standard instruments, returns flat {variable: {rule}} dict.
-    """
-    cfg = _get_config(config)
-    rules_dir = Path(cfg.json_rules_path_i)
-
-    if is_dynamic_rule_instrument(instrument_name):
-        mappings = get_rule_mappings(instrument_name)
-        variant_rules: dict[str, dict] = {}
-        for variant, filename in mappings.items():
-            path = rules_dir / filename
-            try:
-                with path.open("r", encoding="utf-8") as f:
-                    variant_rules[variant] = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                logger.exception("Failed to load variant %s from %s", variant, path)
-                raise
-        return variant_rules
-
-    file_list = instrument_json_mapping.get(instrument_name, [])
-    if not file_list:
-        logger.warning("No rule files configured for instrument: %s", instrument_name)
-        return {}
-
-    combined: dict[str, Any] = {}
-    for filename in file_list:
-        path = rules_dir / filename
-        if not path.exists():
-            logger.warning("Rule file not found: %s", path)
-            continue
-        try:
-            with path.open("r", encoding="utf-8") as f:
-                combined.update(json.load(f))
-        except json.JSONDecodeError:
-            logger.warning("Invalid JSON in %s, skipping", path)
-    return combined
-
-
-def resolve_dynamic_rules(record: dict, base_rules: dict, instrument_name: str) -> dict:
-    """Handle C2/C2T discrimination.
-
-    If the instrument is not dynamic, returns base_rules unchanged.
-    For dynamic instruments, checks the discriminant variable in the record and
-    returns the matching variant's rules from base_rules.
-    """
-    if not is_dynamic_rule_instrument(instrument_name):
-        return base_rules
-
-    discriminant_var = get_discriminant_variable(instrument_name)
-    value = record.get(discriminant_var, "").upper()
-
-    if value and value in base_rules:
-        logger.debug(
-            "Resolved dynamic variant %s=%s for %s", discriminant_var, value, instrument_name
-        )
-        return base_rules[value]
-
-    if not value:
-        logger.warning(
-            "Missing %s in record for %s. Falling back to first variant.",
-            discriminant_var,
-            instrument_name,
-        )
-    else:
-        logger.warning(
-            "No variant rules for %s=%s in %s. Falling back to first variant.",
-            discriminant_var,
-            value,
-            instrument_name,
-        )
-
-    # Default: return first variant
-    return next(iter(base_rules.values())) if base_rules else {}
-
-
-def _load_dynamic_variant_rules(instrument_name: str, config: QCConfig | None = None) -> dict:
-    """Load the nested {variant: {rules}} structure for a dynamic instrument
-    using the I-packet rules directory."""
-    cfg = _get_config(config)
-    rules_dir = Path(cfg.json_rules_path_i)
-    mappings = get_rule_mappings(instrument_name)
-    variant_rules: dict[str, dict] = {}
-    for variant, filename in mappings.items():
-        path = rules_dir / filename
-        try:
-            with path.open("r", encoding="utf-8") as f:
-                variant_rules[variant] = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            logger.exception("Failed to load dynamic variant %s from %s", variant, path)
-            raise
-    return variant_rules
-
-
-def _load_instrument_rules_for_packet(
-    instrument_name: str, packet: str, config: QCConfig | None = None
-) -> dict:
-    """Load rules for a specific instrument from a specific packet directory.
-
-    Unlike load_rules_for_packet (which loads ALL rules in the directory),
-    this loads only the JSON files mapped to the given instrument.
-    Uses a cache keyed by (packet, instrument_name).
-    """
-    cache_key = f"{packet}_{instrument_name}"
-    if cache_key in _packet_cache:
-        return _packet_cache[cache_key]
-
-    cfg = _get_config(config)
-    rules_dir = Path(cfg.get_rules_path_for_packet(packet))
-
-    file_list = instrument_json_mapping.get(instrument_name, [])
-    if not file_list:
-        logger.warning("No rule files configured for instrument: %s", instrument_name)
-        _packet_cache[cache_key] = {}
-        return {}
-
-    combined: dict[str, Any] = {}
-    for filename in file_list:
-        path = rules_dir / filename
-        if not path.exists():
-            logger.debug("Rule file not found for packet %s: %s", packet, path)
-            continue
-        try:
-            with path.open("r", encoding="utf-8") as f:
-                combined.update(json.load(f))
-        except json.JSONDecodeError:
-            logger.warning("Invalid JSON in %s, skipping", path)
-
-    logger.debug(
-        "Loaded %d rules for %s (packet %s)", len(combined), instrument_name, packet
-    )
-    _packet_cache[cache_key] = combined
-    return combined
-
-
 def get_rules_for_record(
     record: dict, instrument_name: str, config: QCConfig | None = None
 ) -> dict:
-    """Main entry point: determine packet from record, load instrument-scoped rules."""
+    """Main entry point: load rules from pool, resolve namespace for conflicts."""
     packet = _validate_packet(record.get("packet", ""))
+    cfg = _get_config(config)
 
-    if is_dynamic_rule_instrument(instrument_name):
-        variant_rules = _load_dynamic_variant_rules(instrument_name, config)
-        return resolve_dynamic_rules(record, variant_rules, instrument_name)
+    pool = get_pool(cfg)
+    if packet not in pool.loaded_packets:
+        pool.load_packet(packet, cfg)
 
-    return _load_instrument_rules_for_packet(instrument_name, packet, config)
-
-
-def load_rules_for_instruments(
-    instrument_list: list[str], config: QCConfig | None = None
-) -> dict[str, dict]:
-    """Load rules for multiple instruments. Returns {instrument: {rules}} mapping.
-
-    For dynamic instruments, loads all variants.
-    """
-    return {name: load_rules_for_instrument(name, config) for name in instrument_list}
+    namespace = _resolve_namespace(record, instrument_name)
+    return pool.get_resolved_rules_dict(namespace=namespace)
 
 
 def clear_cache() -> None:
-    """Reset the module-level cache."""
+    """Reset the module-level cache and pool state."""
     _packet_cache.clear()
+    reset_pool()
     logger.debug("Rule loader cache cleared")

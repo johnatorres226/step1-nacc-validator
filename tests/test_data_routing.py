@@ -1,22 +1,21 @@
 """
-Tests for the consolidated rule_loader module.
+Tests for the consolidated rule_loader module backed by NamespacedRulePool.
 
-Tests packet-based rule loading, caching, dynamic instrument resolution,
+Tests packet-based rule loading, caching, pool-based namespace resolution,
 and error handling.
 """
 
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
 from src.pipeline.config.config_manager import QCConfig
 from src.pipeline.io.rule_loader import (
+    _resolve_namespace,
     clear_cache,
     get_rules_for_record,
-    load_rules_for_instruments,
     load_rules_for_packet,
-    resolve_dynamic_rules,
 )
 
 
@@ -47,6 +46,32 @@ def mock_config(sample_rules_dir):
     config = Mock(spec=QCConfig)
     config.get_rules_path_for_packet.return_value = str(sample_rules_dir)
     config.json_rules_path_i = str(sample_rules_dir)
+    return config
+
+
+@pytest.fixture
+def c2_c2t_rules_dir(tmp_path):
+    """Create a temp directory with C2 and C2T overlapping rule files."""
+    c2 = {
+        "mocacomp": {"type": "integer", "allowed": [0, 1]},
+        "mocatots": {"type": "integer", "min": 0, "max": 30},
+        "c2_unique": {"type": "string"},
+    }
+    c2t = {
+        "mocacomp": {"type": "integer", "allowed": [0, 1, 2]},
+        "mocatots": {"type": "integer", "min": 0, "max": 100},
+        "c2t_unique": {"type": "string"},
+    }
+    (tmp_path / "c2_rules.json").write_text(json.dumps(c2))
+    (tmp_path / "c2t_rules.json").write_text(json.dumps(c2t))
+    return tmp_path
+
+
+@pytest.fixture
+def c2_mock_config(c2_c2t_rules_dir):
+    """Config pointing to directory with C2/C2T overlapping rules."""
+    config = Mock(spec=QCConfig)
+    config.get_rules_path_for_packet.return_value = str(c2_c2t_rules_dir)
     return config
 
 
@@ -110,43 +135,38 @@ class TestLoadRulesForPacket:
 
 
 # =============================================================================
-# resolve_dynamic_rules
+# _resolve_namespace (replaces resolve_dynamic_rules tests)
 # =============================================================================
 
 
-class TestResolveDynamicRules:
-    def test_non_dynamic_instrument_returns_base(self):
-        base = {"var1": {"type": "string"}}
-        result = resolve_dynamic_rules({"packet": "I"}, base, "a1_participant_demographics")
-        assert result == base
+class TestResolveNamespace:
+    def test_non_discriminant_instrument_returns_none(self):
+        result = _resolve_namespace({"packet": "I"}, "a1_participant_demographics")
+        assert result is None
 
-    @patch("src.pipeline.io.rule_loader.is_dynamic_rule_instrument", return_value=True)
-    @patch("src.pipeline.io.rule_loader.get_discriminant_variable", return_value="loc_c2_or_c2t")
-    def test_c2_variant_resolved(self, _mock_disc, _mock_dyn):
-        base = {"C2": {"var1": {"type": "string"}}, "C2T": {"var2": {"type": "int"}}}
+    def test_c2_variant_resolved(self):
         record = {"loc_c2_or_c2t": "C2"}
-        result = resolve_dynamic_rules(record, base, "c2c2t_neuropsychological_battery_scores")
-        assert result == {"var1": {"type": "string"}}
+        result = _resolve_namespace(record, "c2c2t_neuropsychological_battery_scores")
+        assert result == "c2"
 
-    @patch("src.pipeline.io.rule_loader.is_dynamic_rule_instrument", return_value=True)
-    @patch("src.pipeline.io.rule_loader.get_discriminant_variable", return_value="loc_c2_or_c2t")
-    def test_c2t_variant_resolved(self, _mock_disc, _mock_dyn):
-        base = {"C2": {"var1": {"type": "string"}}, "C2T": {"var2": {"type": "int"}}}
+    def test_c2t_variant_resolved(self):
         record = {"loc_c2_or_c2t": "C2T"}
-        result = resolve_dynamic_rules(record, base, "c2c2t_neuropsychological_battery_scores")
-        assert result == {"var2": {"type": "int"}}
+        result = _resolve_namespace(record, "c2c2t_neuropsychological_battery_scores")
+        assert result == "c2t"
 
-    @patch("src.pipeline.io.rule_loader.is_dynamic_rule_instrument", return_value=True)
-    @patch("src.pipeline.io.rule_loader.get_discriminant_variable", return_value="loc_c2_or_c2t")
-    def test_missing_discriminant_falls_back(self, _mock_disc, _mock_dyn):
-        base = {"C2": {"var1": {"type": "string"}}, "C2T": {"var2": {"type": "int"}}}
+    def test_missing_discriminant_returns_none(self):
         record = {}
-        result = resolve_dynamic_rules(record, base, "c2c2t_neuropsychological_battery_scores")
-        assert result == {"var1": {"type": "string"}}
+        result = _resolve_namespace(record, "c2c2t_neuropsychological_battery_scores")
+        assert result is None
+
+    def test_case_insensitive_discriminant(self):
+        record = {"loc_c2_or_c2t": "c2t"}
+        result = _resolve_namespace(record, "c2c2t_neuropsychological_battery_scores")
+        assert result == "c2t"
 
 
 # =============================================================================
-# get_rules_for_record
+# get_rules_for_record (pool-based)
 # =============================================================================
 
 
@@ -155,19 +175,16 @@ class TestGetRulesForRecord:
         record = {"packet": "I", "ptid": "TEST001"}
         rules = get_rules_for_record(record, "a1_participant_demographics", config=mock_config)
         assert isinstance(rules, dict)
-
-    def test_returns_only_instrument_scoped_rules(self, mock_config, sample_rules_dir):
-        """Verify that get_rules_for_record returns ONLY the rules mapped to
-        the requested instrument, not all rules in the packet directory."""
-        record = {"packet": "I", "ptid": "TEST001"}
-        rules = get_rules_for_record(
-            record, "a1_participant_demographics", config=mock_config
-        )
-        # a1 rules should contain birthmo (from a1_rules.json)
         assert "birthmo" in rules
-        # Should NOT contain b1 variables (height/weight) or header variables
-        assert "height" not in rules
-        assert "weight" not in rules
+
+    def test_returns_all_pool_rules_for_packet(self, mock_config):
+        """Pool-based loading returns all rules for the packet."""
+        record = {"packet": "I", "ptid": "TEST001"}
+        rules = get_rules_for_record(record, "a1_participant_demographics", config=mock_config)
+        # Pool returns ALL rules for the packet, including from all rule files
+        assert "birthmo" in rules
+        assert "height" in rules
+        assert "packet" in rules
 
     def test_missing_packet_raises(self, mock_config):
         with pytest.raises(ValueError, match="Invalid packet"):
@@ -176,6 +193,37 @@ class TestGetRulesForRecord:
     def test_invalid_packet_raises(self, mock_config):
         with pytest.raises(ValueError, match="Invalid packet"):
             get_rules_for_record({"packet": "X"}, "a1", config=mock_config)
+
+    def test_c2_namespace_resolution(self, c2_mock_config):
+        """C2 discriminant resolves to c2 namespace rules."""
+        record = {"packet": "I", "loc_c2_or_c2t": "C2"}
+        rules = get_rules_for_record(
+            record, "c2c2t_neuropsychological_battery_scores", config=c2_mock_config
+        )
+        assert isinstance(rules, dict)
+        # Should include c2-unique variable
+        assert "c2_unique" in rules
+        # Conflict variables should use c2 namespace values
+        assert rules["mocatots"]["max"] == 30  # c2 version
+
+    def test_c2t_namespace_resolution(self, c2_mock_config):
+        """C2T discriminant resolves to c2t namespace rules."""
+        record = {"packet": "I", "loc_c2_or_c2t": "C2T"}
+        rules = get_rules_for_record(
+            record, "c2c2t_neuropsychological_battery_scores", config=c2_mock_config
+        )
+        assert isinstance(rules, dict)
+        assert "c2t_unique" in rules
+        assert rules["mocatots"]["max"] == 100  # c2t version
+
+    def test_missing_discriminant_returns_default_rules(self, c2_mock_config):
+        """Missing discriminant returns first-wins (alphabetical) rules."""
+        record = {"packet": "I"}
+        rules = get_rules_for_record(
+            record, "c2c2t_neuropsychological_battery_scores", config=c2_mock_config
+        )
+        assert isinstance(rules, dict)
+        assert "mocacomp" in rules
 
 
 # =============================================================================
@@ -191,17 +239,14 @@ class TestClearCache:
         assert rules1 is not rules2
         assert rules1 == rules2
 
+    def test_clear_resets_pool(self, mock_config):
+        """clear_cache also resets the pool singleton."""
+        from src.pipeline.io.rule_pool import get_pool
 
-# =============================================================================
-# load_rules_for_instruments
-# =============================================================================
-
-
-class TestLoadRulesForInstruments:
-    @patch("src.pipeline.io.rule_loader.load_rules_for_instrument")
-    def test_loads_multiple_instruments(self, mock_load):
-        mock_load.side_effect = lambda name, config=None: {f"{name}_var": {"type": "string"}}
-        result = load_rules_for_instruments(["a1", "b1"])
-        assert "a1" in result
-        assert "b1" in result
-        assert mock_load.call_count == 2
+        record = {"packet": "I", "ptid": "TEST001"}
+        get_rules_for_record(record, "a1_participant_demographics", config=mock_config)
+        pool = get_pool()
+        assert len(pool) > 0
+        clear_cache()
+        pool = get_pool()
+        assert len(pool) == 0

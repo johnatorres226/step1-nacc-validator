@@ -6,6 +6,7 @@ fetch → load rules → prep → validate → export flow and returns
 a plain dict with the results.
 """
 
+import json
 import logging
 import time
 from datetime import datetime
@@ -17,6 +18,64 @@ import pandas as pd
 from ..config.config_manager import QCConfig
 
 logger = logging.getLogger(__name__)
+
+
+def _build_rules_cache_from_pool(pool: Any, config: QCConfig) -> dict[str, dict]:
+    """Build ``{instrument: {variable: rule_dict}}`` from pool.
+
+    Uses ``config/variable_instrument_mapping.json`` to reverse-map
+    variables to instruments.  Falls back to assigning all pool rules
+    to the first instrument if the mapping file is missing.
+    """
+    from ..io.rule_pool import NamespacedRulePool
+
+    assert isinstance(pool, NamespacedRulePool)
+
+    mapping_path = (
+        Path(__file__).resolve().parent.parent.parent.parent
+        / "config"
+        / "variable_instrument_mapping.json"
+    )
+    var_to_inst: dict[str, str] = {}
+    if mapping_path.exists():
+        with mapping_path.open(encoding="utf-8") as fh:
+            var_to_inst = json.load(fh)
+
+    rules_cache: dict[str, dict] = {}
+    all_rules = pool.get_all_rules()
+
+    for var, entry in all_rules.items():
+        inst = var_to_inst.get(var)
+        if inst and inst in config.instruments:
+            rules_cache.setdefault(inst, {})[var] = entry.rule
+        else:
+            # For variables with no mapping, use namespace heuristic
+            # e.g., namespace "a1" may correspond to an instrument containing "a1"
+            ns = entry.namespace
+            matched = False
+            for candidate in config.instruments:
+                if ns in candidate:
+                    rules_cache.setdefault(candidate, {})[var] = entry.rule
+                    matched = True
+                    break
+            if not matched:
+                logger.debug("No instrument mapping for variable %s (ns=%s)", var, ns)
+
+    # Handle C2/C2T: merge both namespaces into the c2c2t instrument
+    c2c2t_inst = "c2c2t_neuropsychological_battery_scores"
+    if c2c2t_inst in config.instruments:
+        c2_rules = pool.get_all_rules_for_namespace("c2")
+        c2t_rules = pool.get_all_rules_for_namespace("c2t")
+        merged: dict[str, Any] = {}
+        for var, entry in c2_rules.items():
+            merged[var] = entry.rule
+        for var, entry in c2t_rules.items():
+            if var not in merged:
+                merged[var] = entry.rule
+        if merged:
+            rules_cache[c2c2t_inst] = merged
+
+    return rules_cache
 
 
 def run_pipeline(
@@ -79,15 +138,16 @@ def run_pipeline(
 
         # ── Stage 2: Load Rules ───────────────────────────────────────────
         t0 = time.time()
-        from ..io.rule_loader import load_rules_for_instrument
+        from ..io.rule_pool import get_pool
 
-        rules_cache: dict[str, dict] = {}
-        for instrument in config.instruments:
-            rules = load_rules_for_instrument(instrument, config)
-            if rules:
-                rules_cache[instrument] = rules
-            else:
-                logger.warning("No rules for instrument %s", instrument)
+        pool = get_pool(config)
+        for packet in ("I", "I4", "F"):
+            try:
+                pool.load_packet(packet, config)
+            except (FileNotFoundError, ValueError):
+                logger.warning("No rules directory for packet %s", packet)
+
+        rules_cache = _build_rules_cache_from_pool(pool, config)
 
         variable_to_inst, inst_to_vars = build_variable_maps(config.instruments, rules_cache)
         logger.info(

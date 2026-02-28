@@ -56,35 +56,7 @@ instruments = [
     "c2c2t_neuropsychological_battery_scores",
 ]
 
-# Instrument-to-rule-file mapping for per-instrument rule loading
-instrument_json_mapping = {
-    # I and I4 packets instruments
-    "form_header": ["header_rules.json"],
-    "a1_participant_demographics": ["a1_rules.json"],
-    "a3_participant_family_history": ["a3_rules.json"],
-    "a4a_adrd_specific_treatments": ["a4a_rules.json"],
-    "a5d2_participant_health_history_clinician_assessed": ["a5d2_rules.json"],
-    "b6_geriatric_depression_scale": ["b6_rules.json"],
-    "a1a_sdoh": ["a1a_rules.json"],
-    "a4_participant_medications": ["a4_rules.json"],
-    "b1_vital_signs_and_anthropometrics": ["b1_rules.json"],
-    "a2_coparticipant_demographics": ["a2_rules.json"],
-    "b5_neuropsychiatric_inventory_questionnaire_npiq": ["b5_rules.json"],
-    "b7_functional_assessment_scale_fas": ["b7_rules.json"],
-    "b4_cdr_dementia_staging_instrument": ["b4_rules.json"],
-    "b3_unified_parkinsons_disease_rating_scale_updrs_m": ["b3_rules.json"],
-    "b8_neurological_examination_findings": ["b8_rules.json"],
-    "b9_clinician_judgment_of_symptoms": ["b9_rules.json"],
-    "d1a_clinical_syndrome": ["d1a_rules.json"],
-    "d1b_etiological_diagnosis_and_biomarker_support": ["d1b_rules.json"],
-    "c2c2t_neuropsychological_battery_scores": [
-        "c2_rules.json",
-        "c2t_rules.json",
-    ],
-}
-
-uds_events = ["udsv4_ivp_1_arm_1", "udsv4_fvp_2_arm_1"]
-
+uds_events = ["udsv4visit_arm_1"]
 
 # =============================================================================
 # DATA FETCHING AND FILTERING
@@ -117,48 +89,6 @@ KEY_MAP = {
     "compatibility": "compatibility",
     "temporalrules": "temporalrules",
 }
-
-
-# =============================================================================
-# DYNAMIC RULE SELECTION CONFIGURATION
-# =============================================================================
-
-# Configuration for instruments that use variable-based rule selection.
-# This allows for dynamic rule selection based on discriminant variables.
-# If more C2/C2T instruments are added, they should follow the same pattern,
-# and add their configurations to the DYNAMIC_RULE_INSTRUMENTS dict below.
-
-DYNAMIC_RULE_INSTRUMENTS = {
-    "c2c2t_neuropsychological_battery_scores": {
-        "discriminant_variable": "loc_c2_or_c2t",
-        "rule_mappings": {"C2": "c2_rules.json", "C2T": "c2t_rules.json"},
-    },
-    # --- Future Discriminant Variables ---
-    # (Add future instrument mappings here as needed)
-}
-
-
-def get_discriminant_variable(instrument_name: str) -> str:
-    """Returns the discriminant variable name for a given instrument."""
-    config = DYNAMIC_RULE_INSTRUMENTS.get(instrument_name)
-    if not config:
-        msg = "Instrument '%s' is not configured for dynamic rule selection" % instrument_name
-        raise ValueError(msg)
-    return config["discriminant_variable"]
-
-
-def get_rule_mappings(instrument_name: str) -> dict:
-    """Returns the rule mappings for a given instrument."""
-    config = DYNAMIC_RULE_INSTRUMENTS.get(instrument_name)
-    if not config:
-        msg = "Instrument '%s' is not configured for dynamic rule selection" % instrument_name
-        raise ValueError(msg)
-    return config["rule_mappings"]
-
-
-def is_dynamic_rule_instrument(instrument_name: str) -> bool:
-    """Returns True if the instrument uses dynamic rule selection."""
-    return instrument_name in DYNAMIC_RULE_INSTRUMENTS
 
 
 # =============================================================================
@@ -195,13 +125,6 @@ class QCConfig:
 
     # --- Primary Key Configuration ---
     primary_key_field: str = "ptid"
-
-    # --- Special Column Configuration ---
-    special_col_discriminat_var: list[str] = field(
-        default_factory=lambda: list(
-            {config["discriminant_variable"] for config in DYNAMIC_RULE_INSTRUMENTS.values()}
-        )
-    )
 
     # --- QC Pipeline Behavior ---
     # Only 'complete_visits' mode is currently supported

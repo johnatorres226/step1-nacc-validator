@@ -7,10 +7,7 @@ import pandas as pd
 from ..config.config_manager import (
     get_completion_columns,
     get_core_columns,
-    get_discriminant_variable,
-    is_dynamic_rule_instrument,
 )
-from ..io.rule_loader import load_rules_for_instrument
 from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -27,9 +24,6 @@ class DataProcessingError(Exception):
 
 def _get_variables_for_instrument(instrument: str, rules_cache: dict[str, Any]) -> list[str]:
     """Return variable names for *instrument*."""
-    if is_dynamic_rule_instrument(instrument):
-        variant_rules = load_rules_for_instrument(instrument)
-        return list({var for rules in variant_rules.values() for var in rules})
     return list(rules_cache.get(instrument, {}).keys())
 
 
@@ -97,10 +91,10 @@ def _prepare_single_instrument(
     cols += [v for v in variables if v in data_df.columns]
     cols += [c for c in get_completion_columns() if c in data_df.columns]
 
-    if is_dynamic_rule_instrument(instrument):
-        d_var = get_discriminant_variable(instrument)
-        if d_var in data_df.columns:
-            cols.append(d_var)
+    # Always include discriminant column for C2/C2T instrument
+    if instrument == "c2c2t_neuropsychological_battery_scores":
+        if "loc_c2_or_c2t" in data_df.columns:
+            cols.append("loc_c2_or_c2t")
 
     cols = list(dict.fromkeys(cols))  # deduplicate preserving order
     if not cols:

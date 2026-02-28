@@ -13,11 +13,9 @@ from nacc_form_validator.quality_check import QualityCheck
 from ..config.config_manager import (
     QCConfig,
     get_config,
-    get_discriminant_variable,
-    is_dynamic_rule_instrument,
 )
 from ..core.pipeline import run_pipeline
-from ..io.rule_loader import get_rules_for_record
+from ..io.rule_loader import _NAMESPACE_DISCRIMINANTS, get_rules_for_record
 from ..utils.schema_builder import _build_schema_from_raw
 
 logger = logging.getLogger(__name__)
@@ -99,9 +97,9 @@ def validate_data(
             )
 
             discriminant_info = ""
-            if is_dynamic_rule_instrument(instrument_name):
-                d_var = get_discriminant_variable(instrument_name)
-                discriminant_info = f"{d_var}={record_dict.get(d_var, '')}"
+            disc_var = _NAMESPACE_DISCRIMINANTS.get(instrument_name)
+            if disc_var:
+                discriminant_info = f"{disc_var}={record_dict.get(disc_var, '')}"
 
             if not passed or sys_failure:
                 for field_name, field_errors in record_errors.items():
