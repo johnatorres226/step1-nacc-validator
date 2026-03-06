@@ -104,3 +104,6 @@ addopts = [
     "--strict-markers",
     "--strict-config",
 ]
+markers = [
+    "integration: marks tests as integration tests requiring live API access",
+]
