@@ -6,7 +6,6 @@ fetch → load rules → prep → validate → export flow and returns
 a plain dict with the results.
 """
 
-import json
 import logging
 import time
 from datetime import datetime
@@ -23,57 +22,27 @@ logger = logging.getLogger(__name__)
 def _build_rules_cache_from_pool(pool: Any, config: QCConfig) -> dict[str, dict]:
     """Build ``{instrument: {variable: rule_dict}}`` from pool.
 
-    Uses ``config/variable_instrument_mapping.json`` to reverse-map
-    variables to instruments.  Falls back to assigning all pool rules
-    to the first instrument if the mapping file is missing.
+    Uses namespace_to_instrument mapping to route rules from their source
+    file namespace to the correct instrument.
     """
+    from ..config.config_manager import namespace_to_instrument
     from ..io.rule_pool import NamespacedRulePool
 
     assert isinstance(pool, NamespacedRulePool)
-
-    mapping_path = (
-        Path(__file__).resolve().parent.parent.parent.parent
-        / "config"
-        / "variable_instrument_mapping.json"
-    )
-    var_to_inst: dict[str, str] = {}
-    if mapping_path.exists():
-        with mapping_path.open(encoding="utf-8") as fh:
-            var_to_inst = json.load(fh)
 
     rules_cache: dict[str, dict] = {}
     all_rules = pool.get_all_rules()
 
     for var, entry in all_rules.items():
-        inst = var_to_inst.get(var)
+        inst = namespace_to_instrument.get(entry.namespace)
         if inst and inst in config.instruments:
             rules_cache.setdefault(inst, {})[var] = entry.rule
         else:
-            # For variables with no mapping, use namespace heuristic
-            # e.g., namespace "a1" may correspond to an instrument containing "a1"
-            ns = entry.namespace
-            matched = False
-            for candidate in config.instruments:
-                if ns in candidate:
-                    rules_cache.setdefault(candidate, {})[var] = entry.rule
-                    matched = True
-                    break
-            if not matched:
-                logger.debug("No instrument mapping for variable %s (ns=%s)", var, ns)
-
-    # Handle C2/C2T: merge both namespaces into the c2c2t instrument
-    c2c2t_inst = "c2c2t_neuropsychological_battery_scores"
-    if c2c2t_inst in config.instruments:
-        c2_rules = pool.get_all_rules_for_namespace("c2")
-        c2t_rules = pool.get_all_rules_for_namespace("c2t")
-        merged: dict[str, Any] = {}
-        for var, entry in c2_rules.items():
-            merged[var] = entry.rule
-        for var, entry in c2t_rules.items():
-            if var not in merged:
-                merged[var] = entry.rule
-        if merged:
-            rules_cache[c2c2t_inst] = merged
+            logger.warning(
+                "No instrument mapping for variable '%s' (namespace='%s')",
+                var,
+                entry.namespace,
+            )
 
     return rules_cache
 
@@ -138,14 +107,42 @@ def run_pipeline(
 
         # ── Stage 2: Load Rules ───────────────────────────────────────────
         t0 = time.time()
+        from ..io.rule_loader import clear_cache
         from ..io.rule_pool import get_pool
 
+        # Clear any stale cache from previous runs
+        clear_cache()
+
         pool = get_pool(config)
-        for packet in ("I", "I4", "F"):
+
+        # Only load packets that are actually present in the data
+        # This prevents cross-packet rule collision
+        if not data_df.empty and "packet" in data_df.columns:
+            packets_in_data = set(data_df["packet"].dropna().unique())
+            # Validate and normalize packet values
+            valid_packets = {"I", "I4", "F"}
+            packets_to_load = {p.upper() for p in packets_in_data if p.upper() in valid_packets}
+
+            if len(packets_to_load) > 1:
+                logger.warning(
+                    "Multiple packets in data: %s — validation will use per-record "
+                    "packet isolation to prevent cross-packet rule collision",
+                    ", ".join(sorted(packets_to_load)),
+                )
+            elif len(packets_to_load) == 1:
+                # Single packet — safe to pre-load
+                packet = next(iter(packets_to_load))
+                try:
+                    pool.load_packet(packet, config)
+                except (FileNotFoundError, ValueError):
+                    logger.warning("No rules directory for packet %s", packet)
+        else:
+            # No packet column or empty — fall back to loading I packet
+            logger.warning("No packet column in data — defaulting to packet I rules")
             try:
-                pool.load_packet(packet, config)
+                pool.load_packet("I", config)
             except (FileNotFoundError, ValueError):
-                logger.warning("No rules directory for packet %s", packet)
+                logger.warning("No rules directory for packet I")
 
         rules_cache = _build_rules_cache_from_pool(pool, config)
 

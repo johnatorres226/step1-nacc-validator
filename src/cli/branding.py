@@ -6,6 +6,7 @@ Reference: https://brand.unm.edu/brand-style/color-palette/index.html
 """
 
 from rich.console import Console
+from rich.panel import Panel
 
 # ─── UNM Official Brand Colors ──────────────────────────────────────────────
 # Primary Brand Colors
@@ -48,10 +49,21 @@ def display_banner(console: Console, version: str) -> None:
     """Display the ADRC QC Interface banner with UNM branding."""
     lobo_art = get_lobo_art()
 
-    console.print(f"\n{lobo_art}\n")
-    console.print(f"  [bold {UNM_TURQUOISE}]ADRC Quality Control Interface[/]  [{UNM_SILVER}]v{version}[/]")
-    console.print(f"  [{UNM_LOBO_GRAY}]By University of New Mexico SDCC Dev Team[/]")
-    console.print(f"  [dim {UNM_SILVER}]NACC Alzheimer's Disease Research Center[/]\n")
+    title_block = (
+        f"\n{lobo_art}\n\n"
+        f"  [bold {UNM_TURQUOISE}]ADRC Quality Control Interface[/]"
+        f"  [{UNM_SILVER}]v{version}[/]\n"
+        f"  [{UNM_LOBO_GRAY}]By University of New Mexico SDCC Dev Team[/]\n"
+        f"  [dim {UNM_SILVER}]NACC Alzheimer's Disease Research Center[/]"
+    )
+
+    panel = Panel(
+        title_block,
+        border_style=UNM_CHERRY,
+        padding=(0, 2),
+    )
+
+    console.print(panel)
 
 
 def display_separator(console: Console, width: int = 42) -> None:

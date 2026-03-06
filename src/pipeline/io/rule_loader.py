@@ -33,6 +33,9 @@ _DISCRIMINANT_VALUE_TO_NAMESPACE: dict[str, str] = {
     "C2T": "c2t",
 }
 
+# Track the currently loaded packet to detect packet changes
+_current_loaded_packet: str | None = None
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -115,13 +118,33 @@ def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
 def get_rules_for_record(
     record: dict, instrument_name: str, config: QCConfig | None = None
 ) -> dict:
-    """Main entry point: load rules from pool, resolve namespace for conflicts."""
+    """Main entry point: load rules from pool, resolve namespace for conflicts.
+
+    IMPORTANT: This function implements packet isolation to prevent cross-packet
+    rule collision. When the record's packet differs from the currently loaded
+    packet, the pool is cleared and reloaded with only the new packet's rules.
+    This ensures F-packet variables don't leak into I/I4 validation and vice versa.
+    """
+    global _current_loaded_packet
+
     packet = _validate_packet(record.get("packet", ""))
     cfg = _get_config(config)
 
     pool = get_pool(cfg)
+
+    # PACKET ISOLATION FIX: Clear pool when packet changes to prevent
+    # cross-packet rule collision (e.g., F-packet nwinfpar leaking into I records)
+    if _current_loaded_packet is not None and _current_loaded_packet != packet:
+        logger.debug(
+            "Packet changed from %s to %s — clearing pool to prevent collision",
+            _current_loaded_packet,
+            packet,
+        )
+        pool.clear()
+
     if packet not in pool.loaded_packets:
         pool.load_packet(packet, cfg)
+        _current_loaded_packet = packet
 
     namespace = _resolve_namespace(record, instrument_name)
     return pool.get_resolved_rules_dict(namespace=namespace)
@@ -129,6 +152,8 @@ def get_rules_for_record(
 
 def clear_cache() -> None:
     """Reset the module-level cache and pool state."""
+    global _current_loaded_packet
     _packet_cache.clear()
+    _current_loaded_packet = None
     reset_pool()
     logger.debug("Rule loader cache cleared")

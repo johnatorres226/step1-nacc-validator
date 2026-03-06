@@ -58,7 +58,9 @@ def validate_data(
 
     Args:
         data: DataFrame containing the data to validate.
-        validation_rules: Legacy parameter (ignored — rules resolved per-record).
+        validation_rules: Instrument-scoped variable set used to filter per-record rules.
+            Keys are the variables belonging to this instrument; used to strip
+            cross-instrument bleed from the full pool returned by get_rules_for_record().
         instrument_name: Name of the instrument being validated.
         primary_key_field: Name of the primary key field.
 
@@ -77,6 +79,11 @@ def validate_data(
 
         try:
             resolved_rules = get_rules_for_record(record_dict, instrument_name)
+            # Filter to only this instrument's variables — validation_rules keys are
+            # correctly scoped by _build_rules_cache_from_pool(); this eliminates
+            # cross-instrument bleed while preserving C2/C2T namespace resolution.
+            if validation_rules:
+                resolved_rules = {k: v for k, v in resolved_rules.items() if k in validation_rules}
             if not resolved_rules:
                 logger.warning("No rules for %s, skipping %s", instrument_name, pk_value)
                 continue
