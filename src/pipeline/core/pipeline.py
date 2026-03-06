@@ -115,34 +115,37 @@ def run_pipeline(
 
         pool = get_pool(config)
 
-        # Only load packets that are actually present in the data
-        # This prevents cross-packet rule collision
+        # Determine which packets are in the data
+        packets_in_data: set[str] = set()
         if not data_df.empty and "packet" in data_df.columns:
-            packets_in_data = set(data_df["packet"].dropna().unique())
-            # Validate and normalize packet values
             valid_packets = {"I", "I4", "F"}
-            packets_to_load = {p.upper() for p in packets_in_data if p.upper() in valid_packets}
+            packets_in_data = {
+                p.upper() for p in data_df["packet"].dropna().unique()
+                if p.upper() in valid_packets
+            }
 
-            if len(packets_to_load) > 1:
-                logger.warning(
-                    "Multiple packets in data: %s — validation will use per-record "
-                    "packet isolation to prevent cross-packet rule collision",
-                    ", ".join(sorted(packets_to_load)),
-                )
-            elif len(packets_to_load) == 1:
-                # Single packet — safe to pre-load
-                packet = next(iter(packets_to_load))
-                try:
-                    pool.load_packet(packet, config)
-                except (FileNotFoundError, ValueError):
-                    logger.warning("No rules directory for packet %s", packet)
-        else:
-            # No packet column or empty — fall back to loading I packet
-            logger.warning("No packet column in data — defaulting to packet I rules")
-            try:
-                pool.load_packet("I", config)
-            except (FileNotFoundError, ValueError):
-                logger.warning("No rules directory for packet I")
+        # Load the first/primary packet to build the initial rules_cache
+        # The per-record packet isolation in get_rules_for_record() will handle
+        # dynamic rule switching during validation
+        if len(packets_in_data) == 0:
+            logger.warning("No valid packets in data — defaulting to packet I")
+            packets_in_data = {"I"}
+
+        # Sort to ensure deterministic first packet selection
+        primary_packet = sorted(packets_in_data)[0]
+        logger.info("Primary packet for rules cache: %s", primary_packet)
+
+        if len(packets_in_data) > 1:
+            logger.warning(
+                "Multiple packets in data: %s — per-record packet isolation "
+                "will be used during validation",
+                ", ".join(sorted(packets_in_data)),
+            )
+
+        try:
+            pool.load_packet(primary_packet, config)
+        except (FileNotFoundError, ValueError):
+            logger.warning("No rules directory for packet %s", primary_packet)
 
         rules_cache = _build_rules_cache_from_pool(pool, config)
 
