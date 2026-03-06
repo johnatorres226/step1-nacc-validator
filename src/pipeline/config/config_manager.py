@@ -56,6 +56,31 @@ instruments = [
     "c2c2t_neuropsychological_battery_scores",
 ]
 
+# Namespace (from rule filename stem) → Instrument name
+# Rule files are named like "a1_rules.json" → namespace "a1"
+namespace_to_instrument = {
+    "header": "form_header",
+    "a1": "a1_participant_demographics",
+    "a1a": "a1a_sdoh",
+    "a2": "a2_coparticipant_demographics",
+    "a3": "a3_participant_family_history",
+    "a4": "a4_participant_medications",
+    "a4a": "a4a_adrd_specific_treatments",
+    "a5d2": "a5d2_participant_health_history_clinician_assessed",
+    "b1": "b1_vital_signs_and_anthropometrics",
+    "b3": "b3_unified_parkinsons_disease_rating_scale_updrs_m",
+    "b4": "b4_cdr_dementia_staging_instrument",
+    "b5": "b5_neuropsychiatric_inventory_questionnaire_npiq",
+    "b6": "b6_geriatric_depression_scale",
+    "b7": "b7_functional_assessment_scale_fas",
+    "b8": "b8_neurological_examination_findings",
+    "b9": "b9_clinician_judgment_of_symptoms",
+    "c2": "c2c2t_neuropsychological_battery_scores",
+    "c2t": "c2c2t_neuropsychological_battery_scores",
+    "d1a": "d1a_clinical_syndrome",
+    "d1b": "d1b_etiological_diagnosis_and_biomarker_support",
+}
+
 uds_events = ["udsv4visit_arm_1"]
 
 # =============================================================================
@@ -109,6 +134,7 @@ class QCConfig:
     api_token: str | None = field(default_factory=lambda: os.getenv("REDCAP_API_TOKEN") or None)
     api_url: str | None = field(default_factory=lambda: os.getenv("REDCAP_API_URL") or None)
     project_id: str | None = field(default_factory=lambda: os.getenv("PROJECT_ID"))
+    report_id: str | None = field(default_factory=lambda: os.getenv("REDCAP_REPORT_ID"))
 
     # --- Path Configuration ---
     output_path: str = field(
