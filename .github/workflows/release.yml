@@ -31,22 +31,32 @@ jobs:
           virtualenvs-in-project: true
       
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --with dev --no-interaction
       
       - name: Build package
-        run: poetry build
+        run: |
+          poetry build
+          echo "✓ Package built successfully"
       
       - name: Check package contents
         run: |
+          echo "📦 Distribution files:"
           ls -la dist/
-          poetry run twine check dist/*
+          echo ""
+          echo "🔍 Validating packages with twine:"
+          poetry run python -m twine check dist/*.whl dist/*.tar.gz
+          echo "✓ All packages are valid"
       
       - name: Get version from pyproject.toml
         id: get_version
         run: |
-          VERSION=$(grep -E '^version = ' pyproject.toml | cut -d '"' -f2)
+          VERSION=$(grep -E '^version\s*=\s*' pyproject.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "📦 Building version: $VERSION"
+          if [ -z "$VERSION" ]; then
+            echo "❌ Failed to extract version from pyproject.toml"
+            exit 1
+          fi
       
       - name: Extract changelog for this version
         id: changelog
