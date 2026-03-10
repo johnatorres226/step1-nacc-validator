@@ -12,32 +12,26 @@ The implementations are intentionally lightweight and compatible with the
 project's logging configuration used across the pipeline.
 """
 
-import json
 import logging
 import logging.config
 import os
 import sys
-import threading
-import time
-from contextlib import contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import ClassVar, Generator
-
-import pandas as pd
+from typing import ClassVar
 
 
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color support for terminal output."""
 
-    # ANSI color codes for different log levels
+    # ANSI color codes mapped to UNM brand palette
+    # Reference: https://brand.unm.edu/brand-style/color-palette/index.html
     COLORS: ClassVar[dict[str, str]] = {
-        "DEBUG": "\033[36m",  # Cyan
-        "INFO": "\033[32m",  # Green
-        "WARNING": "\033[33m",  # Yellow
-        "ERROR": "\033[31m",  # Red
-        "CRITICAL": "\033[35m",  # Magenta
-        "RESET": "\033[0m",  # Reset
+        "DEBUG": "\033[38;2;99;102;106m",      # UNM Lobo Gray
+        "INFO": "\033[38;2;0;122;134m",        # UNM Turquoise
+        "WARNING": "\033[38;2;255;198;0m",     # UNM High Noon
+        "ERROR": "\033[38;2;186;12;47m",       # UNM Cherry
+        "CRITICAL": "\033[1;38;2;186;12;47m",  # Bold UNM Cherry
+        "RESET": "\033[0m",
     }
 
     # Icons for different log levels - simplified and professional
@@ -78,9 +72,11 @@ class ColoredFormatter(logging.Formatter):
 
         # Check for Windows terminal color support
         if os.name == "nt":
-            return os.getenv("ANSICON") is not None or "ON" in os.getenv("CONEMUANSI", "OFF")
+            # Windows 10+ terminals (Windows Terminal, VS Code, PowerShell 7+)
+            # support ANSI colors when running in a TTY
+            return True
 
-        return False
+        return True  # Assume color support for TTY sessions
 
     def format(self, record):
         """Format log record with colors and icons."""
@@ -101,68 +97,6 @@ class ColoredFormatter(logging.Formatter):
             record.levelname = f"{color}{record.levelname}{reset}"
 
         return super().format(record)
-
-
-class ProductionCLIFormatter(logging.Formatter):
-    """Streamlined formatter for production CLI operations with minimal visual clutter."""
-
-    def __init__(self, fmt: str | None = None, datefmt: str | None = None) -> None:
-        # Use a clean format for production CLI
-        if fmt is None:
-            fmt = "%(asctime)s | %(levelname)-7s | %(message)s"
-        if datefmt is None:
-            datefmt = "%H:%M:%S"
-        super().__init__(fmt=fmt, datefmt=datefmt)
-
-    def format(self, record) -> str:
-        """Format with minimal decoration and clean output."""
-        # Clean up the message to remove redundant icons and formatting
-        message = record.getMessage()
-
-        # Simplified patterns to avoid ambiguous unicode characters in logs
-        emoji_patterns = ["✅ ", "🔄 ", "📋 ", "📊 ", "INFO  ", "WARN  ", "===", "---", "***"]
-
-        for pattern in emoji_patterns:
-            if message.startswith(pattern):
-                message = message[len(pattern) :]
-                break
-
-        # Clean up repeated information
-        if "complete" in message.lower() and "completed" in message.lower():
-            # Avoid saying "completed" twice
-            message = message.replace("completed", "done")
-
-        # Create a new record with the cleaned message
-        record = logging.makeLogRecord(record.__dict__)
-        record.msg = message
-        record.args = ()
-
-        return super().format(record)
-
-
-class PerformanceFilter(logging.Filter):
-    """Filter to add performance metrics to log records."""
-
-    def __init__(self):
-        super().__init__()
-        self.start_time = time.time()
-
-    def filter(self, record):
-        """Add performance metrics to the log record."""
-        # Attach elapsed time since filter instantiation
-        try:
-            record.elapsed = time.time() - self.start_time
-        except Exception:
-            # If anything goes wrong, avoid breaking logging output
-            record.elapsed = None
-
-        # Use timezone-aware timestamp (UTC)
-        try:
-            record.timestamp = datetime.now(tz=timezone.utc).isoformat()
-        except Exception:
-            record.timestamp = None
-
-        return True
 
 
 def setup_logging(
@@ -298,151 +232,11 @@ def setup_logging(
     logging.config.dictConfig(logging_config)
 
 
-class JSONFormatter(logging.Formatter):
-    """Formatter for structured JSON logging."""
-
-    def format(self, record):
-        """Format log record as JSON."""
-        # Include timezone-aware timestamp (UTC)
-        log_entry = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
-            "level": record.levelname,
-            "logger": record.name,
-            "message": record.getMessage(),
-            "module": record.module,
-            "function": record.funcName,
-            "line": record.lineno,
-        }
-
-        # Add exception info if present
-        if record.exc_info:
-            log_entry["exception"] = self.formatException(record.exc_info)
-
-        # Add performance metrics if available
-        if hasattr(record, "elapsed"):
-            log_entry["elapsed_time"] = record.elapsed
-
-        # Add any extra fields
-        for key, value in record.__dict__.items():
-            if key not in [
-                "name",
-                "msg",
-                "args",
-                "levelname",
-                "levelno",
-                "pathname",
-                "filename",
-                "module",
-                "exc_info",
-                "exc_text",
-                "stack_info",
-                "lineno",
-                "funcName",
-                "created",
-                "msecs",
-                "relativeCreated",
-                "thread",
-                "threadName",
-                "processName",
-                "process",
-                "message",
-            ]:
-                log_entry[key] = value
-
-        return json.dumps(log_entry)
-
-
 def get_logger(name: str) -> logging.Logger:
     """
     Returns a logger instance with the specified name, configured under the 'pipeline' namespace.
     """
     return logging.getLogger(f"pipeline.{name}")
-
-
-class QCLogger:
-    """Context manager for QC operations with progress tracking."""
-
-    def __init__(self, operation_name: str, logger: logging.Logger | None = None):
-        self.operation_name = operation_name
-        self.logger = logger or get_logger("qc_operation")
-        self.start_time = None
-        self.steps_completed = 0
-        self.total_steps = None
-        self._lock = threading.Lock()
-
-    def __enter__(self):
-        """Start the operation logging."""
-        self.start_time = time.time()
-        if self.operation_name in ["Configuration Check", "Environment Setup", "QC Pipeline"]:
-            self.logger.info("Starting operation: %s", self.operation_name)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Complete the operation logging."""
-        if self.start_time is not None:
-            duration = time.time() - self.start_time
-
-            if exc_type is None:
-                if self.operation_name in [
-                    "Configuration Check",
-                    "Environment Setup",
-                    "QC Pipeline",
-                ]:
-                    self.logger.info(
-                        "Completed operation: %s (Duration: %.2fs)",
-                        self.operation_name,
-                        duration,
-                    )
-            else:
-                # Use exception logging to capture full traceback
-                self.logger.exception(
-                    "Failed operation: %s (Duration: %.2fs)",
-                    self.operation_name,
-                    duration,
-                )
-
-        return False  # Don't suppress exceptions
-
-    def log_progress(self, message: str, step: int | None = None) -> None:
-        """Log progress update with optional step tracking."""
-        # Only log progress for high-level operations
-        if self.operation_name in ["Configuration Check", "Environment Setup", "QC Pipeline"]:
-            with self._lock:
-                if step is not None:
-                    self.steps_completed = step
-                else:
-                    self.steps_completed += 1
-
-                if self.total_steps:
-                    progress = (self.steps_completed / self.total_steps) * 100
-                    self.logger.info(
-                        "%s: %s (%d/%d - %.1f%%)",
-                        self.operation_name,
-                        message,
-                        self.steps_completed,
-                        self.total_steps,
-                        progress,
-                    )
-                else:
-                    self.logger.info("%s: %s", self.operation_name, message)
-
-    def set_total_steps(self, total: int) -> None:
-        """Set the total number of steps for progress tracking."""
-        with self._lock:
-            self.total_steps = total
-
-    def log_error(self, message: str, exception: Exception | None = None) -> None:
-        """Log an error during the operation."""
-        if exception:
-            # logger.exception will include exception info automatically
-            self.logger.exception("%s Error: %s", self.operation_name, message)
-            self.logger.debug("Full traceback for %s", self.operation_name, exc_info=True)
-        else:
-            self.logger.error("%s Error: %s", self.operation_name, message)
-
-    def log_warning(self, message: str):
-        """Log a warning during the operation."""
-        self.logger.warning("%s Warning: %s", self.operation_name, message)
 
 
 def _parse_file_size(size_str: str) -> int:
@@ -456,46 +250,6 @@ def _parse_file_size(size_str: str) -> int:
     if size_str.endswith("GB"):
         return int(size_str[:-2]) * 1024 * 1024 * 1024
     return int(size_str)
-
-
-@contextmanager
-def log_performance(
-    operation_name: str, logger: logging.Logger | None = None
-) -> Generator[None, None, None]:
-    """Context manager for logging operation performance."""
-    if logger is None:
-        logger = get_logger("performance")
-
-    start_time = time.time()
-
-    try:
-        yield
-        duration = time.time() - start_time
-        if duration > 1.0:  # Only log operations that take longer than 1 second
-            logger.info("Completed %s in %.2fs", operation_name, duration)
-    except Exception:
-        duration = time.time() - start_time
-        # logger.exception will automatically include exception info
-        logger.exception("Failed %s after %.2fs", operation_name, duration)
-        raise
-
-
-def log_dataframe_info(df: pd.DataFrame, name: str, logger: logging.Logger | None = None) -> None:
-    """Log information about a pandas DataFrame."""
-    if logger is None:
-        logger = get_logger("data")
-
-    # Only log if dataframe is large or in debug mode
-    if len(df) > 1000 or logger.isEnabledFor(logging.DEBUG):
-        logger.info("DataFrame '%s': %d rows, %d columns", name, len(df), len(df.columns))
-
-    if logger.isEnabledFor(logging.DEBUG):
-        logger.debug("DataFrame '%s' columns: %s", name, list(df.columns))
-        logger.debug(
-            "DataFrame '%s' memory usage: %.2f MB",
-            name,
-            df.memory_usage(deep=True).sum() / 1024 / 1024,
-        )
 
 
 def configure_third_party_logging():

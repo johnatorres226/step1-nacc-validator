@@ -1,0 +1,91 @@
+name: Main Branch Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  changelog-version-check:
+    name: Verify Changelog and Version Update
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check CHANGELOG.md was updated
+        run: |
+          echo "Checking if CHANGELOG.md was modified..."
+          git diff --name-only origin/main...HEAD | grep -q "CHANGELOG.md" || {
+            echo "❌ CHANGELOG.md was not updated"
+            echo "Please update CHANGELOG.md with details of your changes"
+            exit 1
+          }
+          echo "✅ CHANGELOG.md was updated"
+      
+      - name: Check version was updated
+        run: |
+          echo "Checking if version was updated in pyproject.toml..."
+          git diff origin/main...HEAD -- pyproject.toml | grep -q "^+version" || {
+            echo "❌ Version was not updated in pyproject.toml"
+            echo "Please bump the version number appropriately"
+            exit 1
+          }
+          echo "✅ Version was updated in pyproject.toml"
+      
+      - name: Validate version format
+        run: |
+          VERSION=$(grep -E '^version = ' pyproject.toml | cut -d '"' -f2)
+          echo "Current version: $VERSION"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "❌ Version format is invalid"
+            echo "Expected format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-prerelease"
+            exit 1
+          fi
+          echo "✅ Version format is valid"
+
+  run-all-checks:
+    name: Run Full Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      
+      - name: Install dependencies
+        run: poetry install --with dev
+      
+      - name: Run tests
+        run: poetry run pytest tests/ -v --cov=src --cov-report=xml
+      
+      - name: Run linting (strict)
+        run: |
+          poetry run ruff check --config ruff.toml src tests
+      
+      - name: Run type checking
+        run: |
+          poetry run mypy --config-file mypy.ini src

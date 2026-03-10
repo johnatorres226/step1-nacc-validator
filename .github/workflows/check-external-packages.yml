@@ -1,0 +1,77 @@
+name: Check External Packages
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ main, dev, codebase-curation ]
+
+jobs:
+  check-external:
+    name: Verify No External Package Changes
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for proper diff
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Check for unauthorized changes to external packages
+      run: |
+        echo "🔍 Checking for changes to protected external packages..."
+        
+        # Check if nacc_form_validator has any changes
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+        
+        if [ -z "$CHANGED_FILES" ]; then
+          echo "⚠️  Could not determine changed files, checking against HEAD"
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+        fi
+        
+        echo "Changed files:"
+        echo "$CHANGED_FILES"
+        echo ""
+        
+        VIOLATIONS=$(echo "$CHANGED_FILES" | grep "^nacc_form_validator/" | grep -v "__pycache__" | grep -v ".pytest_cache" || true)
+        
+        if [ -n "$VIOLATIONS" ]; then
+          echo "❌ ERROR: Unauthorized changes to external package detected!"
+          echo ""
+          echo "The following files in 'nacc_form_validator' were modified:"
+          echo "$VIOLATIONS"
+          echo ""
+          echo "=========================================="
+          echo "POLICY VIOLATION"
+          echo "=========================================="
+          echo ""
+          echo "The 'nacc_form_validator' package is an EXTERNAL engine"
+          echo "that must NOT be modified in this repository."
+          echo ""
+          echo "Please:"
+          echo "  1. Revert changes to nacc_form_validator"
+          echo "  2. See docs/external-package-policy.md for details"
+          echo "  3. Contact maintainers if updates are needed"
+          echo ""
+          exit 1
+        fi
+        
+        echo "✅ No unauthorized changes to external packages detected"
+        echo "✨ External package protection check passed!"
+    
+    - name: Verify .gitattributes protection
+      run: |
+        if [ ! -f .gitattributes ]; then
+          echo "⚠️  Warning: .gitattributes file not found"
+          exit 0
+        fi
+        
+        if grep -q "nacc_form_validator" .gitattributes; then
+          echo "✅ nacc_form_validator is marked as external in .gitattributes"
+        else
+          echo "⚠️  Warning: nacc_form_validator not marked in .gitattributes"
+        fi

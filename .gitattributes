@@ -1,0 +1,8 @@
+# External Package Protection Configuration
+# 
+# This file marks certain directories and files as protected external code
+# that should not be modified in this repository.
+
+# Mark nacc_form_validator as external (read-only)
+nacc_form_validator/** linguist-vendored
+nacc_form_validator/** -diff
