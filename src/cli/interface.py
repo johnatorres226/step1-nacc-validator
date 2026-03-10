@@ -92,9 +92,10 @@ def run_interactive(console: Console | None = None) -> None:
         f"  [{UNM_TURQUOISE}]✓[/] Session started for "
         f"[bold {UNM_CHERRY}]{initials}[/]"
     )
-    console.print(
-        f"  [{UNM_LOBO_GRAY}]Type 'help' for commands or 'exit' to quit.[/]\n"
-    )
+    console.print()
+    
+    # Display available commands immediately
+    display_help(console)
 
     # Command loop
     while True:
