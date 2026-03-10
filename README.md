@@ -252,10 +252,18 @@ Create a `.env` file in the project root:
 REDCAP_API_URL=https://your-redcap-instance/api/
 REDCAP_API_TOKEN=your_api_token_here
 PROJECT_ID=your_project_id
+
+# Optional: Use REDCap report for pre-filtered data (recommended)
+REDCAP_REPORT_ID=your_report_id
+
 JSON_RULES_PATH_I=config/I/
 JSON_RULES_PATH_I4=config/I4/
 JSON_RULES_PATH_F=config/F/
 ```
+
+**Data Fetching Modes:**
+- **Report-based** (recommended): Set `REDCAP_REPORT_ID` to use a pre-configured REDCap report that filters for complete visits with instances, ready for QC. This is more efficient and reduces ETL processing.
+- **Full fetch**: Leave `REDCAP_REPORT_ID` unset to fetch all records and apply filtering during ETL processing.
 
 ### Step 4: Create Output Directory
 

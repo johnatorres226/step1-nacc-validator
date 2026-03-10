@@ -1,9 +1,8 @@
 """
-REDCap data fetching.
+REDCap report-based data fetching.
 
-Provides ``fetch_redcap_data(config, output_path)`` which executes the
-full fetch → validate → optional-save flow and returns
-``(dataframe, saved_files)``.
+Provides ``fetch_report_data(config, output_path)`` which fetches pre-filtered
+data from a configured REDCap report and returns ``(dataframe, records_processed)``.
 """
 
 import json
@@ -15,73 +14,18 @@ from typing import Any
 import pandas as pd
 import requests
 
-from ..config.config_manager import (
-    QCConfig,
-    complete_events_with_incomplete_qc_filter_logic,
-    qc_filterer_logic,
-)
+from ..config.config_manager import QCConfig
 
 logger = logging.getLogger(__name__)
 
 # Fields that must be present after fetch
+# Note: 'packet' field is optional and will be auto-populated with default value 'I' if missing
 REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
-
-
-def fetch_redcap_data(
-    config: QCConfig,
-    output_path: Path | None = None,
-    date_tag: str | None = None,
-    time_tag: str | None = None,
-) -> tuple[pd.DataFrame, int]:
-    """Fetch data from REDCap, validate, filter, and optionally save.
-
-    Returns ``(dataframe, records_processed)``.
-    """
-    t0 = time.time()
-    filter_logic = _get_filter_logic(config)
-
-    # Build instruments list - include quality_control_check for filtering
-    instruments = config.instruments.copy()
-    if filter_logic and "quality_control_check" not in instruments:
-        instruments.append("quality_control_check")
-
-    payload = _build_api_payload(config, instruments, filter_logic)
-    raw = _post_api(config, payload)
-
-    # Fallback fetch without filter if first attempt was empty
-    if not raw and filter_logic:
-        logger.warning("Fetch returned no data — retrying without filter")
-        fb_payload = _build_api_payload(
-            config,
-            [i for i in instruments if i != "quality_control_check"],
-            filter_logic=None,
-        )
-        raw = _post_api(config, fb_payload)
-
-    if not raw:
-        logger.warning("No data returned from REDCap")
-        return pd.DataFrame(), 0
-
-    df = _validate_and_map(raw)
-    df = _apply_ptid_filter(df, config)
-
-    # Optional save (audit trail)
-    if output_path and not df.empty:
-        dt = date_tag or ""
-        tt = time_tag or ""
-        out_dir = Path(output_path) / "Data_Fetched"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        csv_path = out_dir / f"ETL_ProcessedData_{dt}_{tt}.csv"
-        df.to_csv(csv_path, index=False)
-        logger.debug("Saved ETL output: %s (%d records)", csv_path, len(df))
-
-    logger.info("Fetched %d records in %.1fs", len(df), time.time() - t0)
-    return df, len(df)
 
 
 def fetch_report_data(
@@ -151,31 +95,6 @@ def _build_report_payload(config: QCConfig) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _build_api_payload(
-    config: QCConfig, instruments: list[str], filter_logic: str | None
-) -> dict[str, Any]:
-    """Build the REDCap API POST payload."""
-    payload: dict[str, Any] = {
-        "token": config.api_token,
-        "content": "record",
-        "format": "json",
-        "type": "flat",
-        "rawOrLabel": "raw",
-        "rawOrLabelHeaders": "raw",
-        "exportCheckboxLabel": "false",
-        "exportSurveyFields": "false",
-        "exportDataAccessGroups": "false",
-        "returnFormat": "json",
-    }
-    if instruments:
-        payload["forms"] = ",".join(instruments)
-    if config.events:
-        payload["events"] = ",".join(config.events)
-    if filter_logic:
-        payload["filterLogic"] = filter_logic
-    return payload
-
-
 def _post_api(config: QCConfig, payload: dict[str, Any]) -> list[dict[str, Any]]:
     """POST to REDCap and return parsed JSON list."""
     if not config.api_url:
@@ -202,6 +121,15 @@ def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:
     missing = [f for f in REQUIRED_FIELDS if f not in df.columns]
     if missing:
         raise ValueError(f"Missing required fields: {', '.join(missing)}")
+    
+    # Add packet field with default value if missing from REDCap export
+    if "packet" not in df.columns:
+        logger.warning(
+            "packet field missing from REDCap report. Adding default value 'I'. "
+            "To fix this: add the 'packet' field to your REDCap report configuration."
+        )
+        df["packet"] = "I"  # Default to Initial Visit
+    
     return df
 
 
@@ -214,14 +142,3 @@ def _apply_ptid_filter(df: pd.DataFrame, config: QCConfig) -> pd.DataFrame:
     df = df[df["ptid"].isin(targets)].reset_index(drop=True)
     logger.info("PTID filter: %d → %d records", before, len(df))
     return df
-
-
-def _get_filter_logic(config: QCConfig) -> str | None:
-    """Return REDCap filterLogic string based on mode."""
-    mapping = {
-        "complete_events": complete_events_with_incomplete_qc_filter_logic,
-        "complete_visits": complete_events_with_incomplete_qc_filter_logic,
-        "complete_instruments": qc_filterer_logic,
-        "none": None,
-    }
-    return mapping.get(config.mode, qc_filterer_logic)

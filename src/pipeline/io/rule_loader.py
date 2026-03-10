@@ -16,8 +16,6 @@ from .rule_pool import get_pool, reset_pool
 
 logger = get_logger(__name__)
 
-_packet_cache: dict[str, dict] = {}
-
 _VALID_PACKETS = {"I", "I4", "F"}
 
 # ---------------------------------------------------------------------------
@@ -73,12 +71,10 @@ def _resolve_namespace(record: dict, instrument_name: str) -> str | None:
 def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
     """Load all JSON rule files for a packet directory, merge into flat variable->rules dict.
 
-    Handles caching per packet. Returns {variable_name: {rule_dict}} for all
-    instruments in that packet.
+    Returns {variable_name: {rule_dict}} for all instruments in that packet.
+    No caching - rules are loaded fresh each time.
     """
     packet = _validate_packet(packet)
-    if packet in _packet_cache:
-        return _packet_cache[packet]
 
     cfg = _get_config(config)
     rules_path = cfg.get_rules_path_for_packet(packet)
@@ -90,7 +86,6 @@ def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
     rule_files = sorted(rules_dir.glob("*.json"))
     if not rule_files:
         logger.warning("No rule files found in %s", rules_dir)
-        _packet_cache[packet] = {}
         return {}
 
     merged: dict[str, Any] = {}
@@ -111,7 +106,6 @@ def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
     logger.debug(
         "Loaded %d rules for packet %s from %d files", len(merged), packet, len(rule_files)
     )
-    _packet_cache[packet] = merged
     return merged
 
 
@@ -151,9 +145,8 @@ def get_rules_for_record(
 
 
 def clear_cache() -> None:
-    """Reset the module-level cache and pool state."""
+    """Reset the module-level packet tracking and pool state."""
     global _current_loaded_packet
-    _packet_cache.clear()
     _current_loaded_packet = None
     reset_pool()
-    logger.debug("Rule loader cache cleared")
+    logger.debug("Rule loader state cleared")

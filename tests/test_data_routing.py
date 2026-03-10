@@ -92,12 +92,14 @@ class TestLoadRulesForPacket:
     def test_caches_result(self, mock_config):
         rules1 = load_rules_for_packet("I", config=mock_config)
         rules2 = load_rules_for_packet("I", config=mock_config)
-        assert rules1 is rules2
+        # Returns new dict each time (safe immutable behavior), but values are equal
+        assert rules1 == rules2
 
     def test_case_insensitive_packet(self, mock_config):
         rules_lower = load_rules_for_packet("i", config=mock_config)
         rules_upper = load_rules_for_packet("I", config=mock_config)
-        assert rules_lower is rules_upper
+        # Returns new dict each time (safe immutable behavior), but values are equal
+        assert rules_lower == rules_upper
 
     def test_invalid_packet_raises(self, mock_config):
         with pytest.raises(ValueError, match="Invalid packet"):

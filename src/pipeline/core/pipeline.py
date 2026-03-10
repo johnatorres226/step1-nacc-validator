@@ -70,7 +70,7 @@ def run_pipeline(
         prepare_instrument_data_cache,
         preprocess_cast_types,
     )
-    from ..core.validation_utils import build_validation_log, find_complete_visits
+    from ..core.validation_utils import build_validation_log
     from ..io.reports import (
         export_data_fetched,
         export_error_report,
@@ -78,7 +78,7 @@ def run_pipeline(
         export_validation_logs,
     )
     from ..reports.report_pipeline import validate_data
-    from .fetcher import fetch_redcap_data
+    from .fetcher import fetch_report_data
 
     pipeline_start = time.time()
 
@@ -102,7 +102,11 @@ def run_pipeline(
     try:
         # ── Stage 1: Data Fetch ───────────────────────────────────────────
         t0 = time.time()
-        data_df, records_fetched = fetch_redcap_data(config, output_dir, date_tag, time_tag)
+        
+        # Use report-based fetch (pre-filtered data from REDCap report)
+        logger.info("Fetching data from REDCap report %s", config.report_id)
+        data_df, records_fetched = fetch_report_data(config, output_dir, date_tag, time_tag)
+            
         logger.info("Fetched %d records (%.1fs)", records_fetched, time.time() - t0)
 
         # ── Stage 2: Load Rules ───────────────────────────────────────────
@@ -110,7 +114,7 @@ def run_pipeline(
         from ..io.rule_loader import clear_cache
         from ..io.rule_pool import get_pool
 
-        # Clear any stale cache from previous runs
+        # Clear packet isolation state and reset pool for fresh run
         clear_cache()
 
         pool = get_pool(config)
@@ -136,7 +140,7 @@ def run_pipeline(
         logger.info("Primary packet for rules cache: %s", primary_packet)
 
         if len(packets_in_data) > 1:
-            logger.warning(
+            logger.info(
                 "Multiple packets in data: %s — per-record packet isolation "
                 "will be used during validation",
                 ", ".join(sorted(packets_in_data)),
@@ -159,21 +163,6 @@ def run_pipeline(
 
         # ── Stage 3: Data Preparation ─────────────────────────────────────
         t0 = time.time()
-
-        if config.mode == "complete_visits" and not data_df.empty:
-            cv_df, cv_tuples = find_complete_visits(
-                data_df,
-                config.instruments,
-                config.primary_key_field,
-            )
-            if not cv_df.empty:
-                idx = data_df.set_index([config.primary_key_field, "redcap_event_name"]).index
-                cv_idx = cv_df.set_index([config.primary_key_field, "redcap_event_name"]).index
-                data_df = data_df[idx.isin(cv_idx)].copy()
-                logger.info("Filtered to %d complete visits", len(cv_df))
-            else:
-                logger.warning("No complete visits found — nothing to validate")
-                data_df = pd.DataFrame()
 
         instrument_cache: dict[str, pd.DataFrame] = {}
         if not data_df.empty:

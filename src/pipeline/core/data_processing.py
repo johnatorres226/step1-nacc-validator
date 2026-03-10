@@ -4,10 +4,7 @@ from typing import Any
 
 import pandas as pd
 
-from ..config.config_manager import (
-    get_completion_columns,
-    get_core_columns,
-)
+from ..config.config_manager import get_core_columns
 from ..logging.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -89,7 +86,6 @@ def _prepare_single_instrument(
     core_cols = get_core_columns()
     cols: list[str] = [c for c in core_cols if c in data_df.columns]
     cols += [v for v in variables if v in data_df.columns]
-    cols += [c for c in get_completion_columns() if c in data_df.columns]
 
     # Always include discriminant column for C2/C2T instrument
     if instrument == "c2c2t_neuropsychological_battery_scores":

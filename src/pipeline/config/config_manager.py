@@ -83,18 +83,6 @@ namespace_to_instrument = {
 
 uds_events = ["udsv4visit_arm_1"]
 
-# =============================================================================
-# DATA FETCHING AND FILTERING
-# =============================================================================
-
-complete_instruments_vars = [f"{inst}_complete" for inst in instruments]
-complete_events_with_incomplete_qc_filter_logic = (
-    "("
-    + " and ".join(f"[{inst}]=2" for inst in complete_instruments_vars)
-    + ') and ([qc_status_complete] = 0 or [qc_status_complete] = "")'
-)
-qc_filterer_logic = '[qc_status_complete] = 0 or [qc_status_complete] = ""'
-
 
 # =============================================================================
 # JSON SCHEMA TO CERBERUS MAPPING
@@ -342,9 +330,3 @@ def get_core_columns() -> list[str]:
     """Returns the core REDCap columns."""
     config = get_config()
     return [config.primary_key_field, "redcap_event_name", "packet"]
-
-
-def get_completion_columns() -> list[str]:
-    """Returns the completion columns for all instruments."""
-    config = get_config()
-    return [f"{inst}_complete" for inst in config.instruments]

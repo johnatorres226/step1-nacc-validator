@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Data Fetching System is a modern, robust ETL (Extract, Transform, Load) pipeline designed for retrieving and processing REDCap data for the UDSv4 Quality Control Validator. The system implements a clean, object-oriented architecture that follows a linear pipeline pattern: fetch → validate → transform → save. It provides comprehensive error handling, data validation, filtering capabilities, and performance optimization features.
+The Data Fetching System retrieves pre-filtered quality control data from REDCap using report-based exports. Rather than fetching full datasets and applying complex ETL transformations, the system leverages REDCap's built-in report filtering capabilities to obtain ready-to-validate data directly. The architecture follows a streamlined pattern: fetch report → validate fields → filter PTIDs → save. This approach eliminates the need for instrument selection logic, complex filtering operations, and data transformations, resulting in faster execution and simpler maintenance.
 
 ## Architecture
 
@@ -10,573 +10,588 @@ The Data Fetching System is a modern, robust ETL (Extract, Transform, Load) pipe
 
 The system is built on the following principles:
 
-1. **Linear Pipeline Pattern**: Clear separation of concerns with distinct stages
-2. **Object-Oriented Design**: Modular components with single responsibilities
-3. **Robust Error Handling**: Comprehensive error detection and recovery mechanisms
-4. **Data Integrity**: Extensive validation at each pipeline stage
-5. **Performance Optimization**: Efficient data processing and memory management
-6. **Configuration-Driven**: Behavior controlled through centralized configuration
+1. **Simplicity First**: Leverage REDCap's filtering to eliminate complex transformation logic
+2. **Pre-filtered Data**: Reports are configured in REDCap to provide QC-ready data
+3. **Minimal Processing**: Focus on validation and PTID filtering only
+4. **Robust Error Handling**: Comprehensive error detection and clear messaging
+5. **Data Integrity**: Field validation ensures required data is present
+6. **Configuration-Driven**: Report selection and behavior controlled through configuration
 
 ### Core Components
 
-1. **RedcapETLPipeline**: Main orchestrator class that coordinates the entire ETL process
-2. **RedcapApiClient**: Handles REDCap API communication with authentication and error handling
-3. **DataValidator**: Performs data validation and quality checks
-4. **DataTransformer**: Applies data transformations based on business rules
-5. **DataSaver**: Manages data persistence with consistent naming conventions
-6. **FilterLogicManager**: Determines appropriate REDCap filtering logic
-7. **ETLContext**: Encapsulates execution context and metadata
+1. **fetch_report_data()**: Main function that orchestrates report data retrieval
+2. **_build_report_payload()**: Constructs REDCap API request for report export
+3. **_post_api()**: Handles REDCap API communication with error handling
+4. **_validate_and_map()**: Validates required fields and maps record_id to ptid
+5. **_apply_ptid_filter()**: Filters data for specific participant IDs when configured
 
 ## Data Structures
 
-### ETLContext
+### Configuration Requirements
 
-The `ETLContext` class encapsulates execution metadata and configuration:
+The system requires the following configuration values:
 
 ```python
-@dataclass
-class ETLContext:
-    config: QCConfig
-    run_date: str
-    time_stamp: str
-    output_path: Optional[Path] = None
+config.report_id      # REDCap report ID (required)
+config.api_url       # REDCap API endpoint URL
+config.api_token     # REDCap API authentication token
+config.timeout       # API request timeout in seconds
+config.ptid_list     # Optional list of PTIDs to filter (None = all)
 ```
 
-**Purpose**: Provides consistent execution context across all pipeline components, ensuring proper timestamping and path management.
+### Required Data Fields
 
-### ETLResult
-
-The `ETLResult` class encapsulates pipeline execution results:
+After fetching, the system validates presence of:
 
 ```python
-@dataclass
-class ETLResult:
-    data: pd.DataFrame
-    records_processed: int
-    execution_time: float
-    saved_files: List[Path]
+REQUIRED_FIELDS = ["ptid", "redcap_event_name"]
 ```
 
-**Purpose**: Provides structured access to pipeline outputs and execution metadata for monitoring and reporting.
+These fields are essential for downstream QC validation processes.
 
-### DataContract
+## REDCap Report-Based Export
 
-The `DataContract` class defines expected data structure and validation rules:
+### fetch_report_data() Function
+
+The `fetch_report_data()` function is the primary entry point for data retrieval:
 
 ```python
-class DataContract:
-    REQUIRED_FIELDS = ['ptid', 'redcap_event_name']
+def fetch_report_data(
+    config: QCConfig,
+    output_path: Path | None = None,
+    date_tag: str | None = None,
+    time_tag: str | None = None,
+) -> tuple[pd.DataFrame, int]:
+    """Fetch data from a pre-configured REDCap report.
     
-    @staticmethod
-    def validate_required_fields(df: pd.DataFrame) -> List[str]:
-        # Validation logic
+    Returns (dataframe, records_processed).
+    """
 ```
 
-**Purpose**: Ensures data integrity by defining and enforcing required data structure contracts.
+#### Execution Flow
 
-## REDCap API Integration
+1. **Validation**: Ensures `report_id` is configured
+2. **Payload Construction**: Builds REDCap API report export request
+3. **API Request**: Posts to REDCap and receives JSON data
+4. **Data Validation**: Validates required fields and maps columns
+5. **PTID Filtering**: Applies participant ID filtering if configured
+6. **Optional Save**: Saves fetched data to CSV for audit trail
+7. **Return**: Returns DataFrame and record count
 
-### RedcapApiClient
+### _build_report_payload() Function
 
-The `RedcapApiClient` class manages all REDCap API interactions:
-
-#### Authentication and Session Management
-
-```python
-class RedcapApiClient:
-    def __init__(self, config: QCConfig):
-        self.config = config
-        self.session = requests.Session()
-        self.session.headers.update({
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
-        })
-```
-
-#### API Request Handling
-
-The client implements robust error handling for various failure scenarios:
-
-1. **Timeout Handling**: Configurable timeout with clear error messages
-2. **Network Errors**: Graceful handling of connection issues
-3. **HTTP Errors**: Proper handling of HTTP status codes
-4. **JSON Parsing**: Validation of API response format
-5. **Empty Responses**: Appropriate handling of empty result sets
-
-#### Security Considerations
-
-- **Token Management**: Secure handling of REDCap API tokens
-- **Session Management**: Proper session initialization and cleanup
-- **SSL/TLS**: Secure communication with REDCap servers
-- **Error Sanitization**: Preventing sensitive data exposure in error messages
-
-## API Payload Construction
-
-### Payload Building Process
-
-The `_build_api_payload` method constructs REDCap API requests with the following parameters:
+Constructs the REDCap API payload for report export:
 
 ```python
-def _build_api_payload(self, instruments: List[str], filter_logic: Optional[str]) -> Dict[str, Any]:
-    payload = {
-        'token': self.config.api_token,
-        'content': 'record',
-        'format': 'json',
-        'type': 'flat',
-        'rawOrLabel': 'raw',
-        'rawOrLabelHeaders': 'raw',
-        'exportCheckboxLabel': 'false',
-        'exportSurveyFields': 'false',
-        'exportDataAccessGroups': 'false',
-        'returnFormat': 'json',
+def _build_report_payload(config: QCConfig) -> dict[str, Any]:
+    """Build the REDCap API POST payload for report export."""
+    return {
+        "token": config.api_token,
+        "content": "report",               # Export report content type
+        "report_id": config.report_id,     # Specific report to export
+        "format": "json",                  # JSON response format
+        "rawOrLabel": "raw",               # Use raw coded values
+        "rawOrLabelHeaders": "raw",        # Use variable names as headers
+        "exportCheckboxLabel": "false",    # Export checkbox as 0/1
+        "returnFormat": "json",            # JSON return format
     }
 ```
 
-### Payload Parameters Explained
+#### Payload Parameters Explained
 
-#### Core Parameters
+- **content**: Set to `"report"` to export a pre-configured REDCap report
+- **report_id**: The numeric ID of the report configured in REDCap
+- **format**: `"json"` for structured data format
+- **rawOrLabel**: `"raw"` exports coded values (1, 2, etc.) instead of labels
+- **rawOrLabelHeaders**: `"raw"` uses variable names instead of field labels
+- **exportCheckboxLabel**: `"false"` returns checkbox values as 0/1 rather than labels
+- **returnFormat**: `"json"` specifies JSON response format
 
-- **token**: REDCap API authentication token from configuration
-- **content**: Set to 'record' to export data records
-- **format**: 'json' for structured data format
-- **type**: 'flat' for flattened data structure suitable for analysis
+### API Communication: _post_api() Function
 
-#### Data Format Parameters
-
-- **rawOrLabel**: 'raw' to export raw coded values rather than labels
-- **rawOrLabelHeaders**: 'raw' to use variable names as column headers
-- **exportCheckboxLabel**: 'false' to export checkbox values as 0/1 rather than labels
-- **exportSurveyFields**: 'false' to exclude survey metadata fields
-- **exportDataAccessGroups**: 'false' to exclude data access group information
-- **returnFormat**: 'json' for JSON response format
-
-#### Conditional Parameters
-
-- **forms**: Comma-separated list of instruments/forms to export
-- **events**: Comma-separated list of REDCap events to include
-- **filterLogic**: REDCap filter logic for targeted data retrieval
-
-### Instrument Selection Logic
-
-The system determines which instruments to include in the API request:
-
-1. **Base Instruments**: Starts with configured instruments from `config.instruments`
-2. **Quality Control Form**: Adds 'quality_control_check' form when filtering is applied
-3. **Dynamic Expansion**: May include additional forms based on processing requirements
-
-### Filter Logic Application
-
-The system applies filter logic based on configuration mode:
-
-- **complete_events**: Fetches complete events that haven't been QC'd
-- **complete_visits**: Same as complete_events (alias)
-- **none**: No filtering (fetches all records)
-
-## Data Validation and Processing
-
-### DataValidator Class
-
-The `DataValidator` handles data validation and initial processing:
-
-#### Validation Process
-
-1. **Empty Data Check**: Validates that data was returned from REDCap
-2. **DataFrame Conversion**: Converts JSON response to pandas DataFrame
-3. **Column Mapping**: Maps REDCap fields to expected column names
-4. **Required Field Validation**: Ensures critical fields are present
-5. **Data Type Validation**: Validates data types and formats
-
-#### Column Mapping Logic
+Handles the actual HTTP request to REDCap:
 
 ```python
-def _handle_column_mapping(df: pd.DataFrame) -> pd.DataFrame:
-    # Map record_id to ptid if needed
-    if 'record_id' in df.columns and 'ptid' not in df.columns:
-        df = df.rename(columns={'record_id': 'ptid'})
-        
-    # Validate critical fields
-    if 'ptid' not in df.columns:
-        raise ValueError("Critical error: 'ptid' column missing from REDCap data")
+def _post_api(config: QCConfig, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """POST to REDCap and return parsed JSON list."""
+    try:
+        resp = requests.post(config.api_url, data=payload, timeout=config.timeout)
+        resp.raise_for_status()
+        data = resp.json()
+        return data if data else []
+    except requests.exceptions.Timeout:
+        raise RuntimeError(f"API request timed out after {config.timeout}s")
+    except requests.exceptions.RequestException as exc:
+        text = getattr(getattr(exc, "response", None), "text", None)
+        raise RuntimeError(f"REDCap API request failed: {text or exc!s}")
+    except (ValueError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Failed to parse JSON response: {exc!s}")
 ```
 
 #### Error Handling
 
+The API client handles several error scenarios:
+
+1. **Timeout Errors**: Clear message when request exceeds configured timeout
+2. **Network Errors**: Connection failures and HTTP errors
+3. **Authentication Errors**: Invalid or missing API token
+4. **JSON Parsing Errors**: Malformed responses from REDCap
+5. **Empty Responses**: Graceful handling when report returns no data
+
+#### Security Considerations
+
+- **Token Security**: API token is passed securely in POST data
+- **SSL/TLS**: HTTPS communication with REDCap servers
+- **Error Sanitization**: API responses are not logged to prevent token exposure
+- **Session Management**: Each request is independent, no persistent sessions
+
+## Data Validation and Column Mapping
+
+### _validate_and_map() Function
+
+After receiving data from REDCap, the system validates structure and maps columns:
+
+```python
+def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:
+    """Convert raw records to DataFrame, rename record_id → ptid, validate."""
+    df = pd.DataFrame(raw)
+    
+    # Map record_id to ptid for consistency
+    if "record_id" in df.columns and "ptid" not in df.columns:
+        df = df.rename(columns={"record_id": "ptid"})
+    
+    # Validate required fields
+    missing = [f for f in REQUIRED_FIELDS if f not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required fields: {', '.join(missing)}")
+    
+    return df
+```
+
+#### Validation Process
+
+1. **DataFrame Conversion**: Converts JSON response to pandas DataFrame
+2. **Column Mapping**: Maps `record_id` to `ptid` if needed (REDCap standard field)
+3. **Required Field Check**: Ensures `ptid` and `redcap_event_name` are present
+4. **Error Reporting**: Provides clear error message listing missing fields
+
+#### Column Mapping Logic
+
+The system expects participant ID to be in a `ptid` column, but REDCap exports may use `record_id`. The validation function automatically handles this mapping to ensure consistency with downstream validation processes.
+
+### Error Handling
+
 The validator implements strict error handling:
 
-- **Missing Critical Fields**: Immediate failure if required fields are absent
-- **Data Type Mismatches**: Clear error messages for type validation failures
-- **Structural Issues**: Detection and reporting of data structure problems
+- **Missing Critical Fields**: Immediate failure with clear error message
+- **Empty DataFrame**: Handled gracefully, returns empty DataFrame
+- **Malformed Data**: JSON parsing errors are caught by `_post_api()`
 
-## Data Transformation
+## PTID Filtering
 
-### DataTransformer Class
+### _apply_ptid_filter() Function
 
-The `DataTransformer` applies business logic transformations to the data:
-
-#### Transformation Types
-
-1. **Instrument Subset Transformation**: Nullifies data for incomplete instruments
-2. **PTID Filtering**: Filters data for specific participant IDs
-3. **Basic Filtering**: Applies general filtering rules
-
-#### Instrument Subset Logic
-
-For the 'complete_instruments' mode, the transformer:
-
-1. **Loads Validation Rules**: Retrieves rule sets for each instrument
-2. **Maps Variables**: Creates instrument-to-variables mapping
-3. **Checks Completion Status**: Examines completion variables for each instrument
-4. **Nullifies Incomplete Data**: Sets incomplete instrument data to null values
+When configuration specifies a list of participant IDs to process, the system filters data accordingly:
 
 ```python
-for instrument in instrument_list:
-    completion_var = f"{instrument}_complete"
+def _apply_ptid_filter(df: pd.DataFrame, config: QCConfig) -> pd.DataFrame:
+    """Filter to specific PTIDs if config.ptid_list is set."""
+    if not config.ptid_list or "ptid" not in df.columns:
+        return df
     
-    if (completion_var in row and 
-        pd.notna(row[completion_var]) and 
-        str(row[completion_var]) != '2'):
-        
-        # Nullify all variables for incomplete instruments
-        instrument_vars = instrument_to_vars_map.get(instrument, [])
-        for var in instrument_vars:
-            if var in transformed_df.columns:
-                transformed_df.at[index, var] = pd.NA
+    before = len(df)
+    targets = [str(p) for p in config.ptid_list]
+    df = df[df["ptid"].isin(targets)].reset_index(drop=True)
+    
+    logger.info("PTID filter: %d → %d records", before, len(df))
+    return df
 ```
 
-#### PTID Filtering
+#### Filtering Process
 
-When a PTID list is provided in configuration:
+1. **Check Configuration**: Only activates if `config.ptid_list` is set
+2. **Column Validation**: Verifies `ptid` column exists in data
+3. **Type Conversion**: Converts PTIDs to strings for consistent comparison
+4. **Filtering**: Retains only records matching the PTID list
+5. **Reset Index**: Resets DataFrame index after filtering
+6. **Logging**: Reports before/after record counts
 
-1. **Validation**: Ensures PTID column exists in data
-2. **Type Conversion**: Converts PTID list to string format for matching
-3. **Filtering**: Retains only records matching the PTID list
-4. **Logging**: Reports filtering statistics
+#### Use Cases
 
-## Filter Logic Management
+PTID filtering is useful for:
 
-### FilterLogicManager Class
+- **Targeted QC**: Processing specific participants for review
+- **Testing**: Validating changes with a subset of data
+- **Re-processing**: Re-running QC for specific participants
+- **Troubleshooting**: Isolating problematic records for investigation
 
-The `FilterLogicManager` determines appropriate REDCap filter logic based on configuration:
+### Configuration
 
-#### Mode-Based Logic Selection
+PTID filtering is configured via:
 
 ```python
-def get_filter_logic(config: QCConfig) -> Optional[str]:
-    mode_filters = {
-        'complete_events': complete_events_with_incomplete_qc_filter_logic,
-        'complete_visits': complete_events_with_incomplete_qc_filter_logic,
-        'complete_instruments': qc_filterer_logic,
-        'none': None
-    }
+# config.yaml or environment
+PTID_LIST = ["001", "002", "003"]
 ```
 
-#### Filter Logic Rationale
-
-Each filter logic serves a specific purpose:
-
-- **complete_events_with_incomplete_qc_filter_logic**: Selects fully completed visits that haven't undergone quality control review
-- **qc_filterer_logic**: Focuses on records requiring quality control attention
-- **None**: Retrieves all available data without filtering
-
-### Filter Logic Construction
-
-The filter logic strings are constructed in the configuration manager:
-
-#### Complete Events Filter
-
-```python
-complete_events_with_incomplete_qc_filter_logic = (
-    "(" +
-    " and ".join(f"[{inst}]=2" for inst in complete_instruments_vars) +
-    ") and ([qc_status_complete] = 0 or [qc_status_complete] = \"\")"
-)
-```
-
-This filter ensures:
-
-1. All instruments are marked as complete (status = 2)
-2. Quality control has not been completed (status = 0 or empty)
-
-#### QC Status Filter
-
-```python
-qc_filterer_logic = '[qc_status_complete] = 0 or [qc_status_complete] = ""'
-```
-
-This filter targets records needing quality control review.
+Or left empty/None to process all records from the report.
 
 ## Data Persistence
 
-### DataSaver Class
+### Optional Audit Trail Saving
 
-The `DataSaver` manages data persistence with consistent naming and organization:
+The `fetch_report_data()` function optionally saves fetched data to CSV:
+
+```python
+if output_path and not df.empty:
+    dt = date_tag or ""
+    tt = time_tag or ""
+    out_dir = Path(output_path) / "Data_Fetched"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = out_dir / f"Report_Data_{config.report_id}_{dt}_{tt}.csv"
+    df.to_csv(csv_path, index=False)
+    logger.debug("Saved report data: %s (%d records)", csv_path, len(df))
+```
 
 #### File Organization
 
-1. **Directory Structure**: Creates 'Data_Fetched' subdirectory under output path
-2. **Naming Convention**: Uses timestamp-based naming for uniqueness
-3. **Format**: Saves data in CSV format for broad compatibility
+1. **Directory Structure**: Creates `Data_Fetched` subdirectory under output path
+2. **Naming Convention**: `Report_Data_{report_id}_{date}_{time}.csv`
+3. **Format**: CSV for broad compatibility and human readability
 
 #### Naming Convention
 
-```python
-filename = f"{filename_prefix}_{self.context.run_date}_{self.context.time_stamp}.csv"
+Example: `Report_Data_12345_14JAN2026_183627.csv`
+
+Components:
+- `Report_Data`: Fixed prefix identifying report-based fetch
+- `12345`: The REDCap report ID
+- `14JAN2026`: Date tag (DDMMMYYYY format, uppercase)
+- `183627`: Time tag (HHMMSS format)
+
+#### Purpose
+
+The saved data serves as:
+- **Audit Trail**: Record of exactly what data was fetched
+- **Debugging**: Compare fetched data to validation results
+- **Reproducibility**: Re-run validation with same input data
+- **Compliance**: Documentation trail for quality control processes
+
+## REDCap Report Configuration
+
+### Report Setup
+
+The system requires a pre-configured report in REDCap with:
+
+1. **Filtering Logic**: Report should include appropriate filters (e.g., complete events without QC)
+2. **Fields Selection**: Include all variables needed for validation
+3. **Event Selection**: Include relevant REDCap events
+4. **Sort Order**: Optional sorting for consistent data ordering
+
+### Report ID Configuration
+
+Set the report ID in configuration:
+
+```yaml
+# config.yaml
+REDCAP_REPORT_ID: "12345"
 ```
 
-Example: `ETL_ProcessedData_02SEP2025_143022.csv`
+Or via environment variable:
 
-#### File Management
-
-- **Directory Creation**: Automatically creates necessary directories
-- **Conflict Resolution**: Timestamp-based naming prevents file conflicts
-- **Path Tracking**: Maintains list of saved files for reporting
-- **Error Handling**: Graceful handling of file system errors
-
-## ETL Pipeline Orchestration
-
-### RedcapETLPipeline Class
-
-The main `RedcapETLPipeline` class orchestrates the entire ETL process:
-
-#### Pipeline Execution Flow
-
-```python
-def run(self, output_path=None, date_tag=None, time_tag=None) -> ETLResult:
-    # 1. Initialize context and components
-    self._initialize_components(output_path, date_tag, time_tag)
-    
-    # 2. Fetch data from REDCap
-    raw_data = self._fetch_data()
-    
-    # 3. Validate and process data
-    validated_data = self._validate_data(raw_data)
-    
-    # 4. Transform data based on configuration
-    transformed_data = self._transform_data(validated_data)
-    
-    # 5. Save processed data
-    saved_files = self._save_data(transformed_data)
-    
-    return ETLResult(...)
+```bash
+export REDCAP_REPORT_ID=12345
 ```
 
-#### Component Initialization
+### Advantages of Report-Based Fetching
 
-The pipeline initializes all components with proper context:
-
-1. **ETLContext**: Creates execution context with timestamps
-2. **RedcapApiClient**: Initializes API client with configuration
-3. **DataTransformer**: Creates transformer with context
-4. **DataSaver**: Sets up data persistence handler
-
-#### Error Handling Strategy
-
-The pipeline implements comprehensive error handling:
-
-1. **Stage Isolation**: Errors in one stage don't corrupt others
-2. **Context Preservation**: Error messages include execution context
-3. **Resource Cleanup**: Proper cleanup of resources on failure
-4. **Logging Integration**: Detailed error logging for debugging
-
-## Fallback Mechanisms
-
-### Data Fetch Fallback
-
-The system implements intelligent fallback when initial data fetch fails:
-
-```python
-try:
-    raw_data = self.api_client.fetch_data(payload)
-    if not raw_data and filter_logic:
-        logger.info("Attempting fallback fetch without filters")
-        fallback_payload = self._build_api_payload(
-            [inst for inst in fetch_instruments if inst != "quality_control_check"],
-            None
-        )
-        raw_data = self.api_client.fetch_data(fallback_payload)
-except Exception as e:
-    logger.error(f"Data fetch failed: {str(e)}")
-    raise
-```
-
-#### Fallback Logic
-
-1. **Primary Attempt**: Uses full configuration with filters
-2. **Fallback Trigger**: Activates when primary attempt returns no data
-3. **Filter Removal**: Removes filtering logic for broader data retrieval
-4. **Form Adjustment**: Removes quality control form from fallback request
-5. **Success Reporting**: Logs successful fallback operations
+1. **Simplified Code**: No complex filtering logic in application
+2. **REDCap Native**: Leverage REDCap's tested filtering capabilities
+3. **Performance**: REDCap filters data at source, reducing transfer size
+4. **Maintainability**: Update filters in REDCap without code changes
+5. **Flexibility**: Different reports for different QC scenarios
+6. **Testing**: Easy to test with different report configurations
 
 ## Performance Considerations
 
-### Memory Management
-
-1. **DataFrame Operations**: Efficient pandas operations for large datasets
-2. **Memory Monitoring**: Tracking of memory usage during processing
-3. **Garbage Collection**: Proper cleanup of large data structures
-4. **Streaming**: Potential for streaming large datasets
-
 ### Network Optimization
 
-1. **Session Reuse**: HTTP session reuse for multiple requests
-2. **Timeout Configuration**: Configurable timeouts for different network conditions
-3. **Retry Logic**: Built-in retry mechanisms for transient failures
-4. **Compression**: Support for compressed data transfer
+1. **Single Request**: One API call to fetch pre-filtered report data
+2. **Timeout Configuration**: Configurable timeout via `config.timeout`
+3. **Efficient Payload**: Minimal parameters in API request
+4. **HTTP POST**: Uses POST method for secure, efficient data transfer
+
+### Memory Management
+
+1. **DataFrame Operations**: Efficient pandas operations for data handling
+2. **Minimal Processing**: No complex transformations reduce memory footprint
+3. **Streaming**: Data fetched in single batch from report
+4. **Garbage Collection**: pandas automatically manages DataFrame memory
 
 ### Processing Efficiency
 
-1. **Vectorized Operations**: Using pandas vectorized operations where possible
-2. **Concurrent Processing**: Multi-threading support for parallel processing
-3. **Lazy Loading**: Deferred loading of large rule sets
-4. **Caching**: Intelligent caching of frequently accessed data
+1. **Pre-filtered at Source**: REDCap filters data before transfer
+2. **Direct DataFrame**: Immediate conversion from JSON to DataFrame
+3. **Vectorized Operations**: pandas vectorized filtering for PTID operations
+4. **No Complex Logic**: Elimination of ETL transformations improves speed
+
+### Performance Metrics
+
+Typical performance characteristics:
+
+- **API Request Time**: 2-10 seconds (depends on data size and network)
+- **Validation Time**: <1 second for typical datasets
+- **PTID Filtering**: <1 second (vectorized operations)
+- **Total Fetch Time**: Usually <15 seconds for reports with hundreds of records
 
 ## Integration with Configuration System
 
-### Configuration Dependencies
+### Required Configuration Values
 
-The data fetching system relies heavily on the configuration system:
+The data fetching system requires the following configuration:
 
-#### Core Configuration Elements
+```python
+# Core REDCap API Settings
+config.api_url        # REDCap API endpoint URL
+config.api_token      # API authentication token
+config.timeout        # Request timeout (seconds, default: 300)
 
-1. **API Credentials**: REDCap API token and URL
-2. **Instrument Configuration**: List of instruments and their mappings
-3. **Event Configuration**: REDCap events to process
-4. **Processing Mode**: Determines transformation and filtering behavior
-5. **Output Configuration**: File paths and naming conventions
+# Report Configuration  
+config.report_id      # REDCap report ID to fetch
 
-#### Dynamic Configuration
+# Optional Filtering
+config.ptid_list      # List of PTIDs to filter (None = all records)
 
-The system adapts behavior based on configuration:
+# Output Configuration
+config.output_path    # Base output directory for saved files
+config.mode          # Processing mode (used in output directory naming)
+config.instruments   # List of instruments (used during validation)
+```
 
-1. **Mode-Based Processing**: Different processing logic for different modes
-2. **Filter Selection**: Automatic filter logic selection based on mode
-3. **Instrument Inclusion**: Dynamic instrument list based on requirements
-4. **Path Resolution**: Automatic path resolution and validation
+### Configuration Validation
 
-### Configuration Validation Impact
+Before fetching data, the system validates:
 
-Configuration validation directly affects data fetching:
+1. **API Credentials**: `api_url` and `api_token` must be set
+2. **Report ID**: `report_id` must be configured
+3. **Timeout**: Must be positive integer (default: 300 seconds)
+4. **Output Path**: Must be valid directory path if specified
 
-1. **API Connectivity**: Validates API credentials before attempting requests
-2. **Path Validation**: Ensures output paths are accessible
-3. **Instrument Validation**: Verifies instrument-to-rule mappings
-4. **Performance Limits**: Validates performance-related settings
+### Dynamic Behavior
+
+Configuration affects fetching behavior:
+
+1. **PTID Filter**: If `ptid_list` is set, data is filtered to those PTIDs
+2. **Output Path**: If provided, fetched data is saved to CSV
+3. **Timeout**: Controls how long to wait for REDCap response
+4. **Mode**: Used in output directory naming for organization
 
 ## Logging and Monitoring
 
 ### Logging Strategy
 
-The system implements comprehensive logging:
+The system implements focused logging at key points:
 
 #### Log Levels
 
-1. **DEBUG**: Detailed execution information for troubleshooting
-2. **INFO**: General operational information and progress updates
-3. **WARNING**: Non-critical issues that don't prevent operation
-4. **ERROR**: Critical errors that may cause operation failure
+1. **DEBUG**: Detailed information (saved file paths, timing details)
+2. **INFO**: Operational progress (fetch start, record counts, completion)
+3. **WARNING**: Non-critical issues (empty results, missing optional fields)
+4. **ERROR**: Critical failures (API errors, validation failures)
 
-#### Log Content
+#### Key Log Messages
 
-1. **Operation Progress**: Start/completion of major operations
-2. **Data Statistics**: Record counts, processing times, file sizes
-3. **Configuration Details**: Applied settings and parameters
-4. **Error Details**: Comprehensive error information with context
+**Fetch Start:**
+```
+INFO: Fetching data from REDCap report 12345
+```
 
-#### Performance Metrics
+**Fetch Complete:**
+```
+INFO: Fetched 247 records from report 12345 in 8.3s
+```
 
-1. **Execution Time**: Total pipeline execution time
-2. **Record Counts**: Input/output record counts at each stage
-3. **Memory Usage**: Peak memory consumption during processing
-4. **API Performance**: Request/response times and success rates
+**PTID Filtering:**
+```
+INFO: PTID filter: 247 → 15 records
+```
+
+**Empty Results:**
+```
+WARNING: No data returned from REDCap report 12345
+```
+
+**Validation Errors:**
+```
+ERROR: Missing required fields: ptid, redcap_event_name
+```
+
+**API Errors:**
+```
+ERROR: REDCap API request failed: Invalid report ID
+```
+
+### Performance Metrics
+
+The system tracks:
+
+1. **Execution Time**: Total time for `fetch_report_data()` call
+2. **Record Counts**: Number of records fetched and after filtering
+3. **Report ID**: Which report was accessed
+4. **File Saved**: Path to saved CSV (if applicable)
 
 ## Error Handling and Recovery
 
 ### Error Categories
 
-The system handles several categories of errors:
+#### Configuration Errors
+
+1. **Missing Report ID**: `ValueError` if `report_id` not configured
+2. **Missing API URL**: `ValueError` if `api_url` not configured
+3. **Invalid Configuration**: Type errors for invalid config values
 
 #### Network Errors
 
-1. **Connection Failures**: Network connectivity issues
-2. **Timeout Errors**: Request timeout scenarios
-3. **Authentication Errors**: Invalid or expired API credentials
-4. **Rate Limiting**: REDCap API rate limit enforcement
+1. **Timeout**: `RuntimeError` after timeout expires (e.g., "API request timed out after 300s")
+2. **Connection Failure**: `RuntimeError` for network connectivity issues
+3. **HTTP Errors**: `RuntimeError` for non-200 HTTP status codes
+4. **Authentication**: API token invalid or missing (REDCap returns error)
 
 #### Data Errors
 
-1. **Empty Results**: No data returned from REDCap
-2. **Invalid Format**: Malformed or unexpected data structure
-3. **Missing Fields**: Required fields absent from data
-4. **Data Type Issues**: Unexpected data types or formats
+1. **Empty Results**: Returns empty DataFrame (logged as WARNING, not error)
+2. **Invalid JSON**: `RuntimeError` for malformed REDCap responses
+3. **Missing Required Fields**: `ValueError` listing missing fields (ptid, redcap_event_name)
+4. **PTID Column Missing**: Gracefully skips PTID filtering if column absent
 
 #### System Errors
 
-1. **File System Errors**: Path or permission issues
-2. **Memory Errors**: Insufficient memory for processing
-3. **Configuration Errors**: Invalid or missing configuration
-4. **Processing Errors**: Errors in data transformation logic
+1. **File System**: Errors creating output directories or saving CSV
+2. **Memory**: pandas errors for extremely large datasets
+3. **Permissions**: File write permission errors
+
+### Error Messages
+
+All errors include clear, actionable messages:
+
+```python
+# Configuration error
+ValueError("REDCAP_REPORT_ID is not configured")
+
+# Network error
+RuntimeError("API request timed out after 300s")
+RuntimeError("REDCap API request failed: Invalid report ID")
+
+# Data validation error
+ValueError("Missing required fields: ptid, redcap_event_name")
+
+# JSON parsing error
+RuntimeError("Failed to parse JSON response: Expecting value: line 1 column 1")
+```
 
 ### Recovery Strategies
 
-#### Automatic Recovery
+#### No Automatic Fallback
 
-1. **Retry Logic**: Automatic retry for transient failures
-2. **Fallback Processing**: Alternative processing paths for common failures
-3. **Graceful Degradation**: Continued operation with reduced functionality
+Unlike the old ETL system, report-based fetching does NOT implement automatic fallback mechanisms. If the report fetch fails, the system raises an error immediately.
 
-#### Manual Recovery
+**Rationale:**
+- Report failures indicate configuration issues that need manual attention
+- No ambiguity about which data is being processed
+- Clearer error reporting for troubleshooting
 
-1. **Error Reporting**: Detailed error information for manual intervention
-2. **Partial Results**: Saving partial results when possible
-3. **Resume Capability**: Ability to resume from failure points
+#### Manual Recovery Steps
+
+1. **Verify Configuration**: Check `report_id`, `api_url`, `api_token`
+2. **Test Report**: Access report in REDCap web interface
+3. **Check Network**: Verify connectivity to REDCap server
+4. **Review REDCap Logs**: Check REDCap for API errors
+5. **Adjust Timeout**: Increase timeout for large reports
 
 ## Testing and Validation
 
 ### Unit Testing
 
-Each component is designed for independent testing:
+Each function is designed for independent testing:
 
-1. **Mock API Responses**: Testing with simulated REDCap responses
-2. **Data Validation Testing**: Comprehensive validation rule testing
-3. **Transformation Testing**: Testing of data transformation logic
-4. **Error Scenario Testing**: Testing error handling paths
+1. **Mock API Responses**: Use `unittest.mock` to simulate REDCap responses
+2. **Payload Validation**: Test `_build_report_payload()` output structure
+3. **Data Validation**: Test `_validate_and_map()` with various data scenarios
+4. **PTID Filtering**: Test `_apply_ptid_filter()` with different configurations
+5. **Error Scenarios**: Test error handling paths with invalid inputs
 
 ### Integration Testing
 
-1. **End-to-End Testing**: Complete pipeline testing with test data
-2. **Configuration Testing**: Testing with various configuration scenarios
-3. **Performance Testing**: Load and stress testing with large datasets
-4. **Error Recovery Testing**: Testing fallback and recovery mechanisms
+1. **End-to-End Testing**: Complete fetch with test report
+2. **Configuration Testing**: Test with various configuration scenarios
+3. **Network Testing**: Test timeout and error handling
+4. **Empty Data Testing**: Test behavior with reports returning no data
 
-### Data Quality Validation
+### Test Data Setup
 
-1. **Schema Validation**: Ensuring output data matches expected schema
-2. **Completeness Checks**: Verifying all expected data is present
-3. **Consistency Validation**: Checking data consistency across pipeline stages
-4. **Business Rule Validation**: Ensuring business logic is correctly applied
+Create test reports in REDCap with:
+
+1. **Small Dataset**: Quick testing with 5-10 records
+2. **Known Data**: Predictable values for validation
+3. **Edge Cases**: Empty fields, special characters, boundary values
+4. **PTID Coverage**: Records covering PTID filter test cases
+
+### Example Test Structure
+
+```python
+from unittest.mock import patch, MagicMock
+from src.pipeline.core.fetcher import fetch_report_data
+
+def test_fetch_report_data():
+    config = MagicMock()
+    config.report_id = "12345"
+    config.api_url = "https://redcap.example.org/api/"
+    config.api_token = "test_token"
+    config.timeout = 30
+    config.ptid_list = None
+    
+    with patch('src.pipeline.core.fetcher._post_api') as mock_post:
+        mock_post.return_value = [
+            {"record_id": "001", "redcap_event_name": "baseline_arm_1"},
+            {"record_id": "002", "redcap_event_name": "baseline_arm_1"},
+        ]
+        
+        df, count = fetch_report_data(config)
+        assert count == 2
+        assert "ptid" in df.columns
+```
 
 ## Best Practices
 
+### REDCap Report Configuration
+
+1. **Filter at Source**: Configure comprehensive filters in REDCap report
+2. **Include All Fields**: Ensure report includes all variables needed for validation
+3. **Test Reports**: Test reports in REDCap web interface before using in code
+4. **Document Reports**: Document report purpose and filtering logic
+5. **Version Control**: Track report configurations with documentation
+
 ### Development Guidelines
 
-1. **Error Handling**: Always implement comprehensive error handling
-2. **Logging**: Log all significant operations and errors
-3. **Configuration**: Use configuration-driven behavior rather than hard-coding
-4. **Testing**: Write tests for all major functionality
+1. **Error Handling**: Always wrap fetch calls in try-except blocks
+2. **Logging**: Use appropriate log levels for different scenarios
+3. **Configuration**: Validate configuration before calling fetch functions
+4. **Testing**: Test with mock data before using live REDCap API
 
 ### Operational Guidelines
 
-1. **Monitoring**: Monitor pipeline execution and performance
-2. **Backup**: Maintain backups of critical configuration and data
-3. **Documentation**: Keep documentation current with code changes
-4. **Security**: Protect API credentials and sensitive data
+1. **Monitor Performance**: Track fetch times and record counts
+2. **Secure Credentials**: Protect API tokens (use environment variables)
+3. **Backup Configuration**: Maintain backup of report configurations
+4. **Documentation**: Document report IDs and their purposes
+5. **Audit Trail**: Keep saved CSV files for troubleshooting
 
 ### Performance Guidelines
 
-1. **Resource Management**: Monitor and optimize resource usage
-2. **Scalability**: Design for growth in data volume
-3. **Efficiency**: Use efficient algorithms and data structures
-4. **Caching**: Implement appropriate caching strategies
+1. **Report Filters**: Use REDCap filters to minimize data transfer
+2. **Timeout Settings**: Set appropriate timeout for report size
+3. **PTID Lists**: Use PTID filtering for targeted processing
+4. **Network**: Ensure stable network connection for large reports
 
 ## Troubleshooting Guide
 
@@ -584,82 +599,159 @@ Each component is designed for independent testing:
 
 #### No Data Retrieved
 
-1. Check REDCap API credentials
-2. Verify filter logic syntax
-3. Confirm instrument and event configuration
-4. Check REDCap server availability
+**Error:** `WARNING: No data returned from REDCap report 12345`
+
+**Possible Causes:**
+1. Report filters too restrictive (no records match)
+2. Report ID incorrect
+3. Report deleted or disabled in REDCap
+4. Insufficient API permissions
+
+**Solutions:**
+1. Check report in REDCap web interface
+2. Verify report ID in configuration
+3. Confirm report returns data in REDCap
+4. Check API token permissions
+
+#### Missing Report ID
+
+**Error:** `ValueError: REDCAP_REPORT_ID is not configured`
+
+**Solution:**
+1. Set `REDCAP_REPORT_ID` in configuration file or environment variable
+2. Verify configuration is loaded correctly
 
 #### Validation Errors
 
-1. Verify required fields are present in REDCap export
-2. Check data type consistency
-3. Validate column mapping logic
-4. Review REDCap export configuration
+**Error:** `ValueError: Missing required fields: ptid`
 
-#### Performance Issues
+**Possible Causes:**
+1. Report doesn't include required fields
+2. REDCap uses `record_id` but mapping failed
+3. Data structure unexpected
 
-1. Monitor memory usage during processing
-2. Check network connectivity and latency
-3. Review timeout configuration
-4. Consider data volume and processing limits
+**Solutions:**
+1. Add required fields to REDCap report
+2. Check report includes `record_id` or `ptid` column
+3. Verify report includes `redcap_event_name` field
 
-#### File System Errors
+#### API Timeout
 
-1. Verify output path permissions
-2. Check available disk space
-3. Validate path configuration
-4. Review file naming conventions
+**Error:** `RuntimeError: API request timed out after 300s`
+
+**Possible Causes:**
+1. Large report with many records
+2. Slow network connection
+3. REDCap server performance issues
+
+**Solutions:**
+1. Increase timeout in configuration: `TIMEOUT = 600`
+2. Optimize report filters to reduce data size
+3. Check REDCap server status
+4. Test during off-peak hours
+
+#### Authentication Errors
+
+**Error:** `RuntimeError: REDCap API request failed: ERROR: You do not have permissions`
+
+**Possible Causes:**
+1. Invalid API token
+2. Token expired or revoked
+3. Insufficient API permissions
+4. Report access restrictions
+
+**Solutions:**
+1. Verify API token is correct and active
+2. Regenerate API token in REDCap
+3. Check API export permissions in REDCap user settings
+4. Verify report is accessible with that token
 
 ### Diagnostic Procedures
 
-#### Configuration Validation
+#### Test Configuration
 
 ```python
-from src.pipeline.config_manager import get_config
+from src.pipeline.config.config_manager import get_config
 
 config = get_config()
-errors = config.validate()
-if errors:
-    for error in errors:
-        print(f"Configuration error: {error}")
+print(f"API URL: {config.api_url}")
+print(f"Report ID: {config.report_id}")
+print(f"Timeout: {config.timeout}")
+print(f"PTID List: {config.ptid_list}")
 ```
 
-#### API Connectivity Testing
+#### Test API Connectivity
 
 ```python
-from src.pipeline.core.fetcher import RedcapApiClient
+from src.pipeline.core.fetcher import _post_api
+from src.pipeline.config.config_manager import get_config
 
-client = RedcapApiClient(config)
+config = get_config()
+
+# Test basic API access
 test_payload = {
     'token': config.api_token,
     'content': 'project',
     'format': 'json'
 }
-response = client.fetch_data(test_payload)
+try:
+    result = _post_api(config, test_payload)
+    print("API connection successful")
+    print(f"Project: {result}")
+except Exception as e:
+    print(f"API connection failed: {e}")
 ```
 
-#### Pipeline Testing
+#### Test Report Fetch
 
 ```python
-from src.pipeline.core.fetcher import RedcapETLPipeline
+from src.pipeline.core.fetcher import fetch_report_data
+from src.pipeline.config.config_manager import get_config
 
-pipeline = RedcapETLPipeline(config)
-result = pipeline.run()
-print(f"Processed {result.records_processed} records in {result.execution_time:.2f} seconds")
+config = get_config()
+
+try:
+    df, count = fetch_report_data(config)
+    print(f"Successfully fetched {count} records")
+    print(f"Columns: {df.columns.tolist()}")
+    print(f"First row:\n{df.head(1)}")
+except Exception as e:
+    print(f"Fetch failed: {e}")
 ```
+
+#### Verify Report in REDCap
+
+1. Log into REDCap web interface
+2. Navigate to **Data Exports, Reports, and Stats**
+3. Find your report by ID
+4. Click **View Report**
+5. Verify data appears as expected
+6. Check export functionality in REDCap UI
 
 ## Future Enhancements
 
-### Planned Improvements
+### Potential Improvements
 
-1. **Streaming Processing**: Support for processing very large datasets
-2. **Advanced Caching**: Intelligent caching of processed data
-3. **Parallel Processing**: Enhanced multi-threading support
-4. **Real-time Monitoring**: Live monitoring and alerting capabilities
+1. **Multiple Reports**: Support fetching from multiple reports in one run
+2. **Report Caching**: Cache report results for faster re-runs during development
+3. **Incremental Fetch**: Fetch only new/changed records since last run
+4. **Retry Logic**: Implement automatic retry for transient network failures
+5. **Progress Reporting**: Live progress updates for large report fetches
+6. **Batch Processing**: Process large reports in batches to reduce memory usage
 
 ### Extensibility Points
 
-1. **Custom Transformers**: Plugin architecture for custom data transformations
-2. **Output Formats**: Support for additional output formats
-3. **Data Sources**: Support for additional data sources beyond REDCap
-4. **Validation Rules**: Dynamic validation rule loading and application
+1. **Custom Validation**: Plugin architecture for additional field validations
+2. **Output Formats**: Support for Parquet, JSON, or other output formats
+3. **Data Transformations**: Optional post-fetch transformation plugins
+4. **Alternative Sources**: Support for fetching from other REDCap endpoints
+5. **Audit Logging**: Enhanced audit trail with detailed operation logs
+
+### Architecture Considerations
+
+The current report-based architecture provides a solid foundation for enhancements:
+
+- **Simplicity**: Easy to extend without complex dependencies
+- **Modularity**: Functions are independent and testable
+- **Configuration**: New features can be configuration-driven
+- **Performance**: Minimal processing overhead allows for optimization

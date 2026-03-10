@@ -49,10 +49,15 @@ class NamespacedRulePool:
     # Excludes ``*_rules_optional.json`` by design.
     _GLOB = "*_rules.json"
 
+    # Known namespace pairs that are expected to have conflicts (e.g., C2/C2T)
+    # These use discriminant variables for dynamic routing
+    _EXPECTED_CONFLICT_PAIRS = frozenset([("c2", "c2t")])
+
     def __init__(self) -> None:
         self._rules: dict[str, RuleEntry] = {}
         self._namespaced: dict[str, dict[str, RuleEntry]] = {}
         self._conflicts: set[str] = set()
+        self._conflict_namespaces: dict[str, set[str]] = {}  # variable -> {namespaces}
         self._loaded_packets: set[str] = set()
 
     # -- Loading ----------------------------------------------------------
@@ -88,13 +93,24 @@ class NamespacedRulePool:
             namespace = self._namespace_from_path(rule_file)
             self._load_file(rule_file, namespace)
 
+        # Check if conflicts are expected (e.g., C2/C2T dynamic routing)
         if self._conflicts:
-            logger.warning(
-                "Namespace conflicts detected for %d variable(s): %s",
-                len(self._conflicts),
-                ", ".join(sorted(self._conflicts)[:10])
-                + (" ..." if len(self._conflicts) > 10 else ""),
-            )
+            unexpected_conflicts = self._get_unexpected_conflicts()
+            
+            if unexpected_conflicts:
+                # Warn about unexpected conflicts
+                logger.warning(
+                    "Unexpected namespace conflicts detected for %d variable(s): %s",
+                    len(unexpected_conflicts),
+                    ", ".join(sorted(unexpected_conflicts)[:10])
+                    + (" ..." if len(unexpected_conflicts) > 10 else ""),
+                )
+            else:
+                # All conflicts are expected (e.g., C2/C2T), log at debug level
+                logger.debug(
+                    "Expected namespace conflicts for %d variable(s) (C2/C2T dynamic routing)",
+                    len(self._conflicts),
+                )
 
         self._loaded_packets.add(packet)
         logger.debug(
@@ -140,6 +156,11 @@ class NamespacedRulePool:
                 # Already present from a different namespace → conflict
                 if self._rules[variable].namespace != namespace:
                     self._conflicts.add(variable)
+                    # Track which namespaces are involved in this conflict
+                    if variable not in self._conflict_namespaces:
+                        self._conflict_namespaces[variable] = set()
+                    self._conflict_namespaces[variable].add(self._rules[variable].namespace)
+                    self._conflict_namespaces[variable].add(namespace)
             else:
                 self._rules[variable] = entry
 
@@ -168,27 +189,55 @@ class NamespacedRulePool:
         """
         Return ``{variable: rule_dict}`` suitable for schema building.
 
-        If *namespace* is given and a variable is in conflict, the namespaced
-        version is used.  Otherwise the flat index (first-wins) is returned.
+        If *namespace* is given, ONLY rules from that namespace are returned
+        (strict namespace filtering). Otherwise the flat index (first-wins) is returned.
         """
         result: dict[str, dict[str, Any]] = {}
 
-        for var, entry in self._rules.items():
-            if namespace and var in self._conflicts:
-                ns_entry = self._namespaced.get(namespace, {}).get(var)
-                if ns_entry is not None:
-                    result[var] = ns_entry.rule
-                    continue
-            result[var] = entry.rule
-
-        # Include namespace-unique variables if a namespace is specified
+        # When namespace is specified, return ONLY variables from that namespace
         if namespace:
             ns_dict = self._namespaced.get(namespace, {})
             for var, entry in ns_dict.items():
-                if var not in result:
-                    result[var] = entry.rule
+                result[var] = entry.rule
+        else:
+            # No namespace specified: return flat index (first-wins for conflicts)
+            for var, entry in self._rules.items():
+                result[var] = entry.rule
 
         return result
+
+    # -- Helpers ----------------------------------------------------------
+
+    def _get_unexpected_conflicts(self) -> set[str]:
+        """
+        Return variables with conflicts that are NOT in expected namespace pairs.
+        
+        Expected conflicts (e.g., C2/C2T) use discriminant variables for dynamic
+        routing and are intentional. Unexpected conflicts indicate a configuration
+        issue.
+        """
+        unexpected = set()
+        for variable, namespaces in self._conflict_namespaces.items():
+            # Check if this is an expected conflict
+            # For expected pairs, the conflict should only involve those two namespaces
+            is_expected = False
+            for ns1, ns2 in self._EXPECTED_CONFLICT_PAIRS:
+                if namespaces == {ns1, ns2}:
+                    is_expected = True
+                    break
+            
+            if not is_expected:
+                unexpected.add(variable)
+        
+        return unexpected
+
+    @staticmethod
+    def _namespace_from_path(path: Path) -> str:
+        """Derive namespace from file stem: ``c2_rules.json`` → ``c2``."""
+        stem = path.stem  # e.g. "c2_rules"
+        if stem.endswith("_rules"):
+            return stem[: -len("_rules")]
+        return stem
 
     # -- Properties -------------------------------------------------------
 
@@ -209,6 +258,7 @@ class NamespacedRulePool:
         self._rules.clear()
         self._namespaced.clear()
         self._conflicts.clear()
+        self._conflict_namespaces.clear()
         self._loaded_packets.clear()
 
     def __len__(self) -> int:
@@ -219,16 +269,6 @@ class NamespacedRulePool:
             "NamespacedRulePool(rules=%d, namespaces=%d, conflicts=%d)"
             % (len(self._rules), len(self._namespaced), len(self._conflicts))
         )
-
-    # -- Helpers ----------------------------------------------------------
-
-    @staticmethod
-    def _namespace_from_path(path: Path) -> str:
-        """Derive namespace from file stem: ``c2_rules.json`` → ``c2``."""
-        stem = path.stem  # e.g. "c2_rules"
-        if stem.endswith("_rules"):
-            return stem[: -len("_rules")]
-        return stem
 
 
 # ---------------------------------------------------------------------------

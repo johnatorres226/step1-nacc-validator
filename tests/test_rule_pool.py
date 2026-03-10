@@ -286,6 +286,56 @@ class TestConflictDetection:
         assert "c2_unique_var" not in pool_with_c2_c2t.conflict_variables
         assert "c2t_unique_var" not in pool_with_c2_c2t.conflict_variables
 
+    def test_expected_c2_c2t_conflicts_not_reported_as_unexpected(self, tmp_path):
+        """C2/C2T conflicts are expected and should not be in unexpected conflicts."""
+        rules_dir = tmp_path / "rules"
+        rules_dir.mkdir()
+        
+        # Create C2 and C2T files with overlapping variables (expected conflict)
+        (rules_dir / "c2_rules.json").write_text(
+            json.dumps({"shared_var": {"type": "integer"}})
+        )
+        (rules_dir / "c2t_rules.json").write_text(
+            json.dumps({"shared_var": {"type": "string"}})
+        )
+        
+        pool = NamespacedRulePool()
+        pool.load_packet("I", config=_make_config(rules_dir))
+        
+        # Variable should be in conflicts
+        assert "shared_var" in pool.conflict_variables
+        
+        # But should NOT be in unexpected conflicts
+        unexpected = pool._get_unexpected_conflicts()
+        assert "shared_var" not in unexpected
+        assert len(unexpected) == 0
+
+    def test_unexpected_conflicts_are_reported(self, tmp_path):
+        """Conflicts between non-C2/C2T namespaces should be reported as unexpected."""
+        rules_dir = tmp_path / "rules"
+        rules_dir.mkdir()
+        
+        # Create A1 and B1 files with overlapping variables (unexpected conflict)
+        (rules_dir / "a1_rules.json").write_text(
+            json.dumps({"unexpected_shared_var": {"type": "integer"}})
+        )
+        (rules_dir / "b1_rules.json").write_text(
+            json.dumps({"unexpected_shared_var": {"type": "string"}})
+        )
+        
+        pool = NamespacedRulePool()
+        pool.load_packet("I", config=_make_config(rules_dir))
+        
+        # Variable should be in conflicts
+        assert "unexpected_shared_var" in pool.conflict_variables
+        
+        # And should be in unexpected conflicts
+        unexpected = pool._get_unexpected_conflicts()
+        assert "unexpected_shared_var" in unexpected
+        assert len(unexpected) == 1
+
+
+
 
 # ---------------------------------------------------------------------------
 # get_resolved_rules_dict
