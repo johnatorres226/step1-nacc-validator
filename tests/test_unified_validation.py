@@ -7,9 +7,10 @@ resolved_rules to only variables present in validation_rules (instrument-scoped)
 eliminating false validation errors from foreign-instrument variables.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
 import pytest
-from unittest.mock import MagicMock, patch
 
 from src.pipeline.config.config_manager import QCConfig
 from src.pipeline.reports.report_pipeline import validate_data

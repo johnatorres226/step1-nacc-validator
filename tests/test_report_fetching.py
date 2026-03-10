@@ -8,7 +8,6 @@ ETL filtering logic.
 import os
 from unittest.mock import patch
 
-import pandas as pd
 import pytest
 
 from src.pipeline.config.config_manager import QCConfig

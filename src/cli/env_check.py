@@ -50,7 +50,8 @@ def display_status(console: Console) -> bool:
 
     # .env file
     env_path = project_root / ".env"
-    env_table.add_row(".env File", _icon(env_path.exists()), "Found" if env_path.exists() else "Missing")
+    env_status = "Found" if env_path.exists() else "Missing"
+    env_table.add_row(".env File", _icon(env_path.exists()), env_status)
 
     # Key packages
     for pkg in ("rich", "click", "pandas", "requests"):
@@ -99,7 +100,8 @@ def display_status(console: Console) -> bool:
     out_ok = bool(config.output_path) and (
         Path(config.output_path).exists() or Path(config.output_path).parent.exists()
     )
-    cfg_table.add_row("Output Dir", _icon(out_ok), Path(config.output_path).name if config.output_path else "N/A")
+    output_display = Path(config.output_path).name if config.output_path else "N/A"
+    cfg_table.add_row("Output Dir", _icon(out_ok), output_display)
 
     # Pipeline settings
     cfg_table.add_row("Mode", _icon(True), config.mode or "N/A")
@@ -125,4 +127,4 @@ def display_status(console: Console) -> bool:
 
 def _icon(ok: bool) -> str:
     """Return a styled check/cross icon."""
-    return f"[green]✓[/]" if ok else f"[{UNM_CHERRY}]✗[/]"
+    return "[green]✓[/]" if ok else f"[{UNM_CHERRY}]✗[/]"

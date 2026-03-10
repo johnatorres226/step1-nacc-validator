@@ -3,7 +3,6 @@
 import json
 
 import pandas as pd
-import pytest
 
 from src.pipeline.io.reports import (
     export_data_fetched,

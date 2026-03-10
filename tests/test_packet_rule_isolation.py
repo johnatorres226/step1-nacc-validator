@@ -12,14 +12,12 @@ Root Cause:
 - F-packet variables validated against I records → FALSE POSITIVE ERRORS
 """
 
-import os
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
 from src.pipeline.config.config_manager import QCConfig
-from src.pipeline.io.rule_pool import NamespacedRulePool, get_pool, reset_pool
+from src.pipeline.io.rule_pool import NamespacedRulePool, reset_pool
 
 
 @pytest.fixture
@@ -81,7 +79,7 @@ class TestCrossPacketCollisionBug:
         )
 
         # This is the bug: F-only variables are available when validating I records
-        print(f"BUG CONFIRMED: nwinfpar (F-only) is present after loading I+F")
+        print("BUG CONFIRMED: nwinfpar (F-only) is present after loading I+F")
         print(f"  Source file: {nwinfpar_after_f.source_file}")
         print(f"  Namespace: {nwinfpar_after_f.namespace}")
 
@@ -180,11 +178,9 @@ class TestPacketIsolationFix:
 
     def test_validation_with_correct_packet_rules(self, config):
         """Verifies record validation uses correct packet's rules."""
-        # Simulate I packet record
-        i_record = {"ptid": "TEST001", "packet": "I", "momyob": 1940}
-
-        # Simulate F packet record
-        f_record = {"ptid": "TEST002", "packet": "F", "momyob": "", "nwinfpar": 0}
+        # Test data setup (records defined for documentation)
+        # i_record = {"ptid": "TEST001", "packet": "I", "momyob": 1940}
+        # f_record = {"ptid": "TEST002", "packet": "F", "momyob": "", "nwinfpar": 0}
 
         # For I record, nwinfpar validation should NOT happen
         pool_i = NamespacedRulePool()

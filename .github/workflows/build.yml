@@ -59,7 +59,8 @@ jobs:
         echo ""
         echo "=== Using pkginfo to validate metadata ===" 
         pip install pkginfo
-        python -c "import pkginfo; w = pkginfo.Wheel('dist/udsv4_redcap_qc_validator-0.1.0-py3-none-any.whl'); print(f'Name: {w.name}'); print(f'Version: {w.version}'); print(f'Summary: {w.summary}')"
+        WHEEL_FILE=$(ls dist/*.whl | head -n 1)
+        python -c "import pkginfo; import sys; w = pkginfo.Wheel(sys.argv[1]); print(f'Name: {w.name}'); print(f'Version: {w.version}'); print(f'Summary: {w.summary}')" "$WHEEL_FILE"
     
     - name: Test package installation
       run: |
