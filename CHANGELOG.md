@@ -3,19 +3,44 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Refactoring] - 2026-02-21
+## [1.0.0] - 2026-03-09
 
-### Phases 7-15: Structural Consolidation
+### Added
+- **Report-Based Data Fetching**: New `fetch_report_data()` function using REDCap's report API for pre-filtered data extraction, eliminating complex ETL transformations
+- **Interactive CLI Commands Display**: Commands now automatically display after user login for improved discoverability
+- **Packet Isolation System**: Implemented per-record packet isolation to prevent cross-packet rule collisions during validation
+- **Expected Conflict Detection**: Enhanced rule pool with smart detection of expected namespace conflicts (C2/C2T) vs unexpected configuration errors
+- **Comprehensive Test Coverage**: Expanded test suite to 140 passing tests covering report fetching, packet isolation, and unified validation
+- **Auto-Packet Population**: Automatically adds packet field with default value 'I' when missing from REDCap exports
 
-- **Rule routing** (4 files → 1): Collapsed `rules.py`, `packet_router.py`, `hierarchical_router.py`, `unified_rule_loader.py` into `rule_loader.py`
-- **Reports** (732 lines → 110): Replaced `ReportFactory` class with 4 export functions
-- **Orchestrator** (700 lines → 171): Replaced `PipelineOrchestrator` class + 7 dataclasses with single `run_pipeline()` function
-- **Fetcher** (397 lines → 145): Replaced 6 ETL classes with single `fetch_redcap_data()` function
-- **Validation utils** (380 lines → 99): Merged `validation_logging.py` + `visit_processing.py` into `validation_utils.py`
-- **Report pipeline** (342 lines → 154): Removed indirection layer, inlined validation loop
-- **Config tests**: Simplified from 297 → 91 lines, removed deprecated tests
-- **Data processing** (512 lines → 109): Merged `instrument_processors.py`, deleted `processors/` package and `io/context.py`
-- **Net reduction**: ~4,854 → ~1,690 pipeline source lines (65% reduction), 116 tests passing
+### Changed
+- **Data Fetching Architecture**: Replaced complex ETL pipeline (6 classes, 397 lines) with streamlined report-based fetch (145 lines)
+- **Pipeline Orchestration**: Simplified `run_pipeline()` from class-based orchestrator (700 lines) to functional approach (171 lines)
+- **Rule Loading System**: Consolidated 4 rule routing files into single `rule_loader.py` with O(1) variable lookup via `NamespacedRulePool`
+- **Report Generation**: Replaced `ReportFactory` class (732 lines) with 4 focused export functions (110 lines)
+- **Data Processing**: Merged `instrument_processors.py` into `data_processing.py`, deleted `processors/` package
+- **Validation Utilities**: Consolidated `validation_logging.py` and `visit_processing.py` into single `validation_utils.py` (99 lines)
+- **Configuration Management**: Removed deprecated filter logic and completion column tracking, streamlined instrument mappings
+- **CLI Branding**: Redesigned with UNM Lobos wordmark, merged check/config commands into unified `status` command
+- **Documentation**: Completely rewrote `docs/data-fetching-system.md` to reflect report-based architecture (reduced from complex ETL documentation)
+- **Rule Validation**: Updated validation rules across F, I, and I4 packets for a1a, a5d2, b1-b9, c2/c2t, d1a/d1b forms
+
+### Fixed  
+- **Multi-Packet Rule Collision**: Resolved issue where rules from different packets could interfere during validation of mixed-packet datasets
+- **C2/C2T Namespace Conflicts**: Properly handle expected conflicts between C2 and C2T namespaces using discriminant-based routing
+- **Rule Pool Caching**: Removed caching for safer, immutable behavior preventing stale rule references across runs
+
+### Removed
+- **Legacy ETL Classes**: Removed 6 ETL classes (`RedcapETLPipeline`, `RedcapApiClient`, `DataValidator`, `DataTransformer`, `DataSaver`, `FilterLogicManager`)
+- **Deprecated Documentation**: Removed `CONFIG_RULE_ROUTING.md`, `ERROR_DEBUGGING.md`, `REFACTORING_PLAN.md` after consolidation
+- **Dead Code**: Removed ~850 lines of unused code, 7 empty `__init__.py` files, deprecated validation functions
+- **Obsolete Infrastructure**: Removed `processors/` package, `io/context.py`, instrument-specific processors
+- **Legacy Fallback Logic**: Eliminated complex data fetch fallback mechanisms in favor of clear error reporting
+
+### Internal
+- **Code Reduction**: Overall pipeline source reduced from ~4,854 to ~1,690 lines (65% reduction) while maintaining full functionality
+- **Test Suite Growth**: Increased from 116 to 140 passing tests with better coverage of edge cases
+- **Project Classification**: Transitioned from "Alpha" to "Production/Stable" status
 
 ## [0.3.0] - 2026-01-13
 

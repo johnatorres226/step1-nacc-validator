@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "udsv4-redcap-qc-validator"
-version = "0.1.0"  # Keep in sync with src/__version__.py
+version = "1.0.0"  # Keep in sync with src/__version__.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"
@@ -10,7 +10,7 @@ repository = "https://github.com/johnatorres226/step1-nacc-validator"
 documentation = "https://github.com/johnatorres226/step1-nacc-validator/tree/main/docs"
 keywords = ["udsv4", "redcap", "validation", "qc", "nacc"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Healthcare Industry",
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL-2.0)",
     "Programming Language :: Python :: 3.11",
