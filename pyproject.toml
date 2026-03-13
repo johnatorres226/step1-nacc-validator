@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "udsv4-redcap-qc-validator"
-version = "1.0.1"  # Keep in sync with src/__version__.py
+version = "1.0.2"  # Keep in sync with src/__version__.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"

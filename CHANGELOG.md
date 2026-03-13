@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-03-13
+
+### Fixed
+- **visitdate and redcap_repeat_instance Propagation**: These fields are now properly included in error reports for all instruments, not just form_header
+  - Added `visitdate` and `redcap_repeat_instance` to core columns list
+  - Ensures all instrument error records include visit date and repeat instance information
+- **Code Quality Improvements**:
+  - Fixed line-too-long linting issues in report_pipeline.py
+  - Fixed mypy type checking errors (added type annotations, proper exclusions)
+  - Updated CI workflow with `--explicit-package-bases` flag for mypy
+
 ## [1.0.1] - 2026-03-13
 
 ### Changed
