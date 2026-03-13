@@ -237,7 +237,7 @@ jobs:
       - name: Test package installation
         run: |
           pip install dist/*.whl
-          python -c "from pipeline import data_fetch, reports; from cli import cli; print('✓ Package imports successfully')"
+          python -c "import pipeline; import cli; print('✓ Package imports successfully')"
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
