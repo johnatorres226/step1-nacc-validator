@@ -1,6 +1,7 @@
 """Report pipeline — thin orchestration layer over core.pipeline."""
 
 import logging
+import re
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -20,6 +21,40 @@ from ..io.rule_loader import _NAMESPACE_DISCRIMINANTS, get_rules_for_record
 from ..utils.schema_builder import _build_schema_from_raw
 
 logger = logging.getLogger(__name__)
+
+# Regex to extract actual failing variable from compatibility error messages
+# Pattern: "('variable_name', [...]) for if {...} then/else {...} - compatibility rule no: X"
+_COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
+
+
+def _extract_failing_variable(field_name: str, error_msg: str) -> str:
+    """
+    Extract the actual failing variable from compatibility rule error messages.
+    
+    Bug fix for nacc-form-validator compatibility rule error reporting:
+    When a compatibility rule fails, the error is logged under the trigger variable
+    (IF clause), but the error message contains the actual failing variable (THEN/ELSE clause).
+    
+    Example error message:
+        "('apraxsp', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}} 
+         then {'apraxsp': {'allowed': [1, 2, 3]}} - compatibility rule no: 0"
+    
+    In this case:
+        - field_name = 'othersign' (trigger variable)
+        - actual failing variable = 'apraxsp' (extracted from error message)
+    
+    Args:
+        field_name: The field name from validator.errors (trigger variable)
+        error_msg: The error message string
+    
+    Returns:
+        The actual failing variable if it's a compatibility error, otherwise field_name
+    """
+    if "compatibility rule no:" in error_msg:
+        match = _COMPATIBILITY_ERROR_PATTERN.match(error_msg)
+        if match:
+            return match.group(1)
+    return field_name
 
 
 @contextmanager
@@ -112,13 +147,17 @@ def validate_data(
             if not passed or sys_failure:
                 for field_name, field_errors in record_errors.items():
                     for msg in field_errors:
+                        # Extract actual failing variable from compatibility errors
+                        # (fixes bug where trigger variable is logged instead of failing variable)
+                        actual_variable = _extract_failing_variable(field_name, msg)
+                        
                         errors.append(
                             {
                                 primary_key_field: pk_value,
                                 "instrument_name": instrument_name,
-                                "variable": field_name,
+                                "variable": actual_variable,
                                 "error_message": msg,
-                                "current_value": record_dict.get(field_name, ""),
+                                "current_value": record_dict.get(actual_variable, ""),
                                 "packet": packet_value,
                                 "json_rule_path": rules_path,
                                 "redcap_event_name": record_dict.get(
