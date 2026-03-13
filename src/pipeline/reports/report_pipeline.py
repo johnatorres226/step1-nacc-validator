@@ -130,6 +130,7 @@ def validate_data(
                                 "visitdate": record_dict.get("visitdate", ""),
                                 "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
+                                "error_interpretation": "",
                             }
                         )
                 logs.append(
