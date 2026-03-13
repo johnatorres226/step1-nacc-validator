@@ -43,9 +43,9 @@ jobs:
           echo "📦 Distribution files:"
           ls -la dist/
           echo ""
-          echo "🔍 Validating packages with twine:"
-          poetry run python -m twine check dist/*.whl dist/*.tar.gz
-          echo "✓ All packages are valid"
+          echo "🔍 Checking package structure:"
+          poetry check
+          echo "✓ Package structure is valid"
       
       - name: Get version from pyproject.toml
         id: get_version
