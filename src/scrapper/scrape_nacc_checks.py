@@ -4,14 +4,25 @@
 Fetches check data from NACC's published IVP and FVP survey pages and
 saves a lookup file for classifying validation errors as 'alert' or 'error'.
 
+IMPORTANT: The NACC survey pages use client-side JavaScript rendering (DataTables).
+This scraper attempts to parse server-rendered HTML but may not capture data if the
+page is fully JS-rendered. In that case, manually export data from the NACC pages:
+
+1. Visit https://redcap.naccdata.org/surveys/?__report=F3ED7TRJKCRWW4ET (IVP)
+2. Visit https://redcap.naccdata.org/surveys/?__report=NPT99LJFXRWRAM7N (FVP)
+3. Export CSV from each page (if available) or copy table data
+4. Run this script with --from-csv <file.csv> to convert
+
 Usage:
-    python src/scrapper/scrape_nacc_checks.py [--force]
+    python src/scrapper/scrape_nacc_checks.py [--force] [--from-csv FILE]
 
 Options:
-    --force    Overwrite existing file even if less than 30 days old
+    --force         Overwrite existing file even if less than 30 days old
+    --from-csv FILE Convert a manually exported CSV to the lookup JSON
 """
 
 import argparse
+import csv
 import json
 import re
 import sys
@@ -211,34 +222,56 @@ def _should_scrape(force: bool) -> bool:
         return True
 
 
-def main() -> int:
-    """Main entry point."""
-    parser = argparse.ArgumentParser(description="Scrape NACC check classifications")
-    parser.add_argument("--force", action="store_true", help="Force refresh even if file is recent")
-    args = parser.parse_args()
+def _import_from_csv(csv_path: Path) -> list[dict[str, Any]]:
+    """Import check data from a manually exported CSV file.
 
-    if not _should_scrape(args.force):
-        return 0
+    Expected CSV columns (case-insensitive):
+        check_code, error_type, form, packet (or packet_label), variable,
+        check_category, short_desc (optional), full_desc (optional)
+    """
+    records: list[dict[str, Any]] = []
 
-    all_checks: list[dict[str, Any]] = []
+    with csv_path.open(encoding="utf-8-sig") as f:  # utf-8-sig handles BOM
+        reader = csv.DictReader(f)
+        # Normalize headers to lowercase
+        if reader.fieldnames:
+            reader.fieldnames = [h.lower().strip() for h in reader.fieldnames]
 
-    for name, url in _SURVEY_URLS.items():
-        checks = _scrape_survey(name, url)
-        all_checks.extend(checks)
-        print(f"  Total from {name}: {len(checks)}")
+        for row in reader:
+            # Handle packet_label or packet column
+            packet_label = row.get("packet_label", row.get("packet", ""))
+            packet = _extract_packet_code(packet_label) if "uds" in packet_label.lower() else packet_label.upper()
 
+            record = {
+                "check_code": row.get("check_code", "").strip(),
+                "error_type": row.get("error_type", "error").strip().lower(),
+                "form": row.get("form", "").strip().lower(),
+                "packet": packet,
+                "variable": row.get("variable", "").strip().lower(),
+                "check_category": row.get("check_category", "Conformity").strip(),
+                "short_desc": row.get("short_desc", "").strip(),
+                "full_desc": row.get("full_desc", "").strip(),
+            }
+
+            if record["check_code"] and record["variable"]:
+                records.append(record)
+
+    return records
+
+
+def _write_output(all_checks: list[dict[str, Any]], source: str) -> int:
+    """Write checks to output JSON file."""
     if not all_checks:
-        print("ERROR: No checks scraped. Check network connectivity and URLs.")
+        print("ERROR: No checks to write.")
         return 1
 
-    # Build output structure
     alert_count = sum(1 for c in all_checks if c["error_type"] == "alert")
     lookup = _build_lookup(all_checks)
 
     output = {
         "_meta": {
             "scraped_at": datetime.utcnow().isoformat() + "Z",
-            "sources": _SURVEY_URLS,
+            "sources": {"manual_import": source} if "csv" in source.lower() else _SURVEY_URLS,
             "total_checks": len(all_checks),
             "alert_count": alert_count,
         },
@@ -250,18 +283,15 @@ def main() -> int:
                 "form": c["form"],
                 "variable": c["variable"],
                 "check_category": c["check_category"],
-                "short_desc": c["short_desc"],
-                "full_desc": c["full_desc"],
+                "short_desc": c.get("short_desc", ""),
+                "full_desc": c.get("full_desc", ""),
             }
             for c in all_checks
         ],
         "lookup": lookup,
     }
 
-    # Ensure output directory exists
     _OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-    # Write output
     _OUTPUT_PATH.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print(f"\nSummary:")
@@ -271,6 +301,44 @@ def main() -> int:
     print(f"  Output: {_OUTPUT_PATH}")
 
     return 0
+
+
+def main() -> int:
+    """Main entry point."""
+    parser = argparse.ArgumentParser(description="Scrape NACC check classifications")
+    parser.add_argument("--force", action="store_true", help="Force refresh even if file is recent")
+    parser.add_argument("--from-csv", type=Path, metavar="FILE", help="Import from manually exported CSV")
+    args = parser.parse_args()
+
+    # CSV import mode
+    if args.from_csv:
+        if not args.from_csv.exists():
+            print(f"ERROR: CSV file not found: {args.from_csv}")
+            return 1
+        print(f"Importing from CSV: {args.from_csv}")
+        all_checks = _import_from_csv(args.from_csv)
+        return _write_output(all_checks, str(args.from_csv))
+
+    # Web scraping mode
+    if not _should_scrape(args.force):
+        return 0
+
+    all_checks: list[dict[str, Any]] = []
+
+    for name, url in _SURVEY_URLS.items():
+        checks = _scrape_survey(name, url)
+        all_checks.extend(checks)
+        print(f"  Total from {name}: {len(checks)}")
+
+    if not all_checks:
+        print("ERROR: No checks scraped.")
+        print("The NACC pages use client-side JavaScript rendering.")
+        print("Please manually export the data and use: --from-csv <file.csv>")
+        print("\nAlternatively, ensure config/nacc_check_classifications.json exists")
+        print("with sample data. The pipeline will use 'error' as default for unmatched checks.")
+        return 1
+
+    return _write_output(all_checks, "web_scrape")
 
 
 if __name__ == "__main__":
