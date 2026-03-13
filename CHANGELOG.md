@@ -3,6 +3,46 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-03-13
+
+### Added
+- **NACC Check Classification Framework**: Comprehensive alert/error classification system for UDSv4 validation checks
+  - Added `nacc_check_classifications.json` with 85,000+ NACC check classifications mapping packets, instruments, and variables to check types
+  - New fields in error reports: `nacc_check_code`, `nacc_check_type` (alert/error), and `nacc_interpretation`
+  - Implemented classification lookup functions in `report_pipeline.py` to determine check severity
+  - Added CSV scrapper utility (`src/scrapper/convert_csv_to_json.py`) to convert quality check CSVs into JSON classifications
+- **Quality Check Configuration**: Added quality check CSV files for IVP and FVP forms
+  - `config/quality-check/ivp-quality-checks.csv`: 3,977 IVP validation rules
+  - `config/quality-check/fvp-quality-checks.csv`: 4,103 FVP validation rules
+- **Documentation**: Comprehensive documentation for alert implementation
+  - `ALERT_CLASSIFICATION_TASK.md`: Detailed task specification and implementation guide
+  - `alert-implementation-roadmap.md`: Step-by-step roadmap with 724 lines of analysis
+  - `downstream-alerts-analysis.md`: Impact analysis for downstream systems
+- **Test Coverage**: Added `tests/test_nacc_check_classification.py` with 203 lines of comprehensive tests for classification system
+
+### Changed
+- **Error Report Schema**: Enhanced error dataset output with new NACC classification fields
+  - Replaced `error_interpretation` placeholder field with `nacc_interpretation` containing actual check descriptions
+  - Added `nacc_check_code` for unique check identification
+  - Added `nacc_check_type` to distinguish between alerts and errors
+- **Package Import Structure**: Simplified package imports to match actual package structure
+  - Fixed CI package installation tests to use correct import paths
+
+### Fixed
+- **Code Quality**: Multiple linting and formatting improvements
+  - Resolved line-too-long issues (E501) in `src/pipeline/io/reports.py`
+  - Fixed f-string without placeholders (F541) in `src/scrapper/convert_csv_to_json.py`
+  - Removed unused pytest import (F401) in test files
+  - Applied ruff formatting to 18 Python files
+- **CI/CD Pipeline**: Fixed package import verification in build workflow
+  - Corrected test imports from `import udsv4_redcap_qc_validator` to `import pipeline; import cli`
+
+### Breaking Changes
+- **Major Version Bump**: Version 1.x.x → 2.0.0 due to significant architectural changes
+  - Error report schema now includes three new NACC classification fields
+  - Downstream systems consuming error reports must handle new fields
+  - Classification system changes how errors are categorized and interpreted
+
 ## [1.1.1] - 2026-03-13
 
 ### Added
