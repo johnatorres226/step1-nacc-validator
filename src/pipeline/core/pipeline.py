@@ -102,11 +102,11 @@ def run_pipeline(
     try:
         # ── Stage 1: Data Fetch ───────────────────────────────────────────
         t0 = time.time()
-        
+
         # Use report-based fetch (pre-filtered data from REDCap report)
         logger.info("Fetching data from REDCap report %s", config.report_id)
         data_df, records_fetched = fetch_report_data(config, output_dir, date_tag, time_tag)
-            
+
         logger.info("Fetched %d records (%.1fs)", records_fetched, time.time() - t0)
 
         # ── Stage 2: Load Rules ───────────────────────────────────────────
@@ -124,8 +124,7 @@ def run_pipeline(
         if not data_df.empty and "packet" in data_df.columns:
             valid_packets = {"I", "I4", "F"}
             packets_in_data = {
-                p.upper() for p in data_df["packet"].dropna().unique()
-                if p.upper() in valid_packets
+                p.upper() for p in data_df["packet"].dropna().unique() if p.upper() in valid_packets
             }
 
         # Load the first/primary packet to build the initial rules_cache

@@ -31,7 +31,7 @@ _PACKET_LABEL_MAP = {
 def _extract_packet_code(packet_label: str) -> str:
     """Map packet label to internal packet code."""
     label_lc = packet_label.strip().lower()
-    
+
     # Check longer patterns first to avoid "i4" matching "i"
     # Sort by pattern length descending
     sorted_patterns = sorted(_PACKET_LABEL_MAP.items(), key=lambda x: -len(x[0]))
@@ -39,7 +39,7 @@ def _extract_packet_code(packet_label: str) -> str:
         prefix = pattern.split(" - ")[0]
         if label_lc.startswith(prefix):
             return code
-    
+
     # Fallback
     if "initial" in label_lc and "existing" in label_lc:
         return "I4"
@@ -61,17 +61,17 @@ def _read_csv(csv_path: Path) -> list[dict[str, Any]]:
             with csv_path.open(encoding=encoding) as f:
                 reader = csv.DictReader(f)
                 rows_read = 0
-                
+
                 for row in reader:
                     rows_read += 1
                     # Map CSV columns to internal names
                     error_type = row.get("Error Type", "").strip().lower()
                     packet_label = row.get("Packet", "").strip()
-                    
+
                     # Skip rows with empty error_type or packet
                     if not error_type or not packet_label:
                         continue
-                    
+
                     record = {
                         "check_code": row.get("Error Code", "").strip(),
                         "error_type": error_type,
@@ -83,17 +83,16 @@ def _read_csv(csv_path: Path) -> list[dict[str, Any]]:
                         "short_desc": row.get("Name of the Test", "").strip(),
                         "full_desc": row.get("Full Test Description", "").strip(),
                     }
-                    
+
                     if record["check_code"] and record["variable"] and record["packet"]:
                         records.append(record)
-                
+
                 print(f"  (Encoding: {encoding}, raw rows: {rows_read})")
                 return records
         except UnicodeDecodeError:
             continue
-    
-    raise ValueError(f"Could not decode {csv_path} with any known encoding")
 
+    raise ValueError(f"Could not decode {csv_path} with any known encoding")
 
 
 def _build_lookup(checks: list[dict[str, Any]]) -> dict[str, str]:
@@ -110,27 +109,27 @@ def main() -> int:
     """Convert CSVs to JSON."""
     all_checks: list[dict[str, Any]] = []
     sources: dict[str, str] = {}
-    
+
     # Process each CSV file
     for csv_file in sorted(_QUALITY_CHECK_DIR.glob("*.csv")):
         print(f"Processing: {csv_file.name}")
         records = _read_csv(csv_file)
         all_checks.extend(records)
         sources[csv_file.stem] = str(csv_file)
-        
+
         # Stats
         alerts = sum(1 for r in records if r["error_type"] == "alert")
         errors = sum(1 for r in records if r["error_type"] == "error")
         print(f"  Records: {len(records)} (alerts: {alerts}, errors: {errors})")
-    
+
     if not all_checks:
         print("ERROR: No checks found in CSV files.")
         return 1
-    
+
     # Build output
     alert_count = sum(1 for c in all_checks if c["error_type"] == "alert")
     lookup = _build_lookup(all_checks)
-    
+
     output = {
         "_meta": {
             "generated_at": datetime.utcnow().isoformat() + "Z",
@@ -154,20 +153,21 @@ def main() -> int:
         ],
         "lookup": lookup,
     }
-    
+
     # Write output
     _OUTPUT_PATH.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
-    
+
     print("\n=== Summary ===")
     print(f"Total checks: {len(all_checks)}")
     print(f"Alerts: {alert_count}")
     print(f"Errors: {len(all_checks) - alert_count}")
     print(f"Unique lookup keys: {len(lookup)}")
     print(f"Output: {_OUTPUT_PATH}")
-    
+
     return 0
 
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(main())

@@ -111,9 +111,9 @@ class TestLiveReportFetch:
         df, count = fetch_report_data(config)
 
         # Output dimensions and basic stats
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"REPORT FETCH RESULTS (Report ID: {config.report_id})")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"DataFrame dimensions: {df.shape[0]} rows x {df.shape[1]} columns")
         print(f"Records fetched: {count}")
 
@@ -124,7 +124,7 @@ class TestLiveReportFetch:
             if "ptid" in df.columns:
                 print(f"Unique PTIDs: {df['ptid'].nunique()}")
 
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         # Assertions
         assert count > 0, "Expected at least some records from report"

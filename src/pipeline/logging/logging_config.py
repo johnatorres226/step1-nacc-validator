@@ -26,10 +26,10 @@ class ColoredFormatter(logging.Formatter):
     # ANSI color codes mapped to UNM brand palette
     # Reference: https://brand.unm.edu/brand-style/color-palette/index.html
     COLORS: ClassVar[dict[str, str]] = {
-        "DEBUG": "\033[38;2;99;102;106m",      # UNM Lobo Gray
-        "INFO": "\033[38;2;0;122;134m",        # UNM Turquoise
-        "WARNING": "\033[38;2;255;198;0m",     # UNM High Noon
-        "ERROR": "\033[38;2;186;12;47m",       # UNM Cherry
+        "DEBUG": "\033[38;2;99;102;106m",  # UNM Lobo Gray
+        "INFO": "\033[38;2;0;122;134m",  # UNM Turquoise
+        "WARNING": "\033[38;2;255;198;0m",  # UNM High Noon
+        "ERROR": "\033[38;2;186;12;47m",  # UNM Cherry
         "CRITICAL": "\033[1;38;2;186;12;47m",  # Bold UNM Cherry
         "RESET": "\033[0m",
     }

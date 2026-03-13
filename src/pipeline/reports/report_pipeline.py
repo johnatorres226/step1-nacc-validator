@@ -139,10 +139,10 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
 
     # Build list of forms to try (original + aliases)
     forms_to_try = [form] + _FORM_ALIASES.get(form, [])
-    
+
     # Infer category from error message
     inferred_category = _infer_check_category(error_msg)
-    
+
     # Try each form/category combination
     for try_form in forms_to_try:
         # First try inferred category
@@ -154,7 +154,7 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
                 "check_code": check.get("check_code", ""),
                 "interpretation": check.get("full_desc", ""),
             }
-        
+
         # Then try fallback categories
         for fallback_cat in _CATEGORY_FALLBACKS:
             if fallback_cat == inferred_category:
@@ -167,7 +167,7 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
                     "check_code": check.get("check_code", ""),
                     "interpretation": check.get("full_desc", ""),
                 }
-    
+
     # No match found
     return default
 
@@ -180,23 +180,23 @@ def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg:
 def _extract_failing_variable(field_name: str, error_msg: str) -> str:
     """
     Extract the actual failing variable from compatibility rule error messages.
-    
+
     Bug fix for nacc-form-validator compatibility rule error reporting:
     When a compatibility rule fails, the error is logged under the trigger variable
     (IF clause), but the error message contains the actual failing variable (THEN/ELSE clause).
-    
+
     Example error message:
-        "('apraxsp', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}} 
+        "('apraxsp', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}}
          then {'apraxsp': {'allowed': [1, 2, 3]}} - compatibility rule no: 0"
-    
+
     In this case:
         - field_name = 'othersign' (trigger variable)
         - actual failing variable = 'apraxsp' (extracted from error message)
-    
+
     Args:
         field_name: The field name from validator.errors (trigger variable)
         error_msg: The error message string
-    
+
     Returns:
         The actual failing variable if it's a compatibility error, otherwise field_name
     """
@@ -300,12 +300,12 @@ def validate_data(
                         # Extract actual failing variable from compatibility errors
                         # (fixes bug where trigger variable is logged instead of failing variable)
                         actual_variable = _extract_failing_variable(field_name, msg)
-                        
+
                         # Get full NACC check metadata (error_type, check_code, interpretation)
                         nacc_info = _get_nacc_check_info(
                             packet_value, instrument_name, actual_variable, msg
                         )
-                        
+
                         errors.append(
                             {
                                 primary_key_field: pk_value,
@@ -315,9 +315,7 @@ def validate_data(
                                 "current_value": record_dict.get(actual_variable, ""),
                                 "packet": packet_value,
                                 "json_rule_path": rules_path,
-                                "redcap_event_name": record_dict.get(
-                                    "redcap_event_name", ""
-                                ),
+                                "redcap_event_name": record_dict.get("redcap_event_name", ""),
                                 "redcap_repeat_instance": record_dict.get(
                                     "redcap_repeat_instance", ""
                                 ),

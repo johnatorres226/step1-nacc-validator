@@ -88,11 +88,13 @@ class TestCrossInstrumentBleedPrevention:
 
     def test_multiple_records_all_pass_without_bleed(self, mock_config):
         """All valid instrument_a records pass when pool contains foreign rules."""
-        data = pd.DataFrame([
-            _make_record(ptid="P001", age=45, sex=1),
-            _make_record(ptid="P002", age=72, sex=2),
-            _make_record(ptid="P003", age=30, sex=1),
-        ])
+        data = pd.DataFrame(
+            [
+                _make_record(ptid="P001", age=45, sex=1),
+                _make_record(ptid="P002", age=72, sex=2),
+                _make_record(ptid="P003", age=30, sex=1),
+            ]
+        )
         with patch("src.pipeline.reports.report_pipeline.get_config", return_value=mock_config):
             with patch(
                 "src.pipeline.reports.report_pipeline.get_rules_for_record",
@@ -239,8 +241,15 @@ class TestValidateDataEdgeCases:
         assert len(errors) > 0
         err = errors[0]
         expected_keys = {
-            "ptid", "instrument_name", "variable", "error_message",
-            "current_value", "packet", "json_rule_path", "redcap_event_name", "discriminant",
+            "ptid",
+            "instrument_name",
+            "variable",
+            "error_message",
+            "current_value",
+            "packet",
+            "json_rule_path",
+            "redcap_event_name",
+            "discriminant",
         }
         assert expected_keys.issubset(err.keys())
         assert err["instrument_name"] == "instrument_a"

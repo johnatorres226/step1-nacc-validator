@@ -16,9 +16,11 @@ def test_get_nacc_check_type_returns_alert_from_lookup(monkeypatch):
     from src.pipeline.reports import report_pipeline
 
     monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    monkeypatch.setattr(report_pipeline, "_CHECK_DETAILS", {
-        "I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}
-    })
+    monkeypatch.setattr(
+        report_pipeline,
+        "_CHECK_DETAILS",
+        {"I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}},
+    )
     result = report_pipeline._get_nacc_check_type("I", "a1", "zip", "must be between 006 and 999")
     assert result == "alert"
 
@@ -27,12 +29,8 @@ def test_get_nacc_check_type_returns_error_from_lookup(monkeypatch):
     """When lookup contains the key with error value, return 'error'."""
     from src.pipeline.reports import report_pipeline
 
-    monkeypatch.setattr(
-        report_pipeline, "_CHECK_LOOKUP", {"I|a1|birthmo|Conformity": "error"}
-    )
-    result = report_pipeline._get_nacc_check_type(
-        "I", "a1", "birthmo", "must be between 1 and 12"
-    )
+    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|birthmo|Conformity": "error"})
+    result = report_pipeline._get_nacc_check_type("I", "a1", "birthmo", "must be between 1 and 12")
     assert result == "error"
 
 
@@ -41,9 +39,7 @@ def test_get_nacc_check_type_defaults_to_error_when_key_not_found(monkeypatch):
     from src.pipeline.reports import report_pipeline
 
     monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    result = report_pipeline._get_nacc_check_type(
-        "I", "a1", "unknown_var", "some error message"
-    )
+    result = report_pipeline._get_nacc_check_type("I", "a1", "unknown_var", "some error message")
     assert result == "error"
 
 
@@ -52,9 +48,11 @@ def test_get_nacc_check_type_case_insensitive_instrument(monkeypatch):
     from src.pipeline.reports import report_pipeline
 
     monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    monkeypatch.setattr(report_pipeline, "_CHECK_DETAILS", {
-        "I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}
-    })
+    monkeypatch.setattr(
+        report_pipeline,
+        "_CHECK_DETAILS",
+        {"I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}},
+    )
     result = report_pipeline._get_nacc_check_type("I", "A1", "ZIP", "must be between 006 and 999")
     assert result == "alert"
 
@@ -149,9 +147,7 @@ class TestLoadCheckLookup:
     def test_returns_empty_dict_when_file_missing(self, monkeypatch, tmp_path):
         from src.pipeline.reports import report_pipeline
 
-        monkeypatch.setattr(
-            report_pipeline, "_CLASSIFICATIONS_PATH", tmp_path / "nonexistent.json"
-        )
+        monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", tmp_path / "nonexistent.json")
         monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
         result = report_pipeline._load_check_lookup()
         assert result == {}

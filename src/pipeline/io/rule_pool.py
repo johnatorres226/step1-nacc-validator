@@ -22,6 +22,7 @@ logger = get_logger(__name__)
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True, slots=True)
 class RuleEntry:
     """A single variable's validation rule with source metadata."""
@@ -35,6 +36,7 @@ class RuleEntry:
 # ---------------------------------------------------------------------------
 # Pool implementation
 # ---------------------------------------------------------------------------
+
 
 class NamespacedRulePool:
     """
@@ -79,10 +81,7 @@ class NamespacedRulePool:
         rule_files = sorted(rules_dir.glob(self._GLOB))
 
         # Filter out *_rules_optional.json explicitly
-        rule_files = [
-            f for f in rule_files
-            if not f.stem.endswith("_rules_optional")
-        ]
+        rule_files = [f for f in rule_files if not f.stem.endswith("_rules_optional")]
 
         if not rule_files:
             logger.warning("No *_rules.json files found in %s", rules_dir)
@@ -96,7 +95,7 @@ class NamespacedRulePool:
         # Check if conflicts are expected (e.g., C2/C2T dynamic routing)
         if self._conflicts:
             unexpected_conflicts = self._get_unexpected_conflicts()
-            
+
             if unexpected_conflicts:
                 # Warn about unexpected conflicts
                 logger.warning(
@@ -114,8 +113,7 @@ class NamespacedRulePool:
 
         self._loaded_packets.add(packet)
         logger.debug(
-            "Loaded %d rules for packet %s from %d files "
-            "(%d conflicts across %d namespaces)",
+            "Loaded %d rules for packet %s from %d files (%d conflicts across %d namespaces)",
             len(self._rules),
             packet,
             len(rule_files),
@@ -133,9 +131,7 @@ class NamespacedRulePool:
             return
 
         if not isinstance(data, dict):
-            logger.warning(
-                "Rule file %s does not contain a dict, skipping", path.name
-            )
+            logger.warning("Rule file %s does not contain a dict, skipping", path.name)
             return
 
         ns_dict = self._namespaced.setdefault(namespace, {})
@@ -166,9 +162,7 @@ class NamespacedRulePool:
 
     # -- Lookup -----------------------------------------------------------
 
-    def get_rule(
-        self, variable: str, namespace: str | None = None
-    ) -> RuleEntry | None:
+    def get_rule(self, variable: str, namespace: str | None = None) -> RuleEntry | None:
         """O(1) rule lookup. Use *namespace* for conflict disambiguation."""
         if namespace is not None and variable in self._conflicts:
             ns_dict = self._namespaced.get(namespace, {})
@@ -183,9 +177,7 @@ class NamespacedRulePool:
         """Get all rules from a specific source file/namespace."""
         return dict(self._namespaced.get(namespace, {}))
 
-    def get_resolved_rules_dict(
-        self, namespace: str | None = None
-    ) -> dict[str, dict[str, Any]]:
+    def get_resolved_rules_dict(self, namespace: str | None = None) -> dict[str, dict[str, Any]]:
         """
         Return ``{variable: rule_dict}`` suitable for schema building.
 
@@ -211,7 +203,7 @@ class NamespacedRulePool:
     def _get_unexpected_conflicts(self) -> set[str]:
         """
         Return variables with conflicts that are NOT in expected namespace pairs.
-        
+
         Expected conflicts (e.g., C2/C2T) use discriminant variables for dynamic
         routing and are intentional. Unexpected conflicts indicate a configuration
         issue.
@@ -225,10 +217,10 @@ class NamespacedRulePool:
                 if namespaces == {ns1, ns2}:
                     is_expected = True
                     break
-            
+
             if not is_expected:
                 unexpected.add(variable)
-        
+
         return unexpected
 
     @staticmethod
@@ -265,9 +257,10 @@ class NamespacedRulePool:
         return len(self._rules)
 
     def __repr__(self) -> str:
-        return (
-            "NamespacedRulePool(rules=%d, namespaces=%d, conflicts=%d)"
-            % (len(self._rules), len(self._namespaced), len(self._conflicts))
+        return "NamespacedRulePool(rules=%d, namespaces=%d, conflicts=%d)" % (
+            len(self._rules),
+            len(self._namespaced),
+            len(self._conflicts),
         )
 
 

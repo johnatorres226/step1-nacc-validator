@@ -107,7 +107,8 @@ def display_status(console: Console) -> bool:
     cfg_table.add_row("Mode", _icon(True), config.mode or "N/A")
     cfg_table.add_row("Instruments", _icon(True), str(len(config.instruments)))
     cfg_table.add_row(
-        "Events", _icon(True),
+        "Events",
+        _icon(True),
         ", ".join(config.events) if config.events else "All",
     )
 

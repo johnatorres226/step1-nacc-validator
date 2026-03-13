@@ -1,4 +1,3 @@
-
 """
 Interactive CLI interface for the ADRC Quality Control system.
 
@@ -87,21 +86,16 @@ def run_interactive(console: Console | None = None) -> None:
         console.print(f"  [{UNM_CHERRY}]Initials are required. Exiting.[/]\n")
         return
 
-    console.print(
-        f"  [{UNM_TURQUOISE}]✓[/] Session started for "
-        f"[bold {UNM_CHERRY}]{initials}[/]"
-    )
+    console.print(f"  [{UNM_TURQUOISE}]✓[/] Session started for [bold {UNM_CHERRY}]{initials}[/]")
     console.print()
-    
+
     # Display available commands immediately
     display_help(console)
 
     # Command loop
     while True:
         try:
-            raw = console.input(
-                f"  [{UNM_CHERRY}]ADRC[/] [{UNM_TURQUOISE}]❯[/] "
-            ).strip()
+            raw = console.input(f"  [{UNM_CHERRY}]ADRC[/] [{UNM_TURQUOISE}]❯[/] ").strip()
 
             if not raw:
                 continue
@@ -132,14 +126,10 @@ def run_interactive(console: Console | None = None) -> None:
 
             else:
                 console.print(f"  [{UNM_CHERRY}]Unknown command:[/] {raw}")
-                console.print(
-                    f"  [{UNM_LOBO_GRAY}]Type 'help' for available commands.[/]\n"
-                )
+                console.print(f"  [{UNM_LOBO_GRAY}]Type 'help' for available commands.[/]\n")
 
         except KeyboardInterrupt:
-            console.print(
-                f"\n\n  [{UNM_LOBO_GRAY}]Interrupted. Goodbye, {initials}.[/]\n"
-            )
+            console.print(f"\n\n  [{UNM_LOBO_GRAY}]Interrupted. Goodbye, {initials}.[/]\n")
             break
         except EOFError:
             break
@@ -163,19 +153,11 @@ def _run_qc(
 
     # Describe the run
     mode_label = (
-        "Detailed + Passed Rules"
-        if passed_rules
-        else "Detailed"
-        if detailed
-        else "Standard"
+        "Detailed + Passed Rules" if passed_rules else "Detailed" if detailed else "Standard"
     )
     console.print()
-    console.print(
-        f"  [{UNM_TURQUOISE}]Starting QC Validation[/]  [{UNM_SILVER}]({mode_label})[/]"
-    )
-    console.print(
-        f"  [{UNM_LOBO_GRAY}]Initials: {initials}  │  Mode: complete_visits[/]"
-    )
+    console.print(f"  [{UNM_TURQUOISE}]Starting QC Validation[/]  [{UNM_SILVER}]({mode_label})[/]")
+    console.print(f"  [{UNM_LOBO_GRAY}]Initials: {initials}  │  Mode: complete_visits[/]")
     display_separator(console)
 
     try:
@@ -215,9 +197,7 @@ def _run_qc(
         )
 
     except SystemExit:
-        console.print(
-            f"\n  [{UNM_CHERRY}]Configuration invalid. Run 'check' to diagnose.[/]\n"
-        )
+        console.print(f"\n  [{UNM_CHERRY}]Configuration invalid. Run 'check' to diagnose.[/]\n")
     except Exception as e:
         console.print(f"\n  [{UNM_CHERRY}]Pipeline failed:[/] [{UNM_SILVER}]{e}[/]\n")
     finally:

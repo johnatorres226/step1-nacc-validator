@@ -237,7 +237,7 @@ jobs:
       - name: Test package installation
         run: |
           pip install dist/*.whl
-          python -c "import udsv4_redcap_qc_validator; print(f'✓ Package imports successfully')"
+          python -c "from pipeline import data_fetch, reports; from cli import cli; print('✓ Package imports successfully')"
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
