@@ -1,11 +1,13 @@
 """Report pipeline — thin orchestration layer over core.pipeline."""
 
+import json as _json
 import logging
 import re
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path as _Path
 from typing import Any
 
 import pandas as pd
@@ -25,6 +27,96 @@ logger = logging.getLogger(__name__)
 # Regex to extract actual failing variable from compatibility error messages
 # Pattern: "('variable_name', [...]) for if {...} then/else {...} - compatibility rule no: X"
 _COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
+
+# NACC check classification lookup (loaded once at first use)
+_CLASSIFICATIONS_PATH = _Path(__file__).parents[3] / "config" / "nacc_check_classifications.json"
+_CHECK_LOOKUP: dict[str, str] = {}
+
+
+def _infer_check_category(error_msg: str) -> str:
+    """Infer check category from error message.
+
+    Args:
+        error_msg: The validation error message
+
+    Returns:
+        'Missingness', 'Plausibility', or 'Conformity' (default)
+    """
+    msg_lc = error_msg.lower()
+    # Missingness: presence/absence rules
+    if any(
+        p in msg_lc
+        for p in (
+            "cannot be blank",
+            "must be blank",
+            "must be present",
+            "conditionally present",
+            "conditionally blank",
+            "cannot be empty",
+            "required field",
+        )
+    ):
+        return "Missingness"
+    # Plausibility: logic/temporal/compatibility rules
+    if any(
+        p in msg_lc
+        for p in (
+            "temporalrules",
+            "compatibility rule",
+            "should not equal",
+            "should equal",
+            "should be less than",
+            "should be greater",
+        )
+    ):
+        return "Plausibility"
+    # Default: value/range checks
+    return "Conformity"
+
+
+def _load_check_lookup() -> dict[str, str]:
+    """Load the pre-scraped NACC check classifications lookup.
+
+    Returns:
+        Dict mapping '{packet}|{form}|{variable}|{category}' -> 'alert' or 'error'.
+        Returns empty dict on any error.
+    """
+    global _CHECK_LOOKUP
+    if _CHECK_LOOKUP:
+        return _CHECK_LOOKUP
+    if not _CLASSIFICATIONS_PATH.exists():
+        logger.warning(
+            "nacc_check_classifications.json not found. "
+            "Run: python src/scrapper/scrape_nacc_checks.py"
+        )
+        return {}
+    try:
+        data = _json.loads(_CLASSIFICATIONS_PATH.read_text(encoding="utf-8"))
+        _CHECK_LOOKUP = data.get("lookup", {})
+        return _CHECK_LOOKUP
+    except Exception:
+        logger.warning("Failed to load nacc_check_classifications.json", exc_info=True)
+        return {}
+
+
+def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg: str) -> str:
+    """Return 'alert' or 'error' for this failure.
+
+    Args:
+        packet: Packet code ('I', 'I4', 'F', 'M')
+        instrument: Instrument name (e.g., 'a1')
+        variable: Variable name (e.g., 'zip')
+        error_msg: The error message string
+
+    Returns:
+        'alert' if classified as such, otherwise 'error'
+    """
+    lookup = _load_check_lookup()
+    if not lookup:
+        return "error"
+    category = _infer_check_category(error_msg)
+    key = f"{packet}|{instrument.lower()}|{variable.lower()}|{category}"
+    return lookup.get(key, "error")
 
 
 def _extract_failing_variable(field_name: str, error_msg: str) -> str:
@@ -170,6 +262,9 @@ def validate_data(
                                 "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
                                 "error_interpretation": "",
+                                "nacc_check_type": _get_nacc_check_type(
+                                    packet_value, instrument_name, actual_variable, msg
+                                ),
                             }
                         )
                 logs.append(
