@@ -104,7 +104,7 @@ def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg:
 
     Args:
         packet: Packet code ('I', 'I4', 'F', 'M')
-        instrument: Instrument name (e.g., 'a1')
+        instrument: Instrument name (e.g., 'a1_participant_demographics')
         variable: Variable name (e.g., 'zip')
         error_msg: The error message string
 
@@ -114,8 +114,14 @@ def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg:
     lookup = _load_check_lookup()
     if not lookup:
         return "error"
+
+    # Extract short form name from full instrument name
+    # e.g., 'a1_participant_demographics' -> 'a1'
+    # e.g., 'c2c2t_neuropsychological_battery_scores' -> 'c2c2t'
+    form = instrument.lower().split("_")[0] if "_" in instrument else instrument.lower()
+
     category = _infer_check_category(error_msg)
-    key = f"{packet}|{instrument.lower()}|{variable.lower()}|{category}"
+    key = f"{packet}|{form}|{variable.lower()}|{category}"
     return lookup.get(key, "error")
 
 
