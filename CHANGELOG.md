@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-03-13
+
+### Added
+- **REDCap Repeat Instance in JSON Output**: QC Status Report JSON payload now includes `redcap_repeat_instance` field for each participant record
+  - Enables downstream processes to correctly identify and process repeating events
+  - Supports proper record matching and data integration workflows
+  - Field extracted from source data and included in JSON tracking export
+
 ## [1.1.0] - 2026-03-13
 
 ### Fixed
