@@ -60,9 +60,7 @@ class TestQCConfig:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_path = f.name
         try:
-            original = QCConfig(
-                api_token="file_test_token", instruments=["file_test_instrument"]
-            )
+            original = QCConfig(api_token="file_test_token", instruments=["file_test_instrument"])
             original.to_file(temp_path)
             loaded = QCConfig.from_file(temp_path)
             assert loaded.api_token == original.api_token

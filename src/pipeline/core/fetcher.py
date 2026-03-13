@@ -121,7 +121,7 @@ def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:
     missing = [f for f in REQUIRED_FIELDS if f not in df.columns]
     if missing:
         raise ValueError(f"Missing required fields: {', '.join(missing)}")
-    
+
     # Add packet field with default value if missing from REDCap export
     if "packet" not in df.columns:
         logger.warning(
@@ -129,7 +129,7 @@ def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:
             "To fix this: add the 'packet' field to your REDCap report configuration."
         )
         df["packet"] = "I"  # Default to Initial Visit
-    
+
     return df
 
 

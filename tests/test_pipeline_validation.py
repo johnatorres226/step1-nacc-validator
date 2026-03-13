@@ -51,9 +51,7 @@ class TestValidationExecution:
         }
         qc = QualityCheck(schema=schema, pk_field="ptid")
 
-        passed, sys_failure, errors, error_tree = qc.validate_record(
-            {"ptid": "TEST001", "age": 65}
-        )
+        passed, sys_failure, errors, error_tree = qc.validate_record({"ptid": "TEST001", "age": 65})
 
         assert passed is True
         assert sys_failure is False

@@ -110,9 +110,7 @@ class TestExportDataFetched:
 class TestExportJsonTracking:
     def test_passed_status(self, tmp_path):
         """All participants pass when no errors exist."""
-        path = export_json_tracking(
-            _records_df(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG
-        )
+        path = export_json_tracking(_records_df(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG)
         data = json.loads(path.read_text())
         assert len(data) == 2
         assert all(r["qc_status"] == "PASSED" for r in data)
@@ -121,9 +119,7 @@ class TestExportJsonTracking:
 
     def test_failed_status(self, tmp_path):
         """Participants with errors get Failed status listing instruments."""
-        path = export_json_tracking(
-            _records_df(), _errors_df(), tmp_path, DATE_TAG, TIME_TAG
-        )
+        path = export_json_tracking(_records_df(), _errors_df(), tmp_path, DATE_TAG, TIME_TAG)
         data = json.loads(path.read_text())
         p001 = next(r for r in data if r["ptid"] == "P001")
         assert "Failed in instruments:" in p001["qc_status"]
@@ -141,22 +137,22 @@ class TestExportJsonTracking:
     def test_upload_ready_path(self, tmp_path):
         alt = tmp_path / "upload_ready"
         path = export_json_tracking(
-            _records_df(), None, tmp_path, DATE_TAG, TIME_TAG,
+            _records_df(),
+            None,
+            tmp_path,
+            DATE_TAG,
+            TIME_TAG,
             upload_ready_path=str(alt),
         )
         assert path.parent == alt
         assert alt.exists()
 
     def test_filename_format(self, tmp_path):
-        path = export_json_tracking(
-            _records_df(), None, tmp_path, DATE_TAG, TIME_TAG
-        )
+        path = export_json_tracking(_records_df(), None, tmp_path, DATE_TAG, TIME_TAG)
         assert path.name == f"QC_Status_Report_{DATE_TAG}_{TIME_TAG}.json"
 
     def test_empty_all_produces_empty_json(self, tmp_path):
-        path = export_json_tracking(
-            pd.DataFrame(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG
-        )
+        path = export_json_tracking(pd.DataFrame(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG)
         assert json.loads(path.read_text()) == []
 
     def test_none_all_produces_empty_json(self, tmp_path):
@@ -165,9 +161,7 @@ class TestExportJsonTracking:
 
     def test_includes_redcap_repeat_instance(self, tmp_path):
         """Verify that redcap_repeat_instance is included in JSON output."""
-        path = export_json_tracking(
-            _records_df(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG
-        )
+        path = export_json_tracking(_records_df(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG)
         data = json.loads(path.read_text())
         assert len(data) == 2
         assert all("redcap_repeat_instance" in r for r in data)

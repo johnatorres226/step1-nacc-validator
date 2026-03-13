@@ -23,16 +23,16 @@ from src.pipeline.reports.report_pipeline import _extract_failing_variable
 
 def test_extract_failing_variable_from_compatibility_error():
     """Test that _extract_failing_variable correctly parses compatibility errors."""
-    
+
     # Compatibility error format: "('variable', [...]) for if {...} then/else {...}"
     error_msg = (
         "('apraxsp', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}} "
         "then {'apraxsp': {'allowed': [1, 2, 3]}} - compatibility rule no: 0"
     )
-    
+
     # Field name is the trigger variable (wrong)
     field_name = "othersign"
-    
+
     # Should extract 'apraxsp' from the error message
     actual_var = _extract_failing_variable(field_name, error_msg)
     assert actual_var == "apraxsp", f"Expected 'apraxsp', got '{actual_var}'"
@@ -40,12 +40,12 @@ def test_extract_failing_variable_from_compatibility_error():
 
 def test_extract_failing_variable_else_clause():
     """Test extraction for ELSE clause compatibility errors."""
-    
+
     error_msg = (
         "('result_var', ['unallowed value 50']) for if {'trigger_var': {'allowed': [1]}} "
         "else {'result_var': {'allowed': [30, 40]}} - compatibility rule no: 0"
     )
-    
+
     field_name = "trigger_var"
     actual_var = _extract_failing_variable(field_name, error_msg)
     assert actual_var == "result_var"
@@ -53,23 +53,23 @@ def test_extract_failing_variable_else_clause():
 
 def test_extract_failing_variable_non_compatibility_error():
     """Non-compatibility errors should return the original field_name unchanged."""
-    
+
     # Regular validation error (not compatibility)
     error_msg = "unallowed value"
     field_name = "some_field"
-    
+
     actual_var = _extract_failing_variable(field_name, error_msg)
     assert actual_var == field_name, "Non-compatibility errors should return field_name"
 
 
 def test_extract_failing_variable_with_special_characters():
     """Test variable names with underscores and numbers."""
-    
+
     error_msg = (
         "('var_name_123', ['must be empty']) for if {'trigger': {'allowed': [1]}} "
         "then {'var_name_123': {'filled': False}} - compatibility rule no: 2"
     )
-    
+
     field_name = "trigger"
     actual_var = _extract_failing_variable(field_name, error_msg)
     assert actual_var == "var_name_123"
@@ -77,7 +77,7 @@ def test_extract_failing_variable_with_special_characters():
 
 def test_extract_failing_variable_real_world_b8_example():
     """Test with actual error message from NM0117 b8_neurol output."""
-    
+
     # This is the exact error message format from the production CSV
     error_msg = (
         "('apraxsp', ['unallowed value 0']) for if "
@@ -100,27 +100,25 @@ def test_extract_failing_variable_real_world_b8_example():
         "'dysarth': {'allowed': [1, 2, 3]}, "
         "'apraxsp': {'allowed': [1, 2, 3]}} - compatibility rule no: 2"
     )
-    
+
     field_name = "othersign"
     actual_var = _extract_failing_variable(field_name, error_msg)
-    
+
     # Should extract 'apraxsp' not 'othersign'
     assert actual_var == "apraxsp", (
-        f"Real-world b8_neurol error should extract 'apraxsp' from message, "
-        f"got '{actual_var}'"
+        f"Real-world b8_neurol error should extract 'apraxsp' from message, got '{actual_var}'"
     )
 
 
 def test_extract_failing_variable_with_nested_quotes():
     """Test extraction with nested quotes in error message."""
-    
+
     error_msg = (
         "('complex_var', [\"value can't be 0\"]) for if "
         "{'trigger': {'allowed': [1]}} then "
         "{'complex_var': {'allowed': [1, 2]}} - compatibility rule no: 5"
     )
-    
+
     field_name = "trigger"
     actual_var = _extract_failing_variable(field_name, error_msg)
     assert actual_var == "complex_var"
-
