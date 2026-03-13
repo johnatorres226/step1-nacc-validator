@@ -121,8 +121,12 @@ def validate_data(
                                 "current_value": record_dict.get(field_name, ""),
                                 "packet": packet_value,
                                 "json_rule_path": rules_path,
-                                "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                                "redcap_repeat_instance": record_dict.get("redcap_repeat_instance", ""),
+                                "redcap_event_name": record_dict.get(
+                                    "redcap_event_name", ""
+                                ),
+                                "redcap_repeat_instance": record_dict.get(
+                                    "redcap_repeat_instance", ""
+                                ),
                                 "visitdate": record_dict.get("visitdate", ""),
                                 "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
