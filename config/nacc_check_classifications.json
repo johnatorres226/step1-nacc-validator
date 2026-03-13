@@ -1,0 +1,291 @@
+{
+  "_meta": {
+    "scraped_at": "2026-03-13T00:00:00Z",
+    "sources": {
+      "IVP": "https://redcap.naccdata.org/surveys/?__report=F3ED7TRJKCRWW4ET",
+      "FVP": "https://redcap.naccdata.org/surveys/?__report=NPT99LJFXRWRAM7N"
+    },
+    "total_checks": 25,
+    "alert_count": 22,
+    "note": "Sample data based on known alerts. Run scraper when NACC page structure is verified."
+  },
+  "checks": [
+    {
+      "check_code": "a1-ivp-c-108",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "zip",
+      "check_category": "Conformity",
+      "short_desc": "ZIP conforms",
+      "full_desc": "Q14. ZIP (zip code) must be between 006 and 999, or blank"
+    },
+    {
+      "check_code": "a1-ivp-c-124",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "priocc",
+      "check_category": "Conformity",
+      "short_desc": "PRIOCC conforms",
+      "full_desc": "Prior occupation must conform to expected values"
+    },
+    {
+      "check_code": "a1-ivp-p-1001",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "raceunkn",
+      "check_category": "Plausibility",
+      "short_desc": "If one race is known, cannot check Unknown",
+      "full_desc": "If one race is known, cannot check Unknown"
+    },
+    {
+      "check_code": "a1-ivp-p-1002",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "gendkn",
+      "check_category": "Plausibility",
+      "short_desc": "Gender plausibility check",
+      "full_desc": "Gender plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-p-1003",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "gennoans",
+      "check_category": "Plausibility",
+      "short_desc": "Gender no answer plausibility",
+      "full_desc": "Gender no answer plausibility"
+    },
+    {
+      "check_code": "a1-ivp-p-1004",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "sexorndnk",
+      "check_category": "Plausibility",
+      "short_desc": "Sexual orientation plausibility",
+      "full_desc": "Sexual orientation plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-p-1005",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "sexornnoan",
+      "check_category": "Plausibility",
+      "short_desc": "Sexual orientation no answer",
+      "full_desc": "Sexual orientation no answer plausibility"
+    },
+    {
+      "check_code": "a1-ivp-p-1006",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "served",
+      "check_category": "Plausibility",
+      "short_desc": "Military service plausibility",
+      "full_desc": "Military service plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-p-1007",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "frmdatea1",
+      "check_category": "Plausibility",
+      "short_desc": "Form date plausibility",
+      "full_desc": "Form date plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-p-1008",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "livsitua",
+      "check_category": "Plausibility",
+      "short_desc": "Living situation plausibility",
+      "full_desc": "Living situation plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-p-1009",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1",
+      "variable": "residenc",
+      "check_category": "Plausibility",
+      "short_desc": "Residence plausibility",
+      "full_desc": "Residence plausibility check"
+    },
+    {
+      "check_code": "a1-i4vp-p-1001",
+      "error_type": "alert",
+      "packet": "I4",
+      "form": "a1",
+      "variable": "birthmo",
+      "check_category": "Plausibility",
+      "short_desc": "BIRTHMO aligns with UDSv3",
+      "full_desc": "BIRTHMO aligns with birth month from UDSv3"
+    },
+    {
+      "check_code": "a1a-ivp-p-1003",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1a",
+      "variable": "naccreas",
+      "check_category": "Plausibility",
+      "short_desc": "A1a plausibility check",
+      "full_desc": "A1a plausibility check"
+    },
+    {
+      "check_code": "a1a-ivp-p-1008",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a1a",
+      "variable": "refersc",
+      "check_category": "Plausibility",
+      "short_desc": "Referral source plausibility",
+      "full_desc": "Referral source plausibility check"
+    },
+    {
+      "check_code": "a2-ivp-p-1001",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a2",
+      "variable": "inlivwth",
+      "check_category": "Plausibility",
+      "short_desc": "Lives with informant",
+      "full_desc": "Lives with informant plausibility check"
+    },
+    {
+      "check_code": "a2-ivp-p-1002",
+      "error_type": "alert",
+      "packet": "I",
+      "form": "a2",
+      "variable": "inknown",
+      "check_category": "Plausibility",
+      "short_desc": "Informant knowledge check",
+      "full_desc": "Informant knowledge plausibility check"
+    },
+    {
+      "check_code": "a1-ivp-c-002",
+      "error_type": "error",
+      "packet": "I",
+      "form": "a1",
+      "variable": "birthmo",
+      "check_category": "Conformity",
+      "short_desc": "BIRTHMO conforms",
+      "full_desc": "Q1a. BIRTHMO (birth month) must be between 1 and 12"
+    },
+    {
+      "check_code": "a1-fvp-c-108",
+      "error_type": "alert",
+      "packet": "F",
+      "form": "a1",
+      "variable": "zip",
+      "check_category": "Conformity",
+      "short_desc": "ZIP conforms",
+      "full_desc": "Q14. ZIP (zip code) must be between 006 and 999, or blank"
+    },
+    {
+      "check_code": "a1-fvp-p-1001",
+      "error_type": "alert",
+      "packet": "F",
+      "form": "a1",
+      "variable": "raceunkn",
+      "check_category": "Plausibility",
+      "short_desc": "If one race is known, cannot check Unknown",
+      "full_desc": "If one race is known, cannot check Unknown"
+    },
+    {
+      "check_code": "a1-fvp-p-1006",
+      "error_type": "alert",
+      "packet": "F",
+      "form": "a1",
+      "variable": "served",
+      "check_category": "Plausibility",
+      "short_desc": "Military service plausibility",
+      "full_desc": "Military service plausibility check"
+    },
+    {
+      "check_code": "a1-fvp-p-1008",
+      "error_type": "alert",
+      "packet": "F",
+      "form": "a1",
+      "variable": "livsitua",
+      "check_category": "Plausibility",
+      "short_desc": "Living situation plausibility",
+      "full_desc": "Living situation plausibility check"
+    },
+    {
+      "check_code": "a1-fvp-p-1009",
+      "error_type": "alert",
+      "packet": "F",
+      "form": "a1",
+      "variable": "residenc",
+      "check_category": "Plausibility",
+      "short_desc": "Residence plausibility",
+      "full_desc": "Residence plausibility check"
+    },
+    {
+      "check_code": "a1-i4vp-p-1008",
+      "error_type": "error",
+      "packet": "I4",
+      "form": "a1",
+      "variable": "birthmo",
+      "check_category": "Plausibility",
+      "short_desc": "BIRTHMO aligns with birth month from UDSv3",
+      "full_desc": "BIRTHMO aligns with birth month from UDSv3"
+    },
+    {
+      "check_code": "b1-ivp-m-001",
+      "error_type": "error",
+      "packet": "I",
+      "form": "b1",
+      "variable": "tobac100",
+      "check_category": "Missingness",
+      "short_desc": "TOBAC100 required",
+      "full_desc": "TOBAC100 cannot be blank"
+    },
+    {
+      "check_code": "b1-ivp-c-001",
+      "error_type": "error",
+      "packet": "I",
+      "form": "b1",
+      "variable": "tobac100",
+      "check_category": "Conformity",
+      "short_desc": "TOBAC100 conforms",
+      "full_desc": "TOBAC100 must be 0 or 1"
+    }
+  ],
+  "lookup": {
+    "I|a1|zip|Conformity": "alert",
+    "I|a1|priocc|Conformity": "alert",
+    "I|a1|raceunkn|Plausibility": "alert",
+    "I|a1|gendkn|Plausibility": "alert",
+    "I|a1|gennoans|Plausibility": "alert",
+    "I|a1|sexorndnk|Plausibility": "alert",
+    "I|a1|sexornnoan|Plausibility": "alert",
+    "I|a1|served|Plausibility": "alert",
+    "I|a1|frmdatea1|Plausibility": "alert",
+    "I|a1|livsitua|Plausibility": "alert",
+    "I|a1|residenc|Plausibility": "alert",
+    "I4|a1|birthmo|Plausibility": "alert",
+    "I|a1a|naccreas|Plausibility": "alert",
+    "I|a1a|refersc|Plausibility": "alert",
+    "I|a2|inlivwth|Plausibility": "alert",
+    "I|a2|inknown|Plausibility": "alert",
+    "I|a1|birthmo|Conformity": "error",
+    "F|a1|zip|Conformity": "alert",
+    "F|a1|raceunkn|Plausibility": "alert",
+    "F|a1|served|Plausibility": "alert",
+    "F|a1|livsitua|Plausibility": "alert",
+    "F|a1|residenc|Plausibility": "alert",
+    "I4|a1|birthmo|Plausibility": "error",
+    "I|b1|tobac100|Missingness": "error",
+    "I|b1|tobac100|Conformity": "error"
+  }
+}
