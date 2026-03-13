@@ -4,6 +4,7 @@ import logging
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
@@ -121,6 +122,9 @@ def validate_data(
                                 "packet": packet_value,
                                 "json_rule_path": rules_path,
                                 "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                                "redcap_repeat_instance": record_dict.get("redcap_repeat_instance", ""),
+                                "visitdate": record_dict.get("visitdate", ""),
+                                "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
                             }
                         )
@@ -173,6 +177,9 @@ def validate_data(
                         else "unknown"
                     ),
                     "redcap_event_name": record_dict.get("redcap_event_name", ""),
+                    "redcap_repeat_instance": record_dict.get("redcap_repeat_instance", ""),
+                    "visitdate": record_dict.get("visitdate", ""),
+                    "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "discriminant": "",
                 }
             )

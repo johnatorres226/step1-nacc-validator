@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-03-13
+
+### Changed
+- **Enhanced Error Dataset Output**: Error reports now include additional fields for improved error tracking and resolution:
+  - `redcap_repeat_instance`: REDCap event instance identifier
+  - `visitdate`: Visit date from the record
+  - `qc_date`: Timestamp when QC validation was performed
+
 ## [1.0.0] - 2026-03-09
 
 ### Added
