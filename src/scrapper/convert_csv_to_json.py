@@ -31,9 +31,15 @@ _PACKET_LABEL_MAP = {
 def _extract_packet_code(packet_label: str) -> str:
     """Map packet label to internal packet code."""
     label_lc = packet_label.strip().lower()
-    for pattern, code in _PACKET_LABEL_MAP.items():
-        if label_lc.startswith(pattern.split(" - ")[0]):
+    
+    # Check longer patterns first to avoid "i4" matching "i"
+    # Sort by pattern length descending
+    sorted_patterns = sorted(_PACKET_LABEL_MAP.items(), key=lambda x: -len(x[0]))
+    for pattern, code in sorted_patterns:
+        prefix = pattern.split(" - ")[0]
+        if label_lc.startswith(prefix):
             return code
+    
     # Fallback
     if "initial" in label_lc and "existing" in label_lc:
         return "I4"

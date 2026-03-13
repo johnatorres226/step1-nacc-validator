@@ -104,6 +104,16 @@ def _load_check_lookup() -> dict[str, str]:
         return {}
 
 
+# Form name aliases: instrument prefix -> NACC form name(s) to try
+_FORM_ALIASES: dict[str, list[str]] = {
+    "c2c2t": ["c2", "c2t"],  # Combined C2/C2T instrument
+    "form": ["uds header"],  # form_header -> uds header
+}
+
+# Category fallback order when primary doesn't match
+_CATEGORY_FALLBACKS = ["Conformity", "Missingness", "Plausibility"]
+
+
 def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg: str) -> dict:
     """Return full NACC check metadata for this failure.
 
@@ -125,23 +135,41 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
     # e.g., 'a1_participant_demographics' -> 'a1'
     # e.g., 'c2c2t_neuropsychological_battery_scores' -> 'c2c2t'
     form = instrument.lower().split("_")[0] if "_" in instrument else instrument.lower()
+    var_lc = variable.lower()
 
-    category = _infer_check_category(error_msg)
-    key = f"{packet}|{form}|{variable.lower()}|{category}"
+    # Build list of forms to try (original + aliases)
+    forms_to_try = [form] + _FORM_ALIASES.get(form, [])
     
-    check = _CHECK_DETAILS.get(key)
-    if check:
-        return {
-            "error_type": check.get("error_type", "error"),
-            "check_code": check.get("check_code", ""),
-            "interpretation": check.get("full_desc", ""),
-        }
-    # Fallback: at least return error_type from simple lookup
-    return {
-        "error_type": lookup.get(key, "error"),
-        "check_code": "",
-        "interpretation": "",
-    }
+    # Infer category from error message
+    inferred_category = _infer_check_category(error_msg)
+    
+    # Try each form/category combination
+    for try_form in forms_to_try:
+        # First try inferred category
+        key = f"{packet}|{try_form}|{var_lc}|{inferred_category}"
+        check = _CHECK_DETAILS.get(key)
+        if check:
+            return {
+                "error_type": check.get("error_type", "error"),
+                "check_code": check.get("check_code", ""),
+                "interpretation": check.get("full_desc", ""),
+            }
+        
+        # Then try fallback categories
+        for fallback_cat in _CATEGORY_FALLBACKS:
+            if fallback_cat == inferred_category:
+                continue  # Already tried
+            key = f"{packet}|{try_form}|{var_lc}|{fallback_cat}"
+            check = _CHECK_DETAILS.get(key)
+            if check:
+                return {
+                    "error_type": check.get("error_type", "error"),
+                    "check_code": check.get("check_code", ""),
+                    "interpretation": check.get("full_desc", ""),
+                }
+    
+    # No match found
+    return default
 
 
 def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg: str) -> str:
