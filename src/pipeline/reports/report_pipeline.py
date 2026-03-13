@@ -31,6 +31,7 @@ _COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
 # NACC check classification lookup (loaded once at first use)
 _CLASSIFICATIONS_PATH = _Path(__file__).parents[3] / "config" / "nacc_check_classifications.json"
 _CHECK_LOOKUP: dict[str, str] = {}
+_CHECK_DETAILS: dict[str, dict] = {}  # Full check metadata by key
 
 
 def _infer_check_category(error_msg: str) -> str:
@@ -81,26 +82,30 @@ def _load_check_lookup() -> dict[str, str]:
         Dict mapping '{packet}|{form}|{variable}|{category}' -> 'alert' or 'error'.
         Returns empty dict on any error.
     """
-    global _CHECK_LOOKUP
+    global _CHECK_LOOKUP, _CHECK_DETAILS
     if _CHECK_LOOKUP:
         return _CHECK_LOOKUP
     if not _CLASSIFICATIONS_PATH.exists():
         logger.warning(
             "nacc_check_classifications.json not found. "
-            "Run: python src/scrapper/scrape_nacc_checks.py"
+            "Run: python src/scrapper/convert_csv_to_json.py"
         )
         return {}
     try:
         data = _json.loads(_CLASSIFICATIONS_PATH.read_text(encoding="utf-8"))
         _CHECK_LOOKUP = data.get("lookup", {})
+        # Build detailed lookup from checks array
+        for check in data.get("checks", []):
+            key = f"{check['packet']}|{check['form']}|{check['variable']}|{check['check_category']}"
+            _CHECK_DETAILS[key] = check
         return _CHECK_LOOKUP
     except Exception:
         logger.warning("Failed to load nacc_check_classifications.json", exc_info=True)
         return {}
 
 
-def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg: str) -> str:
-    """Return 'alert' or 'error' for this failure.
+def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg: str) -> dict:
+    """Return full NACC check metadata for this failure.
 
     Args:
         packet: Packet code ('I', 'I4', 'F', 'M')
@@ -109,11 +114,12 @@ def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg:
         error_msg: The error message string
 
     Returns:
-        'alert' if classified as such, otherwise 'error'
+        Dict with keys: error_type, check_code, interpretation
     """
     lookup = _load_check_lookup()
+    default = {"error_type": "error", "check_code": "", "interpretation": ""}
     if not lookup:
-        return "error"
+        return default
 
     # Extract short form name from full instrument name
     # e.g., 'a1_participant_demographics' -> 'a1'
@@ -122,7 +128,25 @@ def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg:
 
     category = _infer_check_category(error_msg)
     key = f"{packet}|{form}|{variable.lower()}|{category}"
-    return lookup.get(key, "error")
+    
+    check = _CHECK_DETAILS.get(key)
+    if check:
+        return {
+            "error_type": check.get("error_type", "error"),
+            "check_code": check.get("check_code", ""),
+            "interpretation": check.get("full_desc", ""),
+        }
+    # Fallback: at least return error_type from simple lookup
+    return {
+        "error_type": lookup.get(key, "error"),
+        "check_code": "",
+        "interpretation": "",
+    }
+
+
+def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg: str) -> str:
+    """Return 'alert' or 'error' for this failure (backward compatibility)."""
+    return _get_nacc_check_info(packet, instrument, variable, error_msg)["error_type"]
 
 
 def _extract_failing_variable(field_name: str, error_msg: str) -> str:
@@ -249,6 +273,11 @@ def validate_data(
                         # (fixes bug where trigger variable is logged instead of failing variable)
                         actual_variable = _extract_failing_variable(field_name, msg)
                         
+                        # Get full NACC check metadata (error_type, check_code, interpretation)
+                        nacc_info = _get_nacc_check_info(
+                            packet_value, instrument_name, actual_variable, msg
+                        )
+                        
                         errors.append(
                             {
                                 primary_key_field: pk_value,
@@ -267,10 +296,9 @@ def validate_data(
                                 "visitdate": record_dict.get("visitdate", ""),
                                 "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
-                                "error_interpretation": "",
-                                "nacc_check_type": _get_nacc_check_type(
-                                    packet_value, instrument_name, actual_variable, msg
-                                ),
+                                "nacc_check_code": nacc_info["check_code"],
+                                "nacc_check_type": nacc_info["error_type"],
+                                "nacc_interpretation": nacc_info["interpretation"],
                             }
                         )
                 logs.append(
