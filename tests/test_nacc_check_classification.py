@@ -1,7 +1,5 @@
 """Tests for NACC check type classification functions."""
 
-import pytest
-
 
 def test_get_nacc_check_type_returns_error_when_no_file(monkeypatch, tmp_path):
     """If classifications file is missing, default to 'error'."""
@@ -167,8 +165,9 @@ class TestLoadCheckLookup:
         assert result == cached
 
     def test_loads_lookup_from_file(self, monkeypatch, tmp_path):
-        from src.pipeline.reports import report_pipeline
         import json
+
+        from src.pipeline.reports import report_pipeline
 
         # Create a test file
         test_file = tmp_path / "test_classifications.json"
@@ -193,8 +192,9 @@ class TestLoadCheckLookup:
         assert result == {}
 
     def test_returns_empty_dict_when_lookup_key_missing(self, monkeypatch, tmp_path):
-        from src.pipeline.reports import report_pipeline
         import json
+
+        from src.pipeline.reports import report_pipeline
 
         # Create a file without 'lookup' key
         test_file = tmp_path / "no_lookup.json"

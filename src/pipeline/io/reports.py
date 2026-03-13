@@ -85,7 +85,11 @@ def export_json_tracking(
 
         for _, row in unique.iterrows():
             ptid, event = row["ptid"], row["redcap_event_name"]
-            event_instance = row.get("redcap_repeat_instance", "") if "redcap_repeat_instance" in row else ""
+            event_instance = (
+                row.get("redcap_repeat_instance", "")
+                if "redcap_repeat_instance" in row
+                else ""
+            )
 
             # Determine failed instruments
             failed: list[str] = []

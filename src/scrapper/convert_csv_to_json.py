@@ -158,7 +158,7 @@ def main() -> int:
     # Write output
     _OUTPUT_PATH.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
     
-    print(f"\n=== Summary ===")
+    print("\n=== Summary ===")
     print(f"Total checks: {len(all_checks)}")
     print(f"Alerts: {alert_count}")
     print(f"Errors: {len(all_checks) - alert_count}")
