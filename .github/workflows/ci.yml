@@ -7,6 +7,98 @@ on:
     branches: [ main, dev ]
 
 jobs:
+  # Verify no unauthorized changes to external packages
+  check-external-packages:
+    name: External Package Protection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for unauthorized external package changes
+        run: |
+          echo "🔍 Checking for changes to protected external packages..."
+          
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+          
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "⚠️  Could not determine changed files, checking against HEAD"
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || echo "")
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          echo ""
+          
+          VIOLATIONS=$(echo "$CHANGED_FILES" | grep "^nacc_form_validator/" | grep -v "__pycache__" | grep -v ".pytest_cache" || true)
+          
+          if [ -n "$VIOLATIONS" ]; then
+            echo "❌ ERROR: Unauthorized changes to external package detected!"
+            echo ""
+            echo "The following files in 'nacc_form_validator' were modified:"
+            echo "$VIOLATIONS"
+            echo ""
+            echo "=========================================="
+            echo "POLICY VIOLATION"
+            echo "=========================================="
+            echo ""
+            echo "The 'nacc_form_validator' package is an EXTERNAL engine"
+            echo "that must NOT be modified in this repository."
+            echo ""
+            echo "Please:"
+            echo "  1. Revert changes to nacc_form_validator"
+            echo "  2. See docs/external-package-policy.md for details"
+            echo ""
+            exit 1
+          fi
+          
+          echo "✅ No unauthorized changes to external packages"
+
+  # PRs to main must update changelog and version
+  pr-to-main-checks:
+    name: Changelog & Version Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check CHANGELOG.md was updated
+        run: |
+          echo "Checking if CHANGELOG.md was modified..."
+          git diff --name-only origin/main...HEAD | grep -q "CHANGELOG.md" || {
+            echo "❌ CHANGELOG.md was not updated"
+            echo "Please update CHANGELOG.md with details of your changes"
+            exit 1
+          }
+          echo "✅ CHANGELOG.md was updated"
+      
+      - name: Check version was updated
+        run: |
+          echo "Checking if version was updated in pyproject.toml..."
+          git diff origin/main...HEAD -- pyproject.toml | grep -q "^+version" || {
+            echo "❌ Version was not updated in pyproject.toml"
+            echo "Please bump the version number appropriately"
+            exit 1
+          }
+          echo "✅ Version was updated in pyproject.toml"
+      
+      - name: Validate version format
+        run: |
+          VERSION=$(grep -E '^version = ' pyproject.toml | cut -d '"' -f2)
+          echo "Current version: $VERSION"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "❌ Version format is invalid"
+            echo "Expected format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-prerelease"
+            exit 1
+          fi
+          echo "✅ Version format is valid"
+
+  # Run tests across Python versions
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -39,8 +131,7 @@ jobs:
             venv-${{ runner.os }}-${{ matrix.python-version }}-
       
       - name: Install dependencies
-        run: |
-          poetry install --with dev
+        run: poetry install --with dev
       
       - name: Run tests with coverage
         run: |
@@ -54,46 +145,103 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: false
 
+  # Code quality checks
   lint:
-    name: Lint
+    name: Lint (Ruff)
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install dependencies
+      
+      - name: Install Ruff
         run: |
           python -m pip install --upgrade pip
           pip install ruff
-
+      
       - name: Run Ruff lint
-        run: |
-          ruff check --config ruff.toml src tests || echo "Linting issues found - review recommended"
+        run: ruff check --config ruff.toml src tests
       
       - name: Run Ruff format check
-        run: |
-          ruff format --check src tests || echo "Format issues found - review recommended"
+        run: ruff format --check src tests
 
+  # Type checking
   type-check:
-    name: Type Check
+    name: Type Check (mypy)
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install dependencies
+      
+      - name: Install mypy
         run: |
           python -m pip install --upgrade pip
           pip install mypy types-requests types-python-dateutil
-
+      
       - name: Run mypy
+        run: mypy --config-file mypy.ini src
+
+  # Verify package builds correctly
+  build-verify:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-build-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            venv-build-${{ runner.os }}-
+      
+      - name: Install dependencies
+        run: poetry install --with dev
+      
+      - name: Clean build artifacts
         run: |
-          mypy --config-file mypy.ini src || echo "Type check issues found - review recommended"
+          rm -rf dist/ build/ *.egg-info
+          echo "Cleaned previous build artifacts"
+      
+      - name: Build package
+        run: poetry build
+      
+      - name: Validate package metadata
+        run: |
+          poetry check
+          echo "✓ Package structure is valid"
+      
+      - name: Test package installation
+        run: |
+          pip install dist/*.whl
+          python -c "import udsv4_redcap_qc_validator; print(f'✓ Package imports successfully')"
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-py${{ matrix.python-version || '3.12' }}
+          path: dist/
+          retention-days: 7

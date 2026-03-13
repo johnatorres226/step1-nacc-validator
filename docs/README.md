@@ -26,6 +26,12 @@ This documentation provides comprehensive coverage of the UDSv4 REDCap Quality C
    - Data validation and transformation
    - Filter logic and payload construction
 
+4. **[GitHub Workflows & CI/CD](github-workflows.md)**
+   - Continuous Integration workflow
+   - Continuous Deployment workflow
+   - Workflow optimization and best practices
+   - Troubleshooting and monitoring
+
 ## System Architecture
 
 The UDSv4 QC Validator follows a modular architecture with clear separation of concerns:
@@ -236,6 +242,7 @@ The system supports development and testing workflows:
 - [Project Guidelines](guidelines.md)
 - [Configuration Management Documentation](configuration-management.md)
 - [Data Fetching System Documentation](data-fetching-system.md)
+- [GitHub Workflows & CI/CD](github-workflows.md)
 
 ### Development Resources
 

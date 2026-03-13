@@ -1,6 +1,7 @@
 # Local
 flowcharts/
 .github/skills/
+docs/Patches/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
