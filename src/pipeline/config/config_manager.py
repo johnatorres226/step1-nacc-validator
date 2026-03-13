@@ -329,4 +329,10 @@ def get_config(force_reload: bool = False, skip_validation: bool = False) -> QCC
 def get_core_columns() -> list[str]:
     """Returns the core REDCap columns."""
     config = get_config()
-    return [config.primary_key_field, "redcap_event_name", "packet"]
+    return [
+        config.primary_key_field,
+        "redcap_event_name",
+        "redcap_repeat_instance",
+        "packet",
+        "visitdate",
+    ]

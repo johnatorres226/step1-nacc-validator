@@ -3,6 +3,42 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-03-13
+
+### Added
+- **REDCap Repeat Instance in JSON Output**: QC Status Report JSON payload now includes `redcap_repeat_instance` field for each participant record
+  - Enables downstream processes to correctly identify and process repeating events
+  - Supports proper record matching and data integration workflows
+  - Field extracted from source data and included in JSON tracking export
+
+## [1.1.0] - 2026-03-13
+
+### Fixed
+- **Compatibility Rule Variable Logging**: Compatibility rule errors now correctly report the actual failing variable instead of the trigger variable
+  - When a compatibility rule fails (e.g., if `othersign=1` then `apraxsp` must be in [1,2,3]), the error is now logged under the failing variable (`apraxsp`) rather than the trigger variable (`othersign`)
+  - Implemented regex-based extraction in `report_pipeline.py` to parse error messages and identify the correct variable
+  - Added comprehensive test suite (`test_compatibility_variable_logging.py`) to detect this issue in future dependency updates
+  - Resolves misidentified error variables in CSV output reports, improving error traceability and diagnosis
+  - Note: This is a workaround for an upstream bug in `nacc-form-validator` package (https://github.com/naccdata/nacc-form-validator)
+
+## [1.0.3] - 2026-03-13
+
+### Added
+- **Error Interpretation Field**: Added blank `error_interpretation` field to error dataset output for staging error interpretation feature
+  - Prepares infrastructure for future error interpretation and guidance system
+  - Field currently blank, ready for future enhancement
+
+## [1.0.2] - 2026-03-13
+
+### Fixed
+- **visitdate and redcap_repeat_instance Propagation**: These fields are now properly included in error reports for all instruments, not just form_header
+  - Added `visitdate` and `redcap_repeat_instance` to core columns list
+  - Ensures all instrument error records include visit date and repeat instance information
+- **Code Quality Improvements**:
+  - Fixed line-too-long linting issues in report_pipeline.py
+  - Fixed mypy type checking errors (added type annotations, proper exclusions)
+  - Updated CI workflow with `--explicit-package-bases` flag for mypy
+
 ## [1.0.1] - 2026-03-13
 
 ### Changed

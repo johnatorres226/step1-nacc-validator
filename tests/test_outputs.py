@@ -31,6 +31,7 @@ def _records_df() -> pd.DataFrame:
         {
             "ptid": ["P001", "P002"],
             "redcap_event_name": ["visit_1", "visit_1"],
+            "redcap_repeat_instance": ["1", "2"],
             "value": [10, 20],
         }
     )
@@ -161,3 +162,16 @@ class TestExportJsonTracking:
     def test_none_all_produces_empty_json(self, tmp_path):
         path = export_json_tracking(None, None, tmp_path, DATE_TAG, TIME_TAG)
         assert json.loads(path.read_text()) == []
+
+    def test_includes_redcap_repeat_instance(self, tmp_path):
+        """Verify that redcap_repeat_instance is included in JSON output."""
+        path = export_json_tracking(
+            _records_df(), pd.DataFrame(), tmp_path, DATE_TAG, TIME_TAG
+        )
+        data = json.loads(path.read_text())
+        assert len(data) == 2
+        assert all("redcap_repeat_instance" in r for r in data)
+        p001 = next(r for r in data if r["ptid"] == "P001")
+        p002 = next(r for r in data if r["ptid"] == "P002")
+        assert p001["redcap_repeat_instance"] == "1"
+        assert p002["redcap_repeat_instance"] == "2"

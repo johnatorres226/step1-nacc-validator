@@ -1,10 +1,13 @@
 """Report pipeline — thin orchestration layer over core.pipeline."""
 
+import json as _json
 import logging
+import re
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path as _Path
 from typing import Any
 
 import pandas as pd
@@ -20,6 +23,188 @@ from ..io.rule_loader import _NAMESPACE_DISCRIMINANTS, get_rules_for_record
 from ..utils.schema_builder import _build_schema_from_raw
 
 logger = logging.getLogger(__name__)
+
+# Regex to extract actual failing variable from compatibility error messages
+# Pattern: "('variable_name', [...]) for if {...} then/else {...} - compatibility rule no: X"
+_COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
+
+# NACC check classification lookup (loaded once at first use)
+_CLASSIFICATIONS_PATH = _Path(__file__).parents[3] / "config" / "nacc_check_classifications.json"
+_CHECK_LOOKUP: dict[str, str] = {}
+_CHECK_DETAILS: dict[str, dict] = {}  # Full check metadata by key
+
+
+def _infer_check_category(error_msg: str) -> str:
+    """Infer check category from error message.
+
+    Args:
+        error_msg: The validation error message
+
+    Returns:
+        'Missingness', 'Plausibility', or 'Conformity' (default)
+    """
+    msg_lc = error_msg.lower()
+    # Missingness: presence/absence rules
+    if any(
+        p in msg_lc
+        for p in (
+            "cannot be blank",
+            "must be blank",
+            "must be present",
+            "conditionally present",
+            "conditionally blank",
+            "cannot be empty",
+            "required field",
+        )
+    ):
+        return "Missingness"
+    # Plausibility: logic/temporal/compatibility rules
+    if any(
+        p in msg_lc
+        for p in (
+            "temporalrules",
+            "compatibility rule",
+            "should not equal",
+            "should equal",
+            "should be less than",
+            "should be greater",
+        )
+    ):
+        return "Plausibility"
+    # Default: value/range checks
+    return "Conformity"
+
+
+def _load_check_lookup() -> dict[str, str]:
+    """Load the pre-scraped NACC check classifications lookup.
+
+    Returns:
+        Dict mapping '{packet}|{form}|{variable}|{category}' -> 'alert' or 'error'.
+        Returns empty dict on any error.
+    """
+    global _CHECK_LOOKUP, _CHECK_DETAILS
+    if _CHECK_LOOKUP:
+        return _CHECK_LOOKUP
+    if not _CLASSIFICATIONS_PATH.exists():
+        logger.warning(
+            "nacc_check_classifications.json not found. "
+            "Run: python src/scrapper/convert_csv_to_json.py"
+        )
+        return {}
+    try:
+        data = _json.loads(_CLASSIFICATIONS_PATH.read_text(encoding="utf-8"))
+        _CHECK_LOOKUP = data.get("lookup", {})
+        # Build detailed lookup from checks array
+        for check in data.get("checks", []):
+            key = f"{check['packet']}|{check['form']}|{check['variable']}|{check['check_category']}"
+            _CHECK_DETAILS[key] = check
+        return _CHECK_LOOKUP
+    except Exception:
+        logger.warning("Failed to load nacc_check_classifications.json", exc_info=True)
+        return {}
+
+
+# Form name aliases: instrument prefix -> NACC form name(s) to try
+_FORM_ALIASES: dict[str, list[str]] = {
+    "c2c2t": ["c2", "c2t"],  # Combined C2/C2T instrument
+    "form": ["uds header"],  # form_header -> uds header
+}
+
+# Category fallback order when primary doesn't match
+_CATEGORY_FALLBACKS = ["Conformity", "Missingness", "Plausibility"]
+
+
+def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg: str) -> dict:
+    """Return full NACC check metadata for this failure.
+
+    Args:
+        packet: Packet code ('I', 'I4', 'F', 'M')
+        instrument: Instrument name (e.g., 'a1_participant_demographics')
+        variable: Variable name (e.g., 'zip')
+        error_msg: The error message string
+
+    Returns:
+        Dict with keys: error_type, check_code, interpretation
+    """
+    lookup = _load_check_lookup()
+    default = {"error_type": "error", "check_code": "", "interpretation": ""}
+    if not lookup:
+        return default
+
+    # Extract short form name from full instrument name
+    # e.g., 'a1_participant_demographics' -> 'a1'
+    # e.g., 'c2c2t_neuropsychological_battery_scores' -> 'c2c2t'
+    form = instrument.lower().split("_")[0] if "_" in instrument else instrument.lower()
+    var_lc = variable.lower()
+
+    # Build list of forms to try (original + aliases)
+    forms_to_try = [form] + _FORM_ALIASES.get(form, [])
+    
+    # Infer category from error message
+    inferred_category = _infer_check_category(error_msg)
+    
+    # Try each form/category combination
+    for try_form in forms_to_try:
+        # First try inferred category
+        key = f"{packet}|{try_form}|{var_lc}|{inferred_category}"
+        check = _CHECK_DETAILS.get(key)
+        if check:
+            return {
+                "error_type": check.get("error_type", "error"),
+                "check_code": check.get("check_code", ""),
+                "interpretation": check.get("full_desc", ""),
+            }
+        
+        # Then try fallback categories
+        for fallback_cat in _CATEGORY_FALLBACKS:
+            if fallback_cat == inferred_category:
+                continue  # Already tried
+            key = f"{packet}|{try_form}|{var_lc}|{fallback_cat}"
+            check = _CHECK_DETAILS.get(key)
+            if check:
+                return {
+                    "error_type": check.get("error_type", "error"),
+                    "check_code": check.get("check_code", ""),
+                    "interpretation": check.get("full_desc", ""),
+                }
+    
+    # No match found
+    return default
+
+
+def _get_nacc_check_type(packet: str, instrument: str, variable: str, error_msg: str) -> str:
+    """Return 'alert' or 'error' for this failure (backward compatibility)."""
+    return _get_nacc_check_info(packet, instrument, variable, error_msg)["error_type"]
+
+
+def _extract_failing_variable(field_name: str, error_msg: str) -> str:
+    """
+    Extract the actual failing variable from compatibility rule error messages.
+    
+    Bug fix for nacc-form-validator compatibility rule error reporting:
+    When a compatibility rule fails, the error is logged under the trigger variable
+    (IF clause), but the error message contains the actual failing variable (THEN/ELSE clause).
+    
+    Example error message:
+        "('apraxsp', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}} 
+         then {'apraxsp': {'allowed': [1, 2, 3]}} - compatibility rule no: 0"
+    
+    In this case:
+        - field_name = 'othersign' (trigger variable)
+        - actual failing variable = 'apraxsp' (extracted from error message)
+    
+    Args:
+        field_name: The field name from validator.errors (trigger variable)
+        error_msg: The error message string
+    
+    Returns:
+        The actual failing variable if it's a compatibility error, otherwise field_name
+    """
+    if "compatibility rule no:" in error_msg:
+        match = _COMPATIBILITY_ERROR_PATTERN.match(error_msg)
+        if match:
+            return match.group(1)
+    return field_name
 
 
 @contextmanager
@@ -112,20 +297,36 @@ def validate_data(
             if not passed or sys_failure:
                 for field_name, field_errors in record_errors.items():
                     for msg in field_errors:
+                        # Extract actual failing variable from compatibility errors
+                        # (fixes bug where trigger variable is logged instead of failing variable)
+                        actual_variable = _extract_failing_variable(field_name, msg)
+                        
+                        # Get full NACC check metadata (error_type, check_code, interpretation)
+                        nacc_info = _get_nacc_check_info(
+                            packet_value, instrument_name, actual_variable, msg
+                        )
+                        
                         errors.append(
                             {
                                 primary_key_field: pk_value,
                                 "instrument_name": instrument_name,
-                                "variable": field_name,
+                                "variable": actual_variable,
                                 "error_message": msg,
-                                "current_value": record_dict.get(field_name, ""),
+                                "current_value": record_dict.get(actual_variable, ""),
                                 "packet": packet_value,
                                 "json_rule_path": rules_path,
-                                "redcap_event_name": record_dict.get("redcap_event_name", ""),
-                                "redcap_repeat_instance": record_dict.get("redcap_repeat_instance", ""),
+                                "redcap_event_name": record_dict.get(
+                                    "redcap_event_name", ""
+                                ),
+                                "redcap_repeat_instance": record_dict.get(
+                                    "redcap_repeat_instance", ""
+                                ),
                                 "visitdate": record_dict.get("visitdate", ""),
                                 "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
+                                "nacc_check_code": nacc_info["check_code"],
+                                "nacc_check_type": nacc_info["error_type"],
+                                "nacc_interpretation": nacc_info["interpretation"],
                             }
                         )
                 logs.append(

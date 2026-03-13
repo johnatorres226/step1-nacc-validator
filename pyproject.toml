@@ -1,23 +1,32 @@
-[tool.poetry]
+[project]
 name = "udsv4-redcap-qc-validator"
-version = "1.0.1"  # Keep in sync with src/__version__.py
+version = "2.0.0"  # Keep in sync with src/__version__.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"
-authors = ["UDSv4 Team"]
-homepage = "https://github.com/johnatorres226/step1-nacc-validator"
-repository = "https://github.com/johnatorres226/step1-nacc-validator"
-documentation = "https://github.com/johnatorres226/step1-nacc-validator/tree/main/docs"
+authors = [
+    { name = "UDSv4 Team" }
+]
 keywords = ["udsv4", "redcap", "validation", "qc", "nacc"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Healthcare Industry",
-    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL-2.0)",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+requires-python = ">=3.11"
+dependencies = []  # Managed by Poetry in [tool.poetry.dependencies]
 
+[project.urls]
+homepage = "https://github.com/johnatorres226/step1-nacc-validator"
+repository = "https://github.com/johnatorres226/step1-nacc-validator"
+documentation = "https://github.com/johnatorres226/step1-nacc-validator/tree/main/docs"
+
+[project.scripts]
+udsv4-qc = "cli.cli:cli"
+
+[tool.poetry]
 # Package includes
 # NOTE: nacc_form_validator is an EXTERNAL package (DO NOT MODIFY)
 # See docs/external-package-policy.md for details
@@ -43,9 +52,6 @@ ipython = "*"
 click = ">=8.0.0"
 rich = ">=13.0.0"
 typer = ">=0.9.0"
-
-[tool.poetry.scripts]
-udsv4-qc = "cli.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"

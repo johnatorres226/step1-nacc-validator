@@ -195,7 +195,7 @@ def setup_logging(
     }
 
     # Configure filters - simplified for compatibility
-    filters = {}
+    filters: dict[str, dict] = {}
 
     # Build logging configuration
     logging_config = {

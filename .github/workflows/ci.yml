@@ -188,7 +188,7 @@ jobs:
           pip install mypy types-requests types-python-dateutil
       
       - name: Run mypy
-        run: mypy --config-file mypy.ini src
+        run: mypy --config-file mypy.ini --explicit-package-bases src
 
   # Verify package builds correctly
   build-verify:

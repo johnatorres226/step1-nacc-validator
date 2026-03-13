@@ -205,7 +205,11 @@ def run_pipeline(
             all_logs.extend(logs)
             all_passed.extend(passed)
 
-            rec = df_inst[[config.primary_key_field, "redcap_event_name"]].copy()
+            # Include redcap_repeat_instance if available in the data
+            cols = [config.primary_key_field, "redcap_event_name"]
+            if "redcap_repeat_instance" in df_inst.columns:
+                cols.append("redcap_repeat_instance")
+            rec = df_inst[cols].copy()
             rec["instrument_name"] = instrument
             status_parts.append(rec)
 

@@ -77,10 +77,15 @@ def export_json_tracking(
     records: list[dict] = []
 
     if df_all is not None and not df_all.empty:
-        unique = df_all[["ptid", "redcap_event_name"]].drop_duplicates()
+        # Include redcap_repeat_instance if available
+        cols = ["ptid", "redcap_event_name"]
+        if "redcap_repeat_instance" in df_all.columns:
+            cols.append("redcap_repeat_instance")
+        unique = df_all[cols].drop_duplicates()
 
         for _, row in unique.iterrows():
             ptid, event = row["ptid"], row["redcap_event_name"]
+            event_instance = row.get("redcap_repeat_instance", "") if "redcap_repeat_instance" in row else ""
 
             # Determine failed instruments
             failed: list[str] = []
@@ -95,17 +100,17 @@ def export_json_tracking(
                 qc_status = "PASSED"
                 qc_complete, qcc_complete = "1", "2"
 
-            records.append(
-                {
-                    "ptid": ptid,
-                    "redcap_event_name": event,
-                    "qc_status_complete": qc_complete,
-                    "qc_run_by": user_initials,
-                    "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
-                    "qc_status": qc_status,
-                    "quality_control_check_complete": qcc_complete,
-                }
-            )
+            record_data = {
+                "ptid": ptid,
+                "redcap_event_name": event,
+                "redcap_repeat_instance": event_instance,
+                "qc_status_complete": qc_complete,
+                "qc_run_by": user_initials,
+                "qc_last_run": datetime.now().strftime("%Y-%m-%d"),
+                "qc_status": qc_status,
+                "quality_control_check_complete": qcc_complete,
+            }
+            records.append(record_data)
 
     filename = f"QC_Status_Report_{date_tag}_{time_tag}.json"
 
