@@ -19,9 +19,55 @@ class DataProcessingError(Exception):
 # ---------------------------------------------------------------------------
 
 
+def _extract_referenced_variables(rule_def: dict[str, Any]) -> set[str]:
+    """Extract all variables referenced in a rule's compatibility clauses.
+
+    Compatibility rules can reference variables in:
+    - `if` clause: the condition variables
+    - `then` clause: variables to check when condition is true
+    - `else` clause: variables to check when condition is false
+
+    These may be cross-form variables (e.g., B5 rule checking B9's `bedep`).
+    """
+    referenced: set[str] = set()
+
+    compatibility_rules = rule_def.get("compatibility", [])
+    if not isinstance(compatibility_rules, list):
+        return referenced
+
+    for compat in compatibility_rules:
+        if not isinstance(compat, dict):
+            continue
+
+        # Extract from if/then/else clauses
+        for clause_key in ("if", "then", "else"):
+            clause = compat.get(clause_key, {})
+            if isinstance(clause, dict):
+                referenced.update(clause.keys())
+
+    return referenced
+
+
 def _get_variables_for_instrument(instrument: str, rules_cache: dict[str, Any]) -> list[str]:
-    """Return variable names for *instrument*."""
-    return list(rules_cache.get(instrument, {}).keys())
+    """Return all variable names needed for *instrument* validation.
+
+    This includes:
+    1. Variables owned by the instrument (rule keys)
+    2. Variables referenced in compatibility rules (cross-form variables)
+    """
+    rules = rules_cache.get(instrument, {})
+    if not rules:
+        return []
+
+    # Start with owned variables (rule keys)
+    variables: set[str] = set(rules.keys())
+
+    # Add cross-form variables referenced in compatibility rules
+    for rule_def in rules.values():
+        if isinstance(rule_def, dict):
+            variables.update(_extract_referenced_variables(rule_def))
+
+    return list(variables)
 
 
 # ---------------------------------------------------------------------------
@@ -117,3 +163,56 @@ def prepare_instrument_data_cache(
         cache[instrument] = df
         logger.debug("Prepared %d rows for '%s'", len(df), instrument)
     return cache
+
+
+# ---------------------------------------------------------------------------
+# Packet grouping
+# ---------------------------------------------------------------------------
+
+
+def prepare_packet_grouped_data(
+    data_df: pd.DataFrame,
+    primary_key_field: str = "ptid",
+) -> dict[str, pd.DataFrame]:
+    """Group data by packet type for parallel packet-grouped validation.
+
+    This is the key function for thread-safe parallel validation. By grouping
+    data by packet BEFORE spawning workers, each worker batch operates on a
+    single packet type, eliminating race conditions with rule pool switching.
+
+    Args:
+        data_df: Full data from REDCap
+        primary_key_field: Record identifier field
+
+    Returns:
+        Dict mapping packet code to DataFrame: {'I': df_initial, 'I4': df_i4, 'F': df_fvp}
+    """
+    if data_df.empty:
+        return {}
+
+    if "packet" not in data_df.columns:
+        logger.warning("No 'packet' column in data — defaulting all to 'I'")
+        data_df = data_df.copy()
+        data_df["packet"] = "I"
+
+    packet_groups: dict[str, pd.DataFrame] = {}
+    valid_packets = {"I", "I4", "F"}
+
+    for packet_value in data_df["packet"].dropna().unique():
+        packet_upper = str(packet_value).upper()
+        if packet_upper not in valid_packets:
+            logger.warning("Unknown packet value '%s' — skipping", packet_value)
+            continue
+
+        packet_df = data_df[data_df["packet"].str.upper() == packet_upper].copy()
+        if not packet_df.empty:
+            packet_groups[packet_upper] = packet_df
+            logger.debug("Packet %s: %d records", packet_upper, len(packet_df))
+
+    logger.info(
+        "Grouped data into %d packets: %s",
+        len(packet_groups),
+        ", ".join(f"{k}={len(v)}" for k, v in packet_groups.items()),
+    )
+
+    return packet_groups
