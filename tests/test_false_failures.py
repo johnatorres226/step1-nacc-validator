@@ -309,8 +309,7 @@ class TestFalseFailures:
                                 "trigger": trigger_var,
                                 "target": target_var,
                                 "issue": (
-                                    f"Missing column: trigger={trigger_col}, "
-                                    f"target={target_col}"
+                                    f"Missing column: trigger={trigger_col}, target={target_col}"
                                 ),
                             }
                         )
