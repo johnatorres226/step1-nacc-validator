@@ -1,6 +1,7 @@
 # Local
 flowcharts/
 .github/skills/
+.github/instructions
 docs/Patches/
 
 # Byte-compiled / optimized / DLL files

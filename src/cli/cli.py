@@ -155,9 +155,9 @@ def cli(
 
         base_config.user_initials = user_initials.strip().upper()[:3]
         base_config.mode = "complete_visits"  # Internal mode remains complete_visits
-        base_config.detailed_run = (mode == "detailed-run")
+        base_config.detailed_run = mode == "detailed-run"
         base_config.passed_rules = passed_rules
-        base_config.errors_only_mode = (mode == "errors-only")
+        base_config.errors_only_mode = mode == "errors-only"
 
         if logs:
             _display_run_summary(base_config)
@@ -251,7 +251,7 @@ def _display_run_summary(config: QCConfig) -> None:
         mode_display = "Detailed-Run"
     else:
         mode_display = "Standard"
-    
+
     console.print(f"\nQC Run Configuration (Mode: {mode_display})")
 
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
