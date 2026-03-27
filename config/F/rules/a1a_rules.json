@@ -1503,17 +1503,51 @@
         ]
     },
     "frmdatea1a": {
-        "required": true,
+        "nullable": true,
         "type": "string",
         "formatting": "date",
-        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "frmdatea1a": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
     },
     "langa1a": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             1,
             2
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "langa1a": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "modea1a": {
@@ -1680,6 +1714,23 @@
         ]
     },
     "initialsa1a": {
-        "nullable": true
+        "nullable": true,
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "a1anot": {
+                        "forbidden": [
+                            93
+                        ]
+                    }
+                },
+                "then": {
+                    "initialsa1a": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
     }
 }
