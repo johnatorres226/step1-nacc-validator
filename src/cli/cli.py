@@ -25,21 +25,26 @@ from src.__version__ import __version__
 console = Console()
 logger = get_logger("cli")
 
+# Build help text with version
+CLI_HELP = f"""UDSv4 REDCap QC Validator — ADRC Quality Control Interface (v{__version__}).
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]}, invoke_without_command=True)
-@click.version_option(version=__version__)
-@click.option(
-    "--log-level",
-    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
-    default="INFO",
-    help="Set the logging level.",
+When invoked without arguments, opens the interactive ADRC interface.
+When invoked with options (e.g. -i INITIALS), runs the QC pipeline
+directly. Use the `config` subcommand to inspect configuration.
+"""
+
+
+@click.group(
+    context_settings={"help_option_names": ["-h", "--help"]},
+    invoke_without_command=True,
+    help=CLI_HELP,
 )
 @click.option(
     "--mode",
     "-m",
-    type=click.Choice(["complete_visits"], case_sensitive=False),
-    default="complete_visits",
-    help="Select the QC validation mode. [default: complete_visits]",
+    type=click.Choice(["errors-only", "detailed-run"], case_sensitive=False),
+    default="errors-only",
+    help="Select the QC validation mode: errors-only (default) or detailed-run.",
 )
 @click.option(
     "--output-dir",
@@ -55,15 +60,10 @@ logger = get_logger("cli")
     required=False,
     help="User initials for reporting (3 characters max).",
 )
-@click.option("--log", "-l", is_flag=True, help="Show terminal logging during execution.")
 @click.option(
-    "--detailed-run",
-    "-dr",
+    "--logs",
     is_flag=True,
-    help=(
-        "Generate detailed outputs including Validation_Logs, "
-        "Completed_Visits, Reports, and Generation_Summary files."
-    ),
+    help="Show line-by-line QC element validation logging during execution.",
 )
 @click.option(
     "--passed-rules",
@@ -71,29 +71,21 @@ logger = get_logger("cli")
     is_flag=True,
     help=(
         "Generate comprehensive Rules Validation log for "
-        "diagnostic purposes (requires --detailed-run/-dr, "
+        "diagnostic purposes (requires --mode detailed-run, "
         "large file, slow generation)."
     ),
 )
 @click.pass_context
 def cli(
     ctx: click.Context,
-    log_level: str,
     mode: str,
     output_dir: str,
     events: list[str],
     ptid_list: list[str],
     user_initials: str,
-    log: bool,
-    detailed_run: bool,
+    logs: bool,
     passed_rules: bool,
 ) -> None:
-    """UDSv4 REDCap QC Validator — ADRC Quality Control Interface.
-
-    When invoked without arguments, opens the interactive ADRC interface.
-    When invoked with options (e.g. -i INITIALS), runs the QC pipeline
-    directly. Use the `config` subcommand to inspect configuration.
-    """
     # Launch interactive interface when no CLI arguments are provided
     if len(sys.argv) == 1 and not ctx.invoked_subcommand:
         from cli.interface import run_interactive
@@ -113,11 +105,11 @@ def cli(
         return
 
     # Otherwise, run the QC pipeline using the parameters provided
-    # Validate that --passed-rules can only be used with --detailed-run
-    if passed_rules and not detailed_run:
+    # Validate that --passed-rules can only be used with detailed-run mode
+    if passed_rules and mode != "detailed-run":
         _msg = (
-            "The --passed-rules/-ps option requires --detailed-run/-dr to be enabled. "
-            "Use: udsv4-qc -i INITIALS -dr -ps"
+            "The --passed-rules/-ps option requires --mode detailed-run. "
+            "Use: udsv4-qc -i INITIALS -m detailed-run -ps"
         )
         raise click.ClickException(_msg)
 
@@ -126,18 +118,19 @@ def cli(
         _msg = "The --initials/-i option is required for runs."
         raise click.UsageError(_msg)
 
-    # Configure logging properly using the logging_config module
-    if log:
+    # Configure logging: basic INFO by default, detailed DEBUG with --logs
+    if logs:
         setup_logging(
-            log_level="INFO",
+            log_level="DEBUG",
             console_output=True,
             structured_logging=False,
             performance_tracking=True,
         )
     else:
+        # Basic logging for default run - shows progress but not verbose details
         setup_logging(
-            log_level="CRITICAL",
-            console_output=False,
+            log_level="INFO",
+            console_output=True,
             structured_logging=False,
             performance_tracking=False,
         )
@@ -161,28 +154,25 @@ def cli(
             base_config.ptid_list = list(ptid_list)
 
         base_config.user_initials = user_initials.strip().upper()[:3]
-        base_config.mode = mode
-        base_config.detailed_run = detailed_run
+        base_config.mode = "complete_visits"  # Internal mode remains complete_visits
+        base_config.detailed_run = (mode == "detailed-run")
         base_config.passed_rules = passed_rules
+        base_config.errors_only_mode = (mode == "errors-only")
 
-        if log:
+        if logs:
             _display_run_summary(base_config)
 
-        # Execute pipeline
-        if log:
-            with operation_context("qc_validation", f"Processing {mode} mode"):
-                run_report_pipeline(config=base_config)
-            logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
-            logger.info("QC validation pipeline complete")
-        else:
+        # Execute pipeline with operation context for better progress tracking
+        with operation_context("qc_validation", f"Processing in {mode} mode"):
             run_report_pipeline(config=base_config)
+        logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
+        logger.info("QC validation pipeline complete")
 
     except Exception as e:
-        if log:
-            logger.exception("QC validation pipeline failed")
-            console.print("An error occurred. Check the logs above for details.")
-        else:
-            console.print(f"QC validation pipeline failed: {e}")
+        logger.exception("QC validation pipeline failed")
+        console.print(f"Pipeline failed: {e}")
+        if logs:
+            console.print("Check the logs above for detailed error information.")
         ctx.exit(1)
 
 
@@ -254,12 +244,18 @@ def config(detailed: bool, json_output: bool) -> None:
 
 def _display_run_summary(config: QCConfig) -> None:
     """Displays a summary of the QC run configuration."""
-    mode_title = config.mode.replace("_", " ").title() if config.mode else "N/A"
-    console.print(f"\nQC Run Configuration (Mode: {mode_title})")
+    # Determine display mode from config flags
+    if config.errors_only_mode:
+        mode_display = "Errors-Only"
+    elif config.detailed_run:
+        mode_display = "Detailed-Run"
+    else:
+        mode_display = "Standard"
+    
+    console.print(f"\nQC Run Configuration (Mode: {mode_display})")
 
     console.print(f"User Initials: {config.user_initials or 'N/A'}")
     console.print(f"Output Directory: {Path(config.output_path).resolve()}")
-    console.print(f"Log Level: {config.log_level}")
     console.print(f"Events: {'All' if not config.events else ', '.join(config.events)}")
     console.print(f"Participants: {'All' if not config.ptid_list else ', '.join(config.ptid_list)}")
 

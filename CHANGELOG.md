@@ -3,6 +3,42 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-03-26
+
+### Changed
+- **CLI Simplification**: Streamlined command-line interface with focused two-mode operation
+  - Replaced `--mode complete_visits` with two new modes: `errors-only` (default) and `detailed-run`
+  - Removed `--log-level` option - logging now configured automatically based on mode
+  - Removed `--log/-l` flag - replaced with `--logs` for line-by-line QC element validation logging
+  - Removed `--detailed-run/-dr` flag - now controlled via `--mode detailed-run`
+  - Removed `--version` command - version now displayed in `--help` text
+- **Default Logging**: Added basic INFO-level logging to all runs by default
+  - Default run now shows progress without verbose details
+  - Use `--logs` flag for detailed DEBUG-level line-by-line QC element logging
+- **Mode-Based Output Control**: Conditional report generation based on selected mode
+  - `errors-only` mode (default): Outputs only error dataset CSV and JSON upload artifacts
+  - `detailed-run` mode: Includes error dataset, JSON artifacts, validation logs CSV, and data fetched CSV (ETL elements)
+  - Both modes always generate error report and JSON tracking
+- **Help Text Enhancement**: Version number now displayed prominently in help text
+
+### Removed
+- `--log-level` CLI option (automatic configuration)
+- `--log/-l` CLI flag (replaced with `--logs`)
+- `--detailed-run/-dr` CLI flag (use `--mode detailed-run`)
+- `--version` command (version shown in `--help`)
+
+### Added
+- `--logs` flag for line-by-line QC element validation logging
+- `errors_only_mode` configuration field in QCConfig
+- Conditional export logic in pipeline based on run mode
+
+## [2.1.0] - 2026-03-20
+
+### Changed
+- **A1A SDOH Form System Field Validation** - Updated `frmdatea1a`, `langa1a`, and `initialsa1a` to be treated as regular data fields instead of system fields. These fields are now nullable by default with the same a1anot=93 compatibility rule as other data fields. When `a1anot=93` (form not completed), these fields can be null; otherwise they are required. This change applies to I, I4, and F packets and resolves validation issues where these fields were unnecessarily required even when the form was not completed.
+  - Updated `a1a_rules.json` for I, I4, and F packets
+  - Modified test suite to remove these fields from SYSTEM_FIELDS set
+
 ## [2.0.0] - 2026-03-13
 
 ### Added

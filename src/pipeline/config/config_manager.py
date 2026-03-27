@@ -152,6 +152,8 @@ class QCConfig:
     detailed_run: bool = False
     # Generate comprehensive Rules Validation log (large file, slow generation)
     passed_rules: bool = False
+    # Errors-only mode: only output error dataset and JSON upload artifacts
+    errors_only_mode: bool = False
 
     # --- Performance & Retries ---
     max_workers: int = field(default_factory=lambda: int(os.getenv("MAX_WORKERS", "4")))

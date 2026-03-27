@@ -227,18 +227,24 @@ def run_pipeline(
         t0 = time.time()
         generated: list[Path] = []
 
+        # Always export error report and JSON tracking
         p = export_error_report(errors_df, output_dir, date_tag, time_tag)
         if p:
             generated.append(p)
 
-        p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
-        if p:
-            generated.append(p)
+        # Conditional exports based on mode
+        # errors-only mode: only error dataset + JSON upload artifacts
+        # detailed-run mode: includes validation logs + data fetched (ETL elements)
+        if not config.errors_only_mode:
+            p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
 
-        p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
-        if p:
-            generated.append(p)
+            p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
 
+        # Always export JSON tracking
         upload_ready = getattr(config, "upload_ready_path", None)
         jp = export_json_tracking(
             df_all=all_records_df,
