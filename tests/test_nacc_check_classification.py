@@ -19,7 +19,7 @@ def test_get_nacc_check_type_returns_alert_from_lookup(monkeypatch):
     monkeypatch.setattr(
         report_pipeline,
         "_CHECK_DETAILS",
-        {"I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}},
+        {"I|a1|zip|Conformity": [{"error_type": "alert", "check_code": "test", "full_desc": "test"}]},
     )
     result = report_pipeline._get_nacc_check_type("I", "a1", "zip", "must be between 006 and 999")
     assert result == "alert"
@@ -51,7 +51,7 @@ def test_get_nacc_check_type_case_insensitive_instrument(monkeypatch):
     monkeypatch.setattr(
         report_pipeline,
         "_CHECK_DETAILS",
-        {"I|a1|zip|Conformity": {"error_type": "alert", "check_code": "test", "full_desc": "test"}},
+        {"I|a1|zip|Conformity": [{"error_type": "alert", "check_code": "test", "full_desc": "test"}]},
     )
     result = report_pipeline._get_nacc_check_type("I", "A1", "ZIP", "must be between 006 and 999")
     assert result == "alert"

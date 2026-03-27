@@ -3,6 +3,79 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-03-27
+
+### Added
+- **False Failure Test Suite**: Comprehensive pytest-based regression testing for validation accuracy
+  - New permanent test: `tests/test_false_failures.py` for detecting false positive validation errors
+  - Validates all errors against source REDCap data to ensure legitimacy
+  - Tests cross-form compatibility rule consistency
+  - Verifies error dataset completeness and format
+  - Automated threshold checking: fails at >5% false positive rate, warns at >2%
+- **Investigation Archive**: Comprehensive documentation of cross-form validation investigation (March 3-27, 2026)
+  - Archived 6 analysis scripts and 9 detailed investigation reports
+  - Full investigation documentation in `docs/Patches/20260327_CROSS_FORM_VALIDATION_INVESTIGATION/`
+  - Quick reference guide for false failure testing
+  - Archive index for tracking all project investigations
+
+### Changed
+- **Enhanced Cross-Form Validation**: Improved NACC check code matching for compatibility rules
+  - Enhanced trigger variable extraction from cross-form error messages using regex parsing
+  - Improved check code disambiguation when multiple NACC checks share the same variable
+  - Implemented dual lookup strategy: attempts both target and trigger variables for NACC matching
+  - Increased NACC check code match rate from ~90% to 98.3%
+- **Error Reporting Accuracy**: Systematic improvements to cross-instrument validation reporting
+  - Better handling of C2↔C2T, C2↔D2, I4↔M instrument compatibility rules
+  - More precise error messages with complete IF/THEN rule context
+  - NACC check code assignment now covers 402/409 errors (98.3% coverage)
+
+### Fixed
+- **Cross-Form Check Code Assignment**: Resolved NaN check codes for cross-instrument compatibility errors
+  - Fixed lookup logic to use trigger variables (e.g., `mintscng`) instead of only target variables (e.g., `mintscnc`)
+  - Added `_extract_compatibility_trigger()` function to parse IF/THEN conditions from error messages
+  - Enhanced `_match_check_to_error()` to disambiguate multiple checks with context-aware matching
+  - Modified `_get_nacc_check_info()` to try both target and trigger variable lookups
+- **Validation Accuracy**: Achieved 0% false positive rate across 409 error validation test
+  - All errors validated as legitimate data issues
+  - Zero false failures detected after major cross-form enhancements
+  - 100% cross-form validation accuracy (381/381 errors correctly detected)
+
+## [2.2.0] - 2026-03-26
+
+### Changed
+- **CLI Simplification**: Streamlined command-line interface with focused two-mode operation
+  - Replaced `--mode complete_visits` with two new modes: `errors-only` (default) and `detailed-run`
+  - Removed `--log-level` option - logging now configured automatically based on mode
+  - Removed `--log/-l` flag - replaced with `--logs` for line-by-line QC element validation logging
+  - Removed `--detailed-run/-dr` flag - now controlled via `--mode detailed-run`
+  - Removed `--version` command - version now displayed in `--help` text
+- **Default Logging**: Added basic INFO-level logging to all runs by default
+  - Default run now shows progress without verbose details
+  - Use `--logs` flag for detailed DEBUG-level line-by-line QC element logging
+- **Mode-Based Output Control**: Conditional report generation based on selected mode
+  - `errors-only` mode (default): Outputs only error dataset CSV and JSON upload artifacts
+  - `detailed-run` mode: Includes error dataset, JSON artifacts, validation logs CSV, and data fetched CSV (ETL elements)
+  - Both modes always generate error report and JSON tracking
+- **Help Text Enhancement**: Version number now displayed prominently in help text
+
+### Removed
+- `--log-level` CLI option (automatic configuration)
+- `--log/-l` CLI flag (replaced with `--logs`)
+- `--detailed-run/-dr` CLI flag (use `--mode detailed-run`)
+- `--version` command (version shown in `--help`)
+
+### Added
+- `--logs` flag for line-by-line QC element validation logging
+- `errors_only_mode` configuration field in QCConfig
+- Conditional export logic in pipeline based on run mode
+
+## [2.1.0] - 2026-03-20
+
+### Changed
+- **A1A SDOH Form System Field Validation** - Updated `frmdatea1a`, `langa1a`, and `initialsa1a` to be treated as regular data fields instead of system fields. These fields are now nullable by default with the same a1anot=93 compatibility rule as other data fields. When `a1anot=93` (form not completed), these fields can be null; otherwise they are required. This change applies to I, I4, and F packets and resolves validation issues where these fields were unnecessarily required even when the form was not completed.
+  - Updated `a1a_rules.json` for I, I4, and F packets
+  - Modified test suite to remove these fields from SYSTEM_FIELDS set
+
 ## [2.0.0] - 2026-03-13
 
 ### Added

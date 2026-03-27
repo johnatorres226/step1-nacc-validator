@@ -16,13 +16,10 @@ class TestA1ARulesA1AnotCompatibility:
 
     # System fields that should NOT have the a1anot=93 rule
     SYSTEM_FIELDS = {
-        "frmdatea1a",
-        "langa1a",
         "modea1a",
         "rmreasa1a",
         "rmmodea1a",
         "a1anot",
-        "initialsa1a",
     }
 
     # Packets to test
