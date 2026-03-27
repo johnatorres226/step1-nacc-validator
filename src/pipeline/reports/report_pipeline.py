@@ -28,10 +28,18 @@ logger = logging.getLogger(__name__)
 # Pattern: "('variable_name', [...]) for if {...} then/else {...} - compatibility rule no: X"
 _COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
 
+# Regex to extract the trigger variable from compatibility errors
+# Pattern: "... for if {'trigger_var': {...}} then ..."
+_COMPATIBILITY_TRIGGER_PATTERN = re.compile(r"for if \{'([^']+)':")
+
+# Packet normalization for check code lookup
+# Maps local packet codes to NACC's code format
+_PACKET_NORMALIZATION = {"I4": "I"}
+
 # NACC check classification lookup (loaded once at first use)
 _CLASSIFICATIONS_PATH = _Path(__file__).parents[3] / "config" / "nacc_check_classifications.json"
 _CHECK_LOOKUP: dict[str, str] = {}
-_CHECK_DETAILS: dict[str, dict] = {}  # Full check metadata by key
+_CHECK_DETAILS: dict[str, list[dict]] = {}  # Full check metadata by key
 
 
 def _infer_check_category(error_msg: str) -> str:
@@ -95,9 +103,12 @@ def _load_check_lookup() -> dict[str, str]:
         data = _json.loads(_CLASSIFICATIONS_PATH.read_text(encoding="utf-8"))
         _CHECK_LOOKUP = data.get("lookup", {})
         # Build detailed lookup from checks array
+        # Store as list since multiple checks can have the same key
         for check in data.get("checks", []):
             key = f"{check['packet']}|{check['form']}|{check['variable']}|{check['check_category']}"
-            _CHECK_DETAILS[key] = check
+            if key not in _CHECK_DETAILS:
+                _CHECK_DETAILS[key] = []
+            _CHECK_DETAILS[key].append(check)
         return _CHECK_LOOKUP
     except Exception:
         logger.warning("Failed to load nacc_check_classifications.json", exc_info=True)
@@ -112,6 +123,72 @@ _FORM_ALIASES: dict[str, list[str]] = {
 
 # Category fallback order when primary doesn't match
 _CATEGORY_FALLBACKS = ["Conformity", "Missingness", "Plausibility"]
+
+
+def _extract_compatibility_trigger(error_msg: str) -> str | None:
+    """Extract the trigger variable from a compatibility rule error message.
+
+    For cross-form compatibility rules (e.g., B5→B9), NACC classifies errors
+    under the TRIGGER variable (e.g., 'depd'), not the TARGET variable ('bedep').
+
+    Example error message:
+        "('bedep', ['unallowed value 0']) for if {'depd': {'allowed': [1]}}
+         then {'bedep': {'allowed': [1]}} - compatibility rule no: 0"
+
+    Returns:
+        The trigger variable name (e.g., 'depd') if found, None otherwise.
+    """
+    match = _COMPATIBILITY_TRIGGER_PATTERN.search(error_msg)
+    return match.group(1) if match else None
+
+
+def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -> dict | None:
+    """Find the best matching check from a list based on error message content.
+
+    For plausibility rules with the same trigger variable, there may be multiple
+    checks (e.g., depd→B9 vs depd→D1a). Match by checking if the target variable
+    appears in the check description.
+
+    Args:
+        checks: List of check dicts with same base key
+        error_msg: The validation error message
+        target_var: The target variable from the error (e.g., 'bedep')
+
+    Returns:
+        Best matching check dict, or first check if no specific match
+    """
+    if not checks:
+        return None
+    if len(checks) == 1:
+        return checks[0]
+
+    # For compatibility rules, prefer checks that mention the target variable
+    target_upper = target_var.upper()
+    error_msg_lower = error_msg.lower()
+
+    # Extract condition from error message: "allowed: [1]" vs "forbidden: [0]"
+    is_positive_condition = "'allowed'" in error_msg_lower
+
+    for check in checks:
+        desc = check.get("full_desc", "").upper()
+        # Check if target variable appears in description
+        if target_upper in desc:
+            # Also verify condition direction matches
+            # "= 1 (Yes)" / "should equal 1" = positive
+            # "= 0 (No)" / "should not equal" = negative
+            check_is_positive = "= 1" in desc and "SHOULD EQUAL" in desc.upper()
+            if check_is_positive == is_positive_condition:
+                return check
+
+    # Fallback: return first check with matching positive/negative direction
+    for check in checks:
+        desc = check.get("full_desc", "").upper()
+        check_is_positive = "= 1" in desc and "SHOULD EQUAL" in desc.upper()
+        if check_is_positive == is_positive_condition:
+            return check
+
+    # Ultimate fallback: first check
+    return checks[0]
 
 
 def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg: str) -> dict:
@@ -131,11 +208,25 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
     if not lookup:
         return default
 
+    # Build packets to try: original first, then normalized fallback
+    # NACC has both I4-specific codes (i4vp) and common codes (ivp)
+    normalized_packet = _PACKET_NORMALIZATION.get(packet, packet)
+    packets_to_try = [packet, normalized_packet] if normalized_packet != packet else [packet]
+
     # Extract short form name from full instrument name
     # e.g., 'a1_participant_demographics' -> 'a1'
     # e.g., 'c2c2t_neuropsychological_battery_scores' -> 'c2c2t'
     form = instrument.lower().split("_")[0] if "_" in instrument else instrument.lower()
     var_lc = variable.lower()
+
+    # Build list of variables to try
+    # For compatibility rules, also try the trigger variable (cross-form checks)
+    vars_to_try = [var_lc]
+    trigger_var = None
+    if "compatibility rule" in error_msg.lower():
+        trigger_var = _extract_compatibility_trigger(error_msg)
+        if trigger_var and trigger_var.lower() != var_lc:
+            vars_to_try.append(trigger_var.lower())
 
     # Build list of forms to try (original + aliases)
     forms_to_try = [form] + _FORM_ALIASES.get(form, [])
@@ -143,30 +234,36 @@ def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg:
     # Infer category from error message
     inferred_category = _infer_check_category(error_msg)
 
-    # Try each form/category combination
-    for try_form in forms_to_try:
-        # First try inferred category
-        key = f"{packet}|{try_form}|{var_lc}|{inferred_category}"
-        check = _CHECK_DETAILS.get(key)
-        if check:
-            return {
-                "error_type": check.get("error_type", "error"),
-                "check_code": check.get("check_code", ""),
-                "interpretation": check.get("full_desc", ""),
-            }
+    # Try each packet/form/variable/category combination
+    for try_packet in packets_to_try:
+        for try_form in forms_to_try:
+            for try_var in vars_to_try:
+                # First try inferred category
+                key = f"{try_packet}|{try_form}|{try_var}|{inferred_category}"
+                checks = _CHECK_DETAILS.get(key)
+                if checks:
+                    check = _match_check_to_error(checks, error_msg, var_lc)
+                    if check:
+                        return {
+                            "error_type": check.get("error_type", "error"),
+                            "check_code": check.get("check_code", ""),
+                            "interpretation": check.get("full_desc", ""),
+                        }
 
-        # Then try fallback categories
-        for fallback_cat in _CATEGORY_FALLBACKS:
-            if fallback_cat == inferred_category:
-                continue  # Already tried
-            key = f"{packet}|{try_form}|{var_lc}|{fallback_cat}"
-            check = _CHECK_DETAILS.get(key)
-            if check:
-                return {
-                    "error_type": check.get("error_type", "error"),
-                    "check_code": check.get("check_code", ""),
-                    "interpretation": check.get("full_desc", ""),
-                }
+                # Then try fallback categories
+                for fallback_cat in _CATEGORY_FALLBACKS:
+                    if fallback_cat == inferred_category:
+                        continue  # Already tried
+                    key = f"{try_packet}|{try_form}|{try_var}|{fallback_cat}"
+                    checks = _CHECK_DETAILS.get(key)
+                    if checks:
+                        check = _match_check_to_error(checks, error_msg, var_lc)
+                        if check:
+                            return {
+                                "error_type": check.get("error_type", "error"),
+                                "check_code": check.get("check_code", ""),
+                                "interpretation": check.get("full_desc", ""),
+                            }
 
     # No match found
     return default

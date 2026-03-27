@@ -4,10 +4,16 @@ QC pipeline execution.
 Single entry point: ``run_pipeline(config)`` executes the full
 fetch → load rules → prep → validate → export flow and returns
 a plain dict with the results.
+
+Parallel Validation Architecture:
+    - Data is grouped by packet (I, I4, F) before validation
+    - Within each packet group, instrument + packet validation run in parallel
+    - This eliminates thread-safety issues with rule pool packet switching
 """
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -68,6 +74,7 @@ def run_pipeline(
     from ..core.data_processing import (
         build_variable_maps,
         prepare_instrument_data_cache,
+        prepare_packet_grouped_data,
         preprocess_cast_types,
     )
     from ..core.validation_utils import build_validation_log
@@ -163,54 +170,107 @@ def run_pipeline(
         # ── Stage 3: Data Preparation ─────────────────────────────────────
         t0 = time.time()
 
-        instrument_cache: dict[str, pd.DataFrame] = {}
-        if not data_df.empty:
-            instrument_cache = prepare_instrument_data_cache(
-                data_df,
-                config.instruments,
-                inst_to_vars,
-                rules_cache,
-                config.primary_key_field,
-            )
+        # Note: Instrument cache is now prepared per-packet in Stage 4
+        # to ensure proper cross-form variable inclusion for each packet subset
         logger.info("Data preparation done (%.1fs)", time.time() - t0)
 
-        # ── Stage 4: Validation ───────────────────────────────────────────
+        # ── Stage 3.5: Packet Grouping for Parallel Validation ────────────
+        t0 = time.time()
+        packet_groups = prepare_packet_grouped_data(data_df, config.primary_key_field)
+        max_workers = getattr(config, "max_workers", 4)
+        logger.info(
+            "Packet grouping done: %d groups, workers=%d (%.1fs)",
+            len(packet_groups),
+            max_workers,
+            time.time() - t0,
+        )
+
+        # ── Stage 4: Parallel Validation ──────────────────────────────────
         t0 = time.time()
         all_errors: list[dict] = []
         all_logs: list[dict] = []
         all_passed: list[dict] = []
         status_parts: list[pd.DataFrame] = []
 
-        for i, instrument in enumerate(config.instruments, 1):
-            df_inst = instrument_cache.get(instrument, pd.DataFrame())
-            if df_inst.empty:
-                continue
-
-            logger.info("Validating %s (%d/%d)", instrument, i, len(config.instruments))
-
-            # Completeness logs
-            build_validation_log(df_inst, instrument, config.primary_key_field)
-
-            # Cast types then validate
-            inst_rules = rules_cache.get(instrument, {})
-            df_inst = preprocess_cast_types(df_inst, inst_rules)
-            errors, logs, passed = validate_data(
-                df_inst,
-                inst_rules,
-                instrument_name=instrument,
-                primary_key_field=config.primary_key_field,
+        # Process each packet group (I, I4, F) — sequential by packet for thread safety
+        for packet_code, packet_df in sorted(packet_groups.items()):
+            logger.info(
+                "Processing packet %s (%d records)",
+                packet_code,
+                len(packet_df),
             )
-            all_errors.extend(errors)
-            all_logs.extend(logs)
-            all_passed.extend(passed)
 
-            # Include redcap_repeat_instance if available in the data
-            cols = [config.primary_key_field, "redcap_event_name"]
-            if "redcap_repeat_instance" in df_inst.columns:
-                cols.append("redcap_repeat_instance")
-            rec = df_inst[cols].copy()
-            rec["instrument_name"] = instrument
-            status_parts.append(rec)
+            # Prepare instrument cache for this packet subset
+            # Note: _get_variables_for_instrument now extracts ALL variables referenced
+            # in rules (including cross-form variables from compatibility clauses)
+            packet_instrument_cache = prepare_instrument_data_cache(
+                packet_df,
+                config.instruments,
+                inst_to_vars,
+                rules_cache,
+                config.primary_key_field,
+            )
+
+            # Define validation task
+            def validate_instrument_task(
+                instrument: str,
+                _cache: dict = packet_instrument_cache,
+                _rules: dict = rules_cache,
+            ) -> tuple[list, list, list, pd.DataFrame | None]:
+                """Validate a single instrument."""
+                df_inst = _cache.get(instrument, pd.DataFrame())
+                if df_inst.empty:
+                    return [], [], [], None
+
+                # Completeness logs
+                build_validation_log(df_inst, instrument, config.primary_key_field)
+
+                # Cast types then validate
+                inst_rules = _rules.get(instrument, {})
+                df_inst = preprocess_cast_types(df_inst, inst_rules)
+                errors, logs, passed = validate_data(
+                    df_inst,
+                    inst_rules,
+                    instrument_name=instrument,
+                    primary_key_field=config.primary_key_field,
+                )
+
+                # Status tracking
+                cols = [config.primary_key_field, "redcap_event_name"]
+                if "redcap_repeat_instance" in df_inst.columns:
+                    cols.append("redcap_repeat_instance")
+                rec = df_inst[cols].copy()
+                rec["instrument_name"] = instrument
+
+                return errors, logs, passed, rec
+
+            # Run instrument validation in parallel
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {}
+
+                # Submit instrument validation tasks
+                for instrument in config.instruments:
+                    future = executor.submit(validate_instrument_task, instrument)
+                    futures[future] = instrument
+
+                # Collect results as they complete
+                for future in as_completed(futures):
+                    instrument_name = futures[future]
+                    try:
+                        errors, logs, passed, rec = future.result()
+                        all_errors.extend(errors)
+                        all_logs.extend(logs)
+                        all_passed.extend(passed)
+                        if rec is not None and not rec.empty:
+                            status_parts.append(rec)
+                        if errors:
+                            logger.debug("%s: %d errors", instrument_name, len(errors))
+                    except Exception as e:
+                        logger.exception(
+                            "Validation failed for %s: %s",
+                            instrument_name,
+                            e,
+                        )
 
         errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
         logs_df = pd.DataFrame(all_logs) if all_logs else pd.DataFrame()
