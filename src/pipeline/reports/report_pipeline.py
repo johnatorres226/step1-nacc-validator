@@ -336,6 +336,7 @@ def validate_data(
     validation_rules: dict[str, dict[str, Any]],
     instrument_name: str,
     primary_key_field: str,
+    datastore: Any | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
     """Validate records using packet-based routing with dynamic instrument support.
 
@@ -346,6 +347,8 @@ def validate_data(
             cross-instrument bleed from the full pool returned by get_rules_for_record().
         instrument_name: Name of the instrument being validated.
         primary_key_field: Name of the primary key field.
+        datastore: Optional datastore for temporal rule validation. When provided,
+            enables cross-visit comparisons (H2 fix - temporal rules support).
 
     Returns:
         Tuple of (errors, logs, passed_records).
@@ -371,14 +374,17 @@ def validate_data(
                 logger.warning("No rules for %s, skipping %s", instrument_name, pk_value)
                 continue
 
+            # H2 fix: Enable temporal rules when datastore is available
             schema = _build_schema_from_raw(
-                resolved_rules, include_temporal_rules=False, include_compatibility_rules=True
+                resolved_rules,
+                include_temporal_rules=datastore is not None,
+                include_compatibility_rules=True,
             )
             qc = QualityCheck(
                 pk_field=primary_key_field,
                 schema=schema,
                 strict=False,
-                datastore=None,
+                datastore=datastore,  # H2 fix: Pass datastore for temporal validation
             )
             passed, sys_failure, record_errors, _error_tree = qc.validate_record(record_dict)
 

@@ -196,7 +196,7 @@ def prepare_packet_grouped_data(
         data_df["packet"] = "I"
 
     packet_groups: dict[str, pd.DataFrame] = {}
-    valid_packets = {"I", "I4", "F"}
+    valid_packets = {"I", "I4", "F", "M"}  # H5 fix: Added M (Milestone) packet support
 
     for packet_value in data_df["packet"].dropna().unique():
         packet_upper = str(packet_value).upper()

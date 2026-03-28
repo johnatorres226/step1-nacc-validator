@@ -89,7 +89,10 @@ uds_events = ["udsv4visit_arm_1"]
 # =============================================================================
 
 # Map JSON rule keys to Cerberus schema keywords
+# NOTE: Keys map to custom NACCValidator keywords (see nacc_form_validator/nacc_validator.py)
+# Each custom keyword has a corresponding _validate_{keyword} method in NACCValidator
 KEY_MAP = {
+    # Standard Cerberus keywords
     "type": "type",
     "nullable": "nullable",
     "min": "min",
@@ -99,8 +102,16 @@ KEY_MAP = {
     "allowed": "allowed",
     "forbidden": "forbidden",
     "filled": "filled",
+    # NACC custom validation keywords (H1 fix - previously missing)
     "compatibility": "compatibility",
     "temporalrules": "temporalrules",
+    "logic": "logic",  # Mathematical formula validation via _validate_logic()
+    "compare_with": "compare_with",  # Value comparison via _validate_compare_with()
+    "compare_age": "compare_age",  # Age-based validation via _validate_compare_age()
+    "function": "function",  # Custom function validation via _validate_function()
+    "compute_gds": "compute_gds",  # GDS calculation validation via _validate_compute_gds()
+    "formatting": "formatting",  # Date formatting support via _validate_formatting()
+    "check_with": "check_with",  # Cerberus native check_with for custom validation
 }
 
 
