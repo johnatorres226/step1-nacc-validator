@@ -20,30 +20,39 @@ class DataProcessingError(Exception):
 
 
 def _extract_referenced_variables(rule_def: dict[str, Any]) -> set[str]:
-    """Extract all variables referenced in a rule's compatibility clauses.
+    """Extract all variables referenced in a rule's compatibility and compare_age clauses.
 
     Compatibility rules can reference variables in:
     - `if` clause: the condition variables
     - `then` clause: variables to check when condition is true
     - `else` clause: variables to check when condition is false
 
-    These may be cross-form variables (e.g., B5 rule checking B9's `bedep`).
+    Compare_age rules can reference variables in:
+    - `compare_to`: age fields to compare against (e.g., behage, cogage)
+
+    These may be cross-form variables (e.g., A1's compare_age checking B9's `behage`).
     """
     referenced: set[str] = set()
 
+    # Extract from compatibility rules
     compatibility_rules = rule_def.get("compatibility", [])
-    if not isinstance(compatibility_rules, list):
-        return referenced
+    if isinstance(compatibility_rules, list):
+        for compat in compatibility_rules:
+            if not isinstance(compat, dict):
+                continue
+            for clause_key in ("if", "then", "else"):
+                clause = compat.get(clause_key, {})
+                if isinstance(clause, dict):
+                    referenced.update(clause.keys())
 
-    for compat in compatibility_rules:
-        if not isinstance(compat, dict):
-            continue
-
-        # Extract from if/then/else clauses
-        for clause_key in ("if", "then", "else"):
-            clause = compat.get(clause_key, {})
-            if isinstance(clause, dict):
-                referenced.update(clause.keys())
+    # Extract from compare_age rules (H1/H4 fix: include cross-form age variables)
+    compare_age = rule_def.get("compare_age", {})
+    if isinstance(compare_age, dict):
+        compare_to = compare_age.get("compare_to", [])
+        if isinstance(compare_to, str):
+            referenced.add(compare_to)
+        elif isinstance(compare_to, list):
+            referenced.update(f for f in compare_to if isinstance(f, str))
 
     return referenced
 
@@ -76,8 +85,32 @@ def _get_variables_for_instrument(instrument: str, rules_cache: dict[str, Any]) 
 
 
 def preprocess_cast_types(df: pd.DataFrame, rules: dict[str, dict[str, Any]]) -> pd.DataFrame:
-    """Cast DataFrame columns according to rule-defined types."""
+    """Cast DataFrame columns according to rule-defined types.
+
+    Also handles special cases:
+    - compare_age rules: cast compare_to fields to numeric (prevents type errors)
+    """
     out = df.copy()
+
+    # Collect fields that need numeric casting from compare_age rules
+    compare_age_fields: set[str] = set()
+    for field, cfg in rules.items():
+        if "compare_age" in cfg:
+            compare_to = cfg["compare_age"].get("compare_to", [])
+            if isinstance(compare_to, str):
+                compare_age_fields.add(compare_to)
+            elif isinstance(compare_to, list):
+                compare_age_fields.update(f for f in compare_to if isinstance(f, str))
+
+    # Cast compare_age referenced fields to numeric
+    for field in compare_age_fields:
+        if field in out.columns:
+            try:
+                out[field] = pd.to_numeric(out[field], errors="coerce")
+            except Exception as e:
+                logger.warning("Failed to cast compare_age field '%s' to numeric: %s", field, e)
+
+    # Standard type casting based on rule definitions
     for field, cfg in rules.items():
         if field not in out.columns:
             continue
