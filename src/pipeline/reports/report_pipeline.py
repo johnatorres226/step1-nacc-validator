@@ -146,8 +146,8 @@ def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -
     """Find the best matching check from a list based on error message content.
 
     For plausibility rules with the same trigger variable, there may be multiple
-    checks (e.g., depd→B9 vs depd→D1a). Match by checking if the target variable
-    appears in the check description.
+    checks (e.g., depd→B9 vs depd→D1a). Match by checking if the trigger variable
+    from the compatibility rule appears in the check description.
 
     Args:
         checks: List of check dicts with same base key
@@ -162,29 +162,47 @@ def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -
     if len(checks) == 1:
         return checks[0]
 
-    # For compatibility rules, prefer checks that mention the target variable
     target_upper = target_var.upper()
     error_msg_lower = error_msg.lower()
 
-    # Extract condition from error message: "allowed: [1]" vs "forbidden: [0]"
-    is_positive_condition = "'allowed'" in error_msg_lower
+    # Extract the trigger variable from compatibility rule
+    # e.g., "if {'demented': {'allowed': [1]}}" -> "demented"
+    trigger_var = _extract_compatibility_trigger(error_msg)
+    trigger_upper = trigger_var.upper() if trigger_var else ""
 
-    for check in checks:
-        desc = check.get("full_desc", "").upper()
-        # Check if target variable appears in description
-        if target_upper in desc:
-            # Also verify condition direction matches
-            # "= 1 (Yes)" / "should equal 1" = positive
-            # "= 0 (No)" / "should not equal" = negative
-            check_is_positive = "= 1" in desc and "SHOULD EQUAL" in desc.upper()
-            if check_is_positive == is_positive_condition:
+    # Determine condition direction from error message
+    # "forbidden" = negative check (should NOT equal)
+    # "allowed" in then clause = positive check (should equal)
+    is_forbidden_check = "'forbidden'" in error_msg_lower
+
+    # Priority 1: Match trigger variable in description (most specific)
+    if trigger_upper:
+        for check in checks:
+            desc = check.get("full_desc", "").upper()
+            if trigger_upper in desc:
+                # Verify semantics match: forbidden → "should not equal"
+                desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
+                if is_forbidden_check == desc_is_negative:
+                    return check
+        # Still prefer trigger match even if semantics don't perfectly align
+        for check in checks:
+            desc = check.get("full_desc", "").upper()
+            if trigger_upper in desc:
                 return check
 
-    # Fallback: return first check with matching positive/negative direction
+    # Priority 2: Match target variable in description
     for check in checks:
         desc = check.get("full_desc", "").upper()
-        check_is_positive = "= 1" in desc and "SHOULD EQUAL" in desc.upper()
-        if check_is_positive == is_positive_condition:
+        if target_upper in desc:
+            desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
+            if is_forbidden_check == desc_is_negative:
+                return check
+
+    # Priority 3: Match condition direction only
+    for check in checks:
+        desc = check.get("full_desc", "").upper()
+        desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
+        if is_forbidden_check == desc_is_negative:
             return check
 
     # Ultimate fallback: first check
