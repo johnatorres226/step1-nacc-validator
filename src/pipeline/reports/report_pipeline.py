@@ -101,14 +101,21 @@ def _load_check_lookup() -> dict[str, str]:
         return {}
     try:
         data = _json.loads(_CLASSIFICATIONS_PATH.read_text(encoding="utf-8"))
-        _CHECK_LOOKUP = data.get("lookup", {})
-        # Build detailed lookup from checks array
-        # Store as list since multiple checks can have the same key
+        local_lookup = data.get("lookup", {})
+        # Build detailed lookup locally first — must be fully populated before
+        # _CHECK_LOOKUP is set, otherwise racing threads that see _CHECK_LOOKUP
+        # as truthy (early-return) would find _CHECK_DETAILS partially empty.
+        local_details: dict[str, list[dict]] = {}
         for check in data.get("checks", []):
             key = f"{check['packet']}|{check['form']}|{check['variable']}|{check['check_category']}"
-            if key not in _CHECK_DETAILS:
-                _CHECK_DETAILS[key] = []
-            _CHECK_DETAILS[key].append(check)
+            if key not in local_details:
+                local_details[key] = []
+            local_details[key].append(check)
+        # Atomically promote to globals: _CHECK_DETAILS first, _CHECK_LOOKUP last.
+        # Any thread that observes _CHECK_LOOKUP as truthy will already see
+        # a fully populated _CHECK_DETAILS (dict.update is a single C-level op).
+        _CHECK_DETAILS.update(local_details)
+        _CHECK_LOOKUP = local_lookup  # Set last — acts as the "ready" signal
         return _CHECK_LOOKUP
     except Exception:
         logger.warning("Failed to load nacc_check_classifications.json", exc_info=True)
@@ -142,12 +149,108 @@ def _extract_compatibility_trigger(error_msg: str) -> str | None:
     return match.group(1) if match else None
 
 
-def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -> dict | None:
-    """Find the best matching check from a list based on error message content.
+def _calculate_check_match_confidence(
+    check: dict, error_msg: str, target_var: str, trigger_var: str | None
+) -> float:
+    """Calculate confidence score (0-100) for how well a check matches an error.
 
-    For plausibility rules with the same trigger variable, there may be multiple
-    checks (e.g., depd→B9 vs depd→D1a). Match by checking if the trigger variable
-    from the compatibility rule appears in the check description.
+    Scoring breakdown:
+    - 40 points: Both trigger AND target variables in description
+    - 30 points: Trigger variable in description (cross-form rules)
+    - 20 points: Target variable in description
+    - 20 points: Condition direction matches (should/should not)
+    - 10 points: Specific value constraints match
+    - 5 points: Category keyword match (blank/present/equal)
+
+    Args:
+        check: NACC check dict with full_desc
+        error_msg: The validation error message
+        target_var: The target variable from the error (e.g., 'bedep')
+        trigger_var: The trigger variable from compatibility rule (e.g., 'depd')
+
+    Returns:
+        Confidence score from 0-100
+    """
+    score = 0.0
+    desc = check.get("full_desc", "").upper()
+    error_msg_lower = error_msg.lower()
+    target_upper = target_var.upper()
+    trigger_upper = trigger_var.upper() if trigger_var else ""
+
+    # 1. Variable name matching (most important)
+    if trigger_upper and target_upper:
+        if trigger_upper in desc and target_upper in desc:
+            score += 40  # Both variables present - highly specific match
+        elif trigger_upper in desc:
+            score += 30  # Trigger variable match - cross-form rule
+        elif target_upper in desc:
+            score += 20  # Target variable match
+    elif target_upper and target_upper in desc:
+        score += 20  # Single variable match
+
+    # 2. Condition direction matching (should vs should not)
+    # NACC descriptions use various phrasings: "should not equal", "should not =", "should not be"
+    is_forbidden_check = "'forbidden'" in error_msg_lower
+    desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc or "SHOULD NOT BE" in desc
+    if is_forbidden_check == desc_is_negative:
+        score += 20
+
+    # 3. Specific value constraint matching
+    # Extract values from error message like "allowed': [1]" or "forbidden': [0, 9]"
+    value_pattern = r"'(?:allowed|forbidden)':\s*\[([^\]]+)\]"
+    error_values = set()
+    for match in re.finditer(value_pattern, error_msg_lower):
+        values_str = match.group(1)
+        error_values.update(v.strip() for v in values_str.split(","))
+
+    if error_values:
+        # Check if any of these values appear in the check description
+        for val in error_values:
+            if val in desc.lower():
+                score += 5
+                break
+
+    # 4. Fine-grained keyword/phrase matching (two tiers)
+    # Tier A: Exact phrase match in error AND desc — strong signal (15 pts)
+    exact_phrases = [
+        ("cannot be blank", "CANNOT BE BLANK"),
+        ("must be blank", "MUST BE BLANK"),
+        ("must be present", "MUST BE PRESENT"),
+        ("cannot be present", "CANNOT BE PRESENT"),
+        ("should not equal", "SHOULD NOT EQUAL"),
+        ("should equal", "SHOULD EQUAL"),
+        ("should be greater", "SHOULD BE GREATER"),
+        ("should be less than", "SHOULD BE LESS THAN"),
+    ]
+    exact_matched = False
+    for phrase_lower, phrase_upper in exact_phrases:
+        if phrase_lower in error_msg_lower and phrase_upper in desc:
+            score += 15
+            exact_matched = True
+            break
+
+    # Tier B: General keyword present in both — weaker signal (5 pts)
+    if not exact_matched:
+        keyword_categories = {
+            "blank": "BLANK",
+            "present": "PRESENT",
+            "equal": "EQUAL",
+            "greater": "GREATER",
+            "less": "LESS",
+        }
+        for keyword, desc_keyword in keyword_categories.items():
+            if keyword in error_msg_lower and desc_keyword in desc:
+                score += 5
+                break
+
+    return score
+
+
+def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -> dict | None:
+    """Find the best matching check from a list based on confidence scoring.
+
+    Returns None if no check meets the minimum confidence threshold (50/100),
+    preventing incorrect quality check assignments when ambiguous.
 
     Args:
         checks: List of check dicts with same base key
@@ -155,58 +258,62 @@ def _match_check_to_error(checks: list[dict], error_msg: str, target_var: str) -
         target_var: The target variable from the error (e.g., 'bedep')
 
     Returns:
-        Best matching check dict, or first check if no specific match
+        Best matching check dict if confidence >= 50, otherwise None
     """
     if not checks:
         return None
     if len(checks) == 1:
+        # Single check — the key (packet|form|variable|category) already uniquely identifies it.
+        # No ambiguity to resolve, so always return it.
         return checks[0]
 
-    target_upper = target_var.upper()
-    error_msg_lower = error_msg.lower()
-
-    # Extract the trigger variable from compatibility rule
-    # e.g., "if {'demented': {'allowed': [1]}}" -> "demented"
+    # Multiple checks - need strong confidence to disambiguate
     trigger_var = _extract_compatibility_trigger(error_msg)
-    trigger_upper = trigger_var.upper() if trigger_var else ""
+    scored_checks = []
 
-    # Determine condition direction from error message
-    # "forbidden" = negative check (should NOT equal)
-    # "allowed" in then clause = positive check (should equal)
-    is_forbidden_check = "'forbidden'" in error_msg_lower
-
-    # Priority 1: Match trigger variable in description (most specific)
-    if trigger_upper:
-        for check in checks:
-            desc = check.get("full_desc", "").upper()
-            if trigger_upper in desc:
-                # Verify semantics match: forbidden → "should not equal"
-                desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
-                if is_forbidden_check == desc_is_negative:
-                    return check
-        # Still prefer trigger match even if semantics don't perfectly align
-        for check in checks:
-            desc = check.get("full_desc", "").upper()
-            if trigger_upper in desc:
-                return check
-
-    # Priority 2: Match target variable in description
     for check in checks:
-        desc = check.get("full_desc", "").upper()
-        if target_upper in desc:
-            desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
-            if is_forbidden_check == desc_is_negative:
-                return check
+        confidence = _calculate_check_match_confidence(check, error_msg, target_var, trigger_var)
+        scored_checks.append((confidence, check))
 
-    # Priority 3: Match condition direction only
-    for check in checks:
-        desc = check.get("full_desc", "").upper()
-        desc_is_negative = "SHOULD NOT EQUAL" in desc or "SHOULD NOT =" in desc
-        if is_forbidden_check == desc_is_negative:
-            return check
+    # Sort by confidence descending
+    scored_checks.sort(key=lambda x: x[0], reverse=True)
+    best_confidence, best_check = scored_checks[0]
 
-    # Ultimate fallback: first check
-    return checks[0]
+    # Minimum confidence threshold: 50/100 for multiple checks
+    # This prevents guessing when we can't confidently match
+    if best_confidence < 50:
+        logger.debug(
+            "Low confidence (%.1f) matching check for variable '%s'. "
+            "Found %d candidates but none meet threshold. Error: %s",
+            best_confidence,
+            target_var,
+            len(checks),
+            error_msg[:100],
+        )
+        return None
+
+    # If top two scores are very close, require higher confidence
+    if len(scored_checks) > 1:
+        second_confidence = scored_checks[1][0]
+        if best_confidence - second_confidence < 10:
+            # Ambiguous - require even higher confidence
+            if best_confidence < 65:
+                logger.debug(
+                    "Ambiguous match for variable '%s' (top scores: %.1f vs %.1f). "
+                    "Skipping check assignment.",
+                    target_var,
+                    best_confidence,
+                    second_confidence,
+                )
+                return None
+
+    logger.debug(
+        "Matched check with confidence %.1f for variable '%s': %s",
+        best_confidence,
+        target_var,
+        best_check.get("check_code", ""),
+    )
+    return best_check
 
 
 def _get_nacc_check_info(packet: str, instrument: str, variable: str, error_msg: str) -> dict:
