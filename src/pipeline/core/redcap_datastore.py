@@ -63,9 +63,7 @@ class REDCapDatastore(Datastore):
             self._orderby,
         )
 
-    def _get_participant_records(
-        self, current_record: dict[str, Any]
-    ) -> pd.DataFrame:
+    def _get_participant_records(self, current_record: dict[str, Any]) -> pd.DataFrame:
         """Get all records for the participant in current_record."""
         pk_value = current_record.get(self._pk_field)
         if not pk_value:
@@ -74,9 +72,7 @@ class REDCapDatastore(Datastore):
         mask = self._data[self._pk_field] == pk_value
         return self._data[mask]
 
-    def get_previous_record(
-        self, current_record: dict[str, Any]
-    ) -> dict[str, Any] | None:
+    def get_previous_record(self, current_record: dict[str, Any]) -> dict[str, Any] | None:
         """
         Return the previous visit record for the specified participant.
 
@@ -96,9 +92,7 @@ class REDCapDatastore(Datastore):
 
         # Find records before current visit date
         if self._orderby in participant_records.columns:
-            earlier = participant_records[
-                participant_records[self._orderby] < current_date
-            ]
+            earlier = participant_records[participant_records[self._orderby] < current_date]
             if not earlier.empty:
                 # Return the most recent previous record
                 return earlier.iloc[-1].to_dict()
@@ -130,9 +124,7 @@ class REDCapDatastore(Datastore):
 
         # Find records before current visit date
         if self._orderby in participant_records.columns:
-            earlier = participant_records[
-                participant_records[self._orderby] < current_date
-            ]
+            earlier = participant_records[participant_records[self._orderby] < current_date]
 
             # Filter to records where all specified fields are non-empty
             for field in ignore_empty_fields:
@@ -144,9 +136,7 @@ class REDCapDatastore(Datastore):
 
         return None
 
-    def get_initial_record(
-        self, current_record: dict[str, Any]
-    ) -> dict[str, Any] | None:
+    def get_initial_record(self, current_record: dict[str, Any]) -> dict[str, Any] | None:
         """
         Return the initial (first) record for the participant.
 
@@ -165,9 +155,7 @@ class REDCapDatastore(Datastore):
 
         # Try to find IVP packet first
         if "packet" in participant_records.columns:
-            ivp_records = participant_records[
-                participant_records["packet"].str.upper() == "I"
-            ]
+            ivp_records = participant_records[participant_records["packet"].str.upper() == "I"]
             if not ivp_records.empty:
                 return ivp_records.iloc[0].to_dict()
 
@@ -177,9 +165,7 @@ class REDCapDatastore(Datastore):
 
         return None
 
-    def get_uds_ivp_record(
-        self, current_record: dict[str, Any]
-    ) -> dict[str, Any] | None:
+    def get_uds_ivp_record(self, current_record: dict[str, Any]) -> dict[str, Any] | None:
         """
         Return the UDS IVP record for the participant.
 
@@ -195,9 +181,7 @@ class REDCapDatastore(Datastore):
 
         # Filter to UDS IVP records (packet = 'I')
         if "packet" in participant_records.columns:
-            ivp_records = participant_records[
-                participant_records["packet"].str.upper() == "I"
-            ]
+            ivp_records = participant_records[participant_records["packet"].str.upper() == "I"]
             if not ivp_records.empty:
                 return ivp_records.iloc[0].to_dict()
 
@@ -217,9 +201,7 @@ class REDCapDatastore(Datastore):
             True (validation skipped - would require external API)
         """
         # Cannot validate RXCUI without external API access
-        logger.debug(
-            "RXCUI validation skipped for %s (requires external API)", drugid
-        )
+        logger.debug("RXCUI validation skipped for %s (requires external API)", drugid)
         return True
 
     def is_valid_adcid(self, adcid: int, own: bool) -> bool:
@@ -237,7 +219,5 @@ class REDCapDatastore(Datastore):
             True (validation skipped - would require external database)
         """
         # Cannot validate ADCID without external database access
-        logger.debug(
-            "ADCID validation skipped for %s (requires external database)", adcid
-        )
+        logger.debug("ADCID validation skipped for %s (requires external database)", adcid)
         return True

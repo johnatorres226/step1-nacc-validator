@@ -26,8 +26,7 @@ def export_error_report(
         logger.info("No validation errors — skipping error report")
         return None
 
-    path = output_dir / "Errors" / f"Final_Error_Dataset_{date_tag}_{time_tag}.csv"
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path = output_dir / f"Final_Error_Dataset_{date_tag}_{time_tag}.csv"
     df_errors.to_csv(path, index=False)
     logger.info("Exported %d errors to %s", len(df_errors), path.name)
     return path

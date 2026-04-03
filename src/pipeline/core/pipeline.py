@@ -21,7 +21,7 @@ from typing import Any
 
 import pandas as pd
 
-from ..config.config_manager import QCConfig
+from ..config.config_manager import OutputMode, QCConfig
 from .redcap_datastore import REDCapDatastore  # H2 fix: Import datastore for temporal rules
 
 logger = logging.getLogger(__name__)
@@ -307,16 +307,6 @@ def run_pipeline(
         # Conditional exports based on mode
         # errors-only mode: only error dataset + JSON upload artifacts
         # detailed-run mode: includes validation logs + data fetched (ETL elements)
-        if not config.errors_only_mode:
-            p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
-            if p:
-                generated.append(p)
-
-            p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
-            if p:
-                generated.append(p)
-
-        # Always export JSON tracking
         upload_ready = getattr(config, "upload_ready_path", None)
         jp = export_json_tracking(
             df_all=all_records_df,
@@ -328,6 +318,15 @@ def run_pipeline(
             upload_ready_path=upload_ready,
         )
         generated.append(jp)
+
+        if config.output_mode == OutputMode.DETAILED:
+            p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
+
+            p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
         logger.info("Exported %d report files (%.1fs)", len(generated), time.time() - t0)
 
         total = time.time() - pipeline_start
