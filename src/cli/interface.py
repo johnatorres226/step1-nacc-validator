@@ -39,9 +39,8 @@ def display_help(console: Console) -> None:
     table.add_column("Description", style=UNM_SILVER)
 
     commands = [
-        ("run", "Run QC validation (complete visits)"),
+        ("run", "Run QC validation (errors-only output)"),
         ("run -dr", "Run with detailed reports"),
-        ("run -dr -ps", "Run with detailed + passed rules log"),
         ("status", "View environment, config, and readiness"),
         ("help", "Show this command reference"),
         ("clear", "Clear screen and show banner"),
@@ -121,8 +120,7 @@ def run_interactive(console: Console | None = None) -> None:
             elif cmd == "run":
                 flags = {p.lower() for p in parts[1:]}
                 detailed = "-dr" in flags or "--detailed-run" in flags
-                passed = "-ps" in flags or "--passed-rules" in flags
-                _run_qc(console, initials, detailed=detailed, passed_rules=passed)
+                _run_qc(console, initials, detailed=detailed)
 
             else:
                 console.print(f"  [{UNM_CHERRY}]Unknown command:[/] {raw}")
@@ -143,27 +141,18 @@ def _run_qc(
     initials: str,
     *,
     detailed: bool = False,
-    passed_rules: bool = False,
 ) -> None:
     """Execute the QC validation pipeline from the interactive interface."""
-    if passed_rules and not detailed:
-        console.print(f"  [{UNM_CHERRY}]--passed-rules requires --detailed-run.[/]")
-        console.print(f"  [{UNM_LOBO_GRAY}]Use: run -dr -ps[/]\n")
-        return
-
-    # Describe the run
-    mode_label = (
-        "Detailed + Passed Rules" if passed_rules else "Detailed" if detailed else "Standard"
-    )
+    mode_label = "Detailed" if detailed else "Standard"
     console.print()
     console.print(f"  [{UNM_TURQUOISE}]Starting QC Validation[/]  [{UNM_SILVER}]({mode_label})[/]")
     console.print(f"  [{UNM_LOBO_GRAY}]Initials: {initials}  │  Mode: complete_visits[/]")
     display_separator(console)
 
     try:
-        from pipeline.config.config_manager import get_config
+        from pipeline.config.config_manager import OutputMode, get_config
+        from pipeline.core.pipeline import run_pipeline
         from pipeline.logging.logging_config import setup_logging
-        from pipeline.reports.report_pipeline import run_report_pipeline
 
         # Enable logging during the run so the user sees progress
         setup_logging(
@@ -185,11 +174,12 @@ def _run_qc(
         # Apply runtime parameters
         config.user_initials = initials
         config.mode = "complete_visits"
-        config.detailed_run = detailed
-        config.passed_rules = passed_rules
+        config.output_mode = OutputMode.DETAILED if detailed else OutputMode.ERRORS_ONLY
 
         console.print()
-        run_report_pipeline(config=config)
+        result = run_pipeline(config=config)
+        if not result["success"]:
+            raise RuntimeError(f"Pipeline execution failed: {result['error']}")
 
         console.print(f"\n  [{UNM_TURQUOISE}]✓ QC validation complete.[/]")
         console.print(

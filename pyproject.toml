@@ -1,6 +1,6 @@
 [project]
 name = "udsv4-redcap-qc-validator"
-version = "2.3.0"  # Keep in sync with src/__version__.py
+version = "2.4.0"  # Keep in sync with src/__version__.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"
@@ -43,15 +43,12 @@ python-dateutil = ">=2.9.0"
 types-python-dateutil = ">=2.9.0.20240316"
 json-logic = "*"
 python-dotenv = "*"
-python-decouple = "*"
 jsonschema = "*"
 pandas = "*"
 requests = "*"
 setuptools = "*"
-ipython = "*"
 click = ">=8.0.0"
 rich = ">=13.0.0"
-typer = ">=0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"

@@ -1,8 +1,10 @@
 # External Package Protection Configuration
 # 
-# This file marks certain directories and files as protected external code
-# that should not be modified in this repository.
+# nacc_form_validator is an external/vendored package. It is marked as
+# linguist-vendored so GitHub excludes it from language stats.
+#
+# The -diff attribute has been intentionally removed to allow diffs for
+# tracked local patches. See docs/external-package-policy.md for policy.
 
-# Mark nacc_form_validator as external (read-only)
+# Mark nacc_form_validator as vendored (language stats only)
 nacc_form_validator/** linguist-vendored
-nacc_form_validator/** -diff
