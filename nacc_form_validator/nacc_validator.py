@@ -769,6 +769,19 @@ class NACCValidator(Validator):
                 valid, errors = self._check_subschema_valid(
                     then_conds, then_operator)
 
+                # When then-check fails but no field-level errors were collected,
+                # the then-fields are absent/null in the record. Generate explicit
+                # errors for non-nullable fields so data-completeness gaps are caught
+                # (e.g. B5 symptom=1 but B9 symptom field not filled in).
+                if not valid and not errors:
+                    errors = {}
+                    for then_field, then_constraint in then_conds.items():
+                        field_val = (self.document or {}).get(then_field)
+                        if _is_missing_value(field_val) and not then_constraint.get(
+                            "nullable", False
+                        ):
+                            errors[then_field] = ["null value not allowed"]
+
             # Otherwise validate the else clause, if they exist
             elif else_conds:
                 valid, errors = self._check_subschema_valid(

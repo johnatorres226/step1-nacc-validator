@@ -13,12 +13,9 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-from pipeline.config.config_manager import (
-    QCConfig,
-    get_config,
-)
+from pipeline.config.config_manager import OutputMode, QCConfig, get_config
+from pipeline.core.pipeline import run_pipeline
 from pipeline.logging.logging_config import get_logger, setup_logging
-from pipeline.reports.report_pipeline import operation_context, run_report_pipeline
 from src.__version__ import __version__
 
 # Initialize console and logger
@@ -65,16 +62,6 @@ directly. Use the `config` subcommand to inspect configuration.
     is_flag=True,
     help="Show line-by-line QC element validation logging during execution.",
 )
-@click.option(
-    "--passed-rules",
-    "-ps",
-    is_flag=True,
-    help=(
-        "Generate comprehensive Rules Validation log for "
-        "diagnostic purposes (requires --mode detailed-run, "
-        "large file, slow generation)."
-    ),
-)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -84,7 +71,6 @@ def cli(
     ptid_list: list[str],
     user_initials: str,
     logs: bool,
-    passed_rules: bool,
 ) -> None:
     # Launch interactive interface when no CLI arguments are provided
     if len(sys.argv) == 1 and not ctx.invoked_subcommand:
@@ -103,15 +89,6 @@ def cli(
     # If a subcommand was invoked, let Click handle it
     if ctx.invoked_subcommand:
         return
-
-    # Otherwise, run the QC pipeline using the parameters provided
-    # Validate that --passed-rules can only be used with detailed-run mode
-    if passed_rules and mode != "detailed-run":
-        _msg = (
-            "The --passed-rules/-ps option requires --mode detailed-run. "
-            "Use: udsv4-qc -i INITIALS -m detailed-run -ps"
-        )
-        raise click.ClickException(_msg)
 
     # Ensure required initials are present for runs
     if not user_initials:
@@ -155,16 +132,16 @@ def cli(
 
         base_config.user_initials = user_initials.strip().upper()[:3]
         base_config.mode = "complete_visits"  # Internal mode remains complete_visits
-        base_config.detailed_run = mode == "detailed-run"
-        base_config.passed_rules = passed_rules
-        base_config.errors_only_mode = mode == "errors-only"
+        base_config.output_mode = (
+            OutputMode.DETAILED if mode == "detailed-run" else OutputMode.ERRORS_ONLY
+        )
 
         if logs:
             _display_run_summary(base_config)
 
-        # Execute pipeline with operation context for better progress tracking
-        with operation_context("qc_validation", f"Processing in {mode} mode"):
-            run_report_pipeline(config=base_config)
+        result = run_pipeline(config=base_config)
+        if not result["success"]:
+            raise RuntimeError(f"Pipeline execution failed: {result['error']}")
         logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
         logger.info("QC validation pipeline complete")
 
@@ -244,13 +221,7 @@ def config(detailed: bool, json_output: bool) -> None:
 
 def _display_run_summary(config: QCConfig) -> None:
     """Displays a summary of the QC run configuration."""
-    # Determine display mode from config flags
-    if config.errors_only_mode:
-        mode_display = "Errors-Only"
-    elif config.detailed_run:
-        mode_display = "Detailed-Run"
-    else:
-        mode_display = "Standard"
+    mode_display = "Detailed-Run" if config.output_mode == OutputMode.DETAILED else "Errors-Only"
 
     console.print(f"\nQC Run Configuration (Mode: {mode_display})")
 

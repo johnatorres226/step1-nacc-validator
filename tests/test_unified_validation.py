@@ -244,12 +244,14 @@ class TestValidateDataEdgeCases:
             "ptid",
             "instrument_name",
             "variable",
+            "field_label",
             "error_message",
             "current_value",
             "packet",
             "json_rule_path",
             "redcap_event_name",
             "discriminant",
+            "variable_context",
         }
         assert expected_keys.issubset(err.keys())
         assert err["instrument_name"] == "instrument_a"

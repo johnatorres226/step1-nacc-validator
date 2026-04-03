@@ -16,7 +16,7 @@ from .rule_pool import get_pool, reset_pool
 
 logger = get_logger(__name__)
 
-_VALID_PACKETS = {"I", "I4", "F"}
+_VALID_PACKETS = {"I", "I4", "F", "M"}  # H5 fix: Added M (Milestone) packet support
 
 # ---------------------------------------------------------------------------
 # Minimal discriminant config — replaces DYNAMIC_RULE_INSTRUMENTS

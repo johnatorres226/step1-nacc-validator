@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.pipeline.config.config_manager import QCConfig, get_config
+from src.pipeline.config.config_manager import OutputMode, QCConfig, get_config
 
 
 class TestQCConfig:
@@ -99,3 +99,28 @@ class TestQCConfig:
     def test_handles_nonexistent_file(self):
         config = QCConfig.from_file("/path/that/does/not/exist.json")
         assert isinstance(config, QCConfig)
+
+    def test_output_mode_default_is_errors_only(self):
+        config = QCConfig()
+        assert config.output_mode == OutputMode.ERRORS_ONLY
+
+    def test_output_mode_string_coerces_in_post_init(self):
+        config = QCConfig(output_mode="detailed-run")
+        assert config.output_mode.value == "detailed-run"
+
+    def test_output_mode_serializes_to_string_in_to_dict(self):
+        config = QCConfig(output_mode=OutputMode.DETAILED)
+        d = config.to_dict()
+        assert d["output_mode"] == "detailed-run"
+
+    def test_output_mode_roundtrips_through_file(self):
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            temp_path = f.name
+        try:
+            original = QCConfig(output_mode=OutputMode.DETAILED)
+            original.to_file(temp_path)
+            loaded = QCConfig.from_file(temp_path)
+            assert loaded.output_mode.value == "detailed-run"
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)

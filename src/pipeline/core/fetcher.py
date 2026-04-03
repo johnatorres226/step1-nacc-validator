@@ -14,7 +14,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from ..config.config_manager import QCConfig
+from ..config.config_manager import OutputMode, QCConfig
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +57,8 @@ def fetch_report_data(
     df = _validate_and_map(raw)
     df = _apply_ptid_filter(df, config)
 
-    # Optional save (audit trail)
-    if output_path and not df.empty:
+    # Audit trail save — detailed mode only
+    if output_path and not df.empty and config.output_mode == OutputMode.DETAILED:
         dt = date_tag or ""
         tt = time_tag or ""
         out_dir = Path(output_path) / "Data_Fetched"
