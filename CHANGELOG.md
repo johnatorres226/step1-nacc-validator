@@ -3,39 +3,54 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.4.0] - 2026-03-28
-
-### Added
-- **Confidence-Based Quality Check Matching**: Replaced "first-match fallback" logic with a
-  scored disambiguation system that returns blank codes instead of guessing wrong
-  - New `_calculate_check_match_confidence()` function scores each candidate check (0–100)
-    across four independent signals: variable name presence (40/30/20 pts), condition
-    direction match (20 pts), value constraint overlap (5 pts), exact phrase match (15 pts)
-    vs. general keyword match (5 pts)
-  - `_match_check_to_error()` rewritten to rank all candidate checks by score and enforce
-    thresholds: ≥50 for multiple checks, ≥65 when the top two scores are within 10 points
-  - Single-check keys always return their match (no ambiguity — key lookup already narrows)
-  - Returns `None` (→ blank `nacc_check_code`/`nacc_interpretation`) when no candidate
-    meets the threshold, eliminating incorrect check assignments on ambiguous variables
-
-### Changed
-- **Exact Phrase Scoring**: Keyword matching upgraded from single-tier to two-tier
-  - Tier A: Exact phrase match (e.g., "cannot be blank" in error AND description) → +15 pts
-  - Tier B: Generic keyword present (e.g., "blank" anywhere) → +5 pts, only when Tier A missed
-  - This correctly differentiates "cannot be blank" (present rule) vs. "must be blank" (absent rule)
+## [2.4.0] - 2026-04-03
 
 ### Fixed
-- **Incorrect Quality Check Assignment**: Variables with multiple quality checks in the same
-  category (e.g., `ADVEVENT` Missingness, `ALCBINGE` Plausibility) no longer receive the
-  first listed check code regardless of relevance — the system now scores all candidates
-  and leaves the field blank when it cannot identify the correct check with confidence
-- **Removed redundant `import re`** inside `_calculate_check_match_confidence` (already
-  imported at module level)
+- **Critical: Cross-Form Completeness Rules Silent Failure** — patched
+  `nacc_form_validator/nacc_validator.py` (`_validate_compatibility`) to catch absent THEN-fields
+  - Root cause: when an IF condition was satisfied but the THEN-field was absent/null,
+    `_check_subschema_valid` returned `(valid=False, errors={})`. The caller's `if errors:` guard
+    evaluated to `False`, silently swallowing the failure — zero errors emitted
+  - Fix: when `not valid and not errors`, iterate THEN-fields and synthesize
+    `"null value not allowed"` errors for any non-nullable absent field
+  - Impact: B5 cross-form errors increased from 12 → 95 per production run; all NACC-flagged
+    cross-form completeness errors in the dataset are now caught (521 total errors, up from 403)
+
+### Added
+- **Rule-Check Mapping Scrapper** (`src/scrapper/build_rule_check_mapping.py`): utility that
+  reads JSON rule files and quality-check CSVs to generate a lookup table mapping
+  `{packet}|{namespace}|{variable}|{rule_kind}` → NACC check metadata with confidence levels
+  (`verified` for unique match, `inferred` for narrowed match)
+- **Rule-Check Mapping Config** (`config/rule_check_mapping.json`): generated artifact from the
+  scrapper — 85,000+ entries mapping validation rules to NACC check classifications
+
+### Changed
+- **Report Pipeline Simplified**: removed the confidence-scoring disambiguation system
+  (`_calculate_check_match_confidence`, `_match_check_to_error`) in favour of direct regex
+  extraction of the failing variable from error messages (`_extract_failing_variable`)
+  — `_get_nacc_check_info` now returns a default struct instead of filtering errors when no
+  classification is found
+- **KEY_MAP Expanded**: added 7 previously unmapped rule types to `config_manager.py` for
+  complete NACC check code coverage across all error categories
+- **External Package Policy Updated**: `docs/external-package-policy.md` changed from
+  "NO MODIFICATIONS ALLOWED" to an approved patch process with a justification table tracking
+  date, branch, root cause, impact, fix, validation, and upstream sync obligation
+- **CI Allowlist Model**: `.github/workflows/ci.yml` external-package-protection job replaced the
+  hard block with an `ALLOWED_PATCHES` allowlist; `nacc_form_validator/nacc_validator.py` is the
+  sole approved entry with inline justification comment
+
+### Removed
+- **Unused dependencies**: `python-decouple`, `ipython`, and `typer` removed from
+  `pyproject.toml` production dependencies
+- **Replaced scrapper**: `src/scrapper/convert_csv_to_json.py` and
+  `config/nacc_check_classifications.json` superseded by the new scrapper and mapping artifact
+- **Untracked internal directories**: `docs/Patches/` and `flowcharts/` removed from git index
+  (directories remain on disk as gitignored local artifacts)
 
 ### Tests
-- 17 new tests across `TestCalculateCheckMatchConfidence`, `TestMatchCheckToError`, and
-  `TestGetNaccCheckInfoWithConfidence` classes in `tests/test_nacc_check_classification.py`
-- Total classification tests: 42 (up from 25)
+- Updated `tests/test_nacc_check_classification.py` to match simplified `_get_nacc_check_info`
+  behaviour — default-struct return path instead of None-filter path
+- 157 tests passing, 2 skipped (unchanged from pre-release baseline)
 
 
 ## [2.3.0] - 2026-03-27
