@@ -226,4 +226,4 @@ output
 pull_errors/
 
 # ruff
-.ruff_cache/
+.ruff_cache/latest_upload.csv

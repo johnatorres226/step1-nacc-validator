@@ -1,211 +1,175 @@
-"""Tests for NACC check type classification functions."""
+"""Tests for variable context enrichment from the REDCap data dictionary."""
+
+import json
+
+# ---------------------------------------------------------------------------
+# _strip_html
+# ---------------------------------------------------------------------------
 
 
-def test_get_nacc_check_type_returns_error_when_no_file(monkeypatch, tmp_path):
-    """If classifications file is missing, default to 'error'."""
-    from src.pipeline.reports import report_pipeline
+class TestStripHtml:
+    def test_plain_text_unchanged(self):
+        from src.pipeline.reports.report_pipeline import _strip_html
 
-    monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", tmp_path / "missing.json")
-    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
-    result = report_pipeline._get_nacc_check_type("I", "a1", "birthmo", "cannot be blank")
-    assert result == "error"
+        assert _strip_html("1a. Birth month") == "1a. Birth month"
+
+    def test_removes_div_and_p_tags(self):
+        from src.pipeline.reports.report_pipeline import _strip_html
+
+        raw = '<div class="rich-text-field-label"><p>5a. Depression/dysphoria</p></div>'
+        assert _strip_html(raw) == "5a. Depression/dysphoria"
+
+    def test_removes_inline_span(self):
+        from src.pipeline.reports.report_pipeline import _strip_html
+
+        raw = '2b. Age at visit <span style="color:red">*</span>'
+        assert _strip_html(raw) == "2b. Age at visit *"
+
+    def test_empty_string(self):
+        from src.pipeline.reports.report_pipeline import _strip_html
+
+        assert _strip_html("") == ""
 
 
-def test_get_nacc_check_type_returns_alert_from_lookup(monkeypatch):
-    """When lookup contains the key, return its value."""
-    from src.pipeline.reports import report_pipeline
+# ---------------------------------------------------------------------------
+# _is_missingness_error
+# ---------------------------------------------------------------------------
 
-    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    monkeypatch.setattr(
-        report_pipeline,
-        "_CHECK_DETAILS",
-        {
-            "I|a1|zip|Conformity": [
-                {"error_type": "alert", "check_code": "test", "full_desc": "test"}
-            ]
+
+class TestIsMissingnessError:
+    def test_null_value_not_allowed(self):
+        from src.pipeline.reports.report_pipeline import _is_missingness_error
+
+        assert _is_missingness_error("null value not allowed") is True
+
+    def test_cannot_be_blank(self):
+        from src.pipeline.reports.report_pipeline import _is_missingness_error
+
+        assert _is_missingness_error("field cannot be blank") is True
+
+    def test_must_be_blank(self):
+        from src.pipeline.reports.report_pipeline import _is_missingness_error
+
+        assert _is_missingness_error("must be blank when X = 0") is True
+
+    def test_range_error_is_not_missingness(self):
+        from src.pipeline.reports.report_pipeline import _is_missingness_error
+
+        assert _is_missingness_error("must be between 1 and 12") is False
+
+    def test_compatibility_rule_is_not_missingness(self):
+        from src.pipeline.reports.report_pipeline import _is_missingness_error
+
+        assert (
+            _is_missingness_error(
+                "('bedep', ['unallowed value 0']) for if {'depd': {'allowed': [1]}} "
+                "then {'bedep': {'allowed': [1]}} - compatibility rule no: 0"
+            )
+            is False
+        )
+
+
+# ---------------------------------------------------------------------------
+# _build_variable_context
+# ---------------------------------------------------------------------------
+
+
+class TestBuildVariableContext:
+    """Tests for _build_variable_context with a mocked data dictionary."""
+
+    _MOCK_DD = {
+        "birthmo": {
+            "form": "a1_participant_demographics",
+            "field_label": "1a. Participant's month of birth",
+            "choices": "1, January | 2, February | 3, March",
         },
-    )
-    result = report_pipeline._get_nacc_check_type("I", "a1", "zip", "must be between 006 and 999")
-    assert result == "alert"
-
-
-def test_get_nacc_check_type_returns_error_from_lookup(monkeypatch):
-    """When lookup contains the key with error value, return 'error'."""
-    from src.pipeline.reports import report_pipeline
-
-    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|birthmo|Conformity": "error"})
-    result = report_pipeline._get_nacc_check_type("I", "a1", "birthmo", "must be between 1 and 12")
-    assert result == "error"
-
-
-def test_get_nacc_check_type_defaults_to_error_when_key_not_found(monkeypatch):
-    """When key is not in lookup, default to 'error'."""
-    from src.pipeline.reports import report_pipeline
-
-    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    result = report_pipeline._get_nacc_check_type("I", "a1", "unknown_var", "some error message")
-    assert result == "error"
-
-
-def test_get_nacc_check_type_case_insensitive_instrument(monkeypatch):
-    """Instrument and variable should be lowercased for lookup."""
-    from src.pipeline.reports import report_pipeline
-
-    monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {"I|a1|zip|Conformity": "alert"})
-    monkeypatch.setattr(
-        report_pipeline,
-        "_CHECK_DETAILS",
-        {
-            "I|a1|zip|Conformity": [
-                {"error_type": "alert", "check_code": "test", "full_desc": "test"}
-            ]
+        "depd": {
+            "form": "b5_npiq",
+            "field_label": "5a. Depression/dysphoria",
+            "choices": "1, Yes | 0, No | 9, Unknown",
         },
-    )
-    result = report_pipeline._get_nacc_check_type("I", "A1", "ZIP", "must be between 006 and 999")
-    assert result == "alert"
+        "bedep": {
+            "form": "b9_clinician_judgment",
+            "field_label": "12b. Depressed mood",
+            "choices": "0, No | 1, Yes | 9, Unknown",
+        },
+    }
 
-
-class TestInferCheckCategory:
-    """Tests for _infer_check_category function."""
-
-    def test_missingness_cannot_be_blank(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Field cannot be blank") == "Missingness"
-
-    def test_missingness_must_be_blank(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Field must be blank when X") == "Missingness"
-
-    def test_missingness_must_be_present(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Field must be present") == "Missingness"
-
-    def test_missingness_conditionally_present(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Conditionally present field") == "Missingness"
-
-    def test_missingness_conditionally_blank(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Conditionally blank when X") == "Missingness"
-
-    def test_missingness_cannot_be_empty(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Field cannot be empty") == "Missingness"
-
-    def test_missingness_required_field(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Required field missing") == "Missingness"
-
-    def test_plausibility_temporalrules(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("temporalrules violation") == "Plausibility"
-
-    def test_plausibility_compatibility_rule(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("compatibility rule no: 3") == "Plausibility"
-
-    def test_plausibility_should_not_equal(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Value should not equal X") == "Plausibility"
-
-    def test_plausibility_should_equal(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Value should equal Y") == "Plausibility"
-
-    def test_plausibility_should_be_less_than(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Value should be less than Z") == "Plausibility"
-
-    def test_plausibility_should_be_greater(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("Value should be greater than Z") == "Plausibility"
-
-    def test_conformity_default(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("must be between 1 and 12") == "Conformity"
-
-    def test_conformity_allowed_values(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("unallowed value 5") == "Conformity"
-
-    def test_conformity_out_of_range(self):
-        from src.pipeline.reports.report_pipeline import _infer_check_category
-
-        assert _infer_check_category("value out of expected range") == "Conformity"
-
-
-class TestLoadCheckLookup:
-    """Tests for _load_check_lookup function."""
-
-    def test_returns_empty_dict_when_file_missing(self, monkeypatch, tmp_path):
+    def _patch(self, monkeypatch):
         from src.pipeline.reports import report_pipeline
 
-        monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", tmp_path / "nonexistent.json")
-        monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
-        result = report_pipeline._load_check_lookup()
-        assert result == {}
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT", self._MOCK_DD)
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT_LOADED", True)
 
-    def test_returns_cached_lookup_when_available(self, monkeypatch):
+    def test_missingness_returns_only_field_label(self, monkeypatch):
+        self._patch(monkeypatch)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
+
+        result = json.loads(_build_variable_context("birthmo", "null value not allowed"))
+        assert result["field_label"] == "1a. Participant's month of birth"
+        assert "choices" not in result
+        assert "form" not in result
+
+    def test_conformity_returns_full_entry(self, monkeypatch):
+        self._patch(monkeypatch)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
+
+        result = json.loads(_build_variable_context("birthmo", "must be between 1 and 12"))
+        assert result["variable"] == "birthmo"
+        assert result["form"] == "a1_participant_demographics"
+        assert result["field_label"] == "1a. Participant's month of birth"
+        assert "choices" in result
+
+    def test_conformity_omits_choices_when_empty(self, monkeypatch):
         from src.pipeline.reports import report_pipeline
 
-        cached = {"I|a1|zip|Conformity": "alert"}
-        monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", cached)
-        result = report_pipeline._load_check_lookup()
-        assert result == cached
+        dd = {"zipcode": {"form": "a1", "field_label": "ZIP code", "choices": ""}}
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT", dd)
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT_LOADED", True)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
 
-    def test_loads_lookup_from_file(self, monkeypatch, tmp_path):
-        import json
+        result = json.loads(_build_variable_context("zipcode", "must be between 006 and 999"))
+        assert "choices" not in result
 
+    def test_compat_rule_returns_array_with_both_variables(self, monkeypatch):
+        self._patch(monkeypatch)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
+
+        msg = (
+            "('bedep', ['unallowed value 0']) for if {'depd': {'allowed': [1]}} "
+            "then {'bedep': {'allowed': [1]}} - compatibility rule no: 0"
+        )
+        result = json.loads(_build_variable_context("bedep", msg))
+        assert isinstance(result, list)
+        assert len(result) == 2
+        vars_in_result = {r["variable"] for r in result}
+        assert vars_in_result == {"bedep", "depd"}
+
+    def test_compat_rule_includes_full_entry_for_each_variable(self, monkeypatch):
+        self._patch(monkeypatch)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
+
+        msg = (
+            "('bedep', ['unallowed value 0']) for if {'depd': {'allowed': [1]}} "
+            "then {'bedep': {'allowed': [1]}} - compatibility rule no: 0"
+        )
+        result = json.loads(_build_variable_context("bedep", msg))
+        for entry in result:
+            assert "form" in entry
+            assert "field_label" in entry
+            assert "choices" in entry
+
+    def test_unknown_variable_returns_empty_string(self, monkeypatch):
+        self._patch(monkeypatch)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
+
+        assert _build_variable_context("unknown_var_xyz", "some error") == ""
+
+    def test_empty_dict_returns_empty_string(self, monkeypatch):
         from src.pipeline.reports import report_pipeline
 
-        # Create a test file
-        test_file = tmp_path / "test_classifications.json"
-        test_data = {"lookup": {"F|a2|inlivwth|Plausibility": "alert"}}
-        test_file.write_text(json.dumps(test_data), encoding="utf-8")
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT", {})
+        monkeypatch.setattr(report_pipeline, "_DATA_DICT_LOADED", True)
+        from src.pipeline.reports.report_pipeline import _build_variable_context
 
-        monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", test_file)
-        monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
-        result = report_pipeline._load_check_lookup()
-        assert result == {"F|a2|inlivwth|Plausibility": "alert"}
-
-    def test_returns_empty_dict_on_invalid_json(self, monkeypatch, tmp_path):
-        from src.pipeline.reports import report_pipeline
-
-        # Create an invalid JSON file
-        test_file = tmp_path / "invalid.json"
-        test_file.write_text("not valid json {", encoding="utf-8")
-
-        monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", test_file)
-        monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
-        result = report_pipeline._load_check_lookup()
-        assert result == {}
-
-    def test_returns_empty_dict_when_lookup_key_missing(self, monkeypatch, tmp_path):
-        import json
-
-        from src.pipeline.reports import report_pipeline
-
-        # Create a file without 'lookup' key
-        test_file = tmp_path / "no_lookup.json"
-        test_data = {"_meta": {}, "checks": []}
-        test_file.write_text(json.dumps(test_data), encoding="utf-8")
-
-        monkeypatch.setattr(report_pipeline, "_CLASSIFICATIONS_PATH", test_file)
-        monkeypatch.setattr(report_pipeline, "_CHECK_LOOKUP", {})
-        result = report_pipeline._load_check_lookup()
-        assert result == {}
+        assert _build_variable_context("birthmo", "null value not allowed") == ""

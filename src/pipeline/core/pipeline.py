@@ -6,9 +6,10 @@ fetch → load rules → prep → validate → export flow and returns
 a plain dict with the results.
 
 Parallel Validation Architecture:
-    - Data is grouped by packet (I, I4, F) before validation
+    - Data is grouped by packet (I, I4, F, M) before validation
     - Within each packet group, instrument + packet validation run in parallel
     - This eliminates thread-safety issues with rule pool packet switching
+    - H2 fix: Temporal rules enabled via in-memory REDCapDatastore
 """
 
 import logging
@@ -20,7 +21,8 @@ from typing import Any
 
 import pandas as pd
 
-from ..config.config_manager import QCConfig
+from ..config.config_manager import OutputMode, QCConfig
+from .redcap_datastore import REDCapDatastore  # H2 fix: Import datastore for temporal rules
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +131,7 @@ def run_pipeline(
         # Determine which packets are in the data
         packets_in_data: set[str] = set()
         if not data_df.empty and "packet" in data_df.columns:
-            valid_packets = {"I", "I4", "F"}
+            valid_packets = {"I", "I4", "F", "M"}  # H5 fix: Added M (Milestone) packet support
             packets_in_data = {
                 p.upper() for p in data_df["packet"].dropna().unique() if p.upper() in valid_packets
             }
@@ -192,12 +194,20 @@ def run_pipeline(
         all_passed: list[dict] = []
         status_parts: list[pd.DataFrame] = []
 
-        # Process each packet group (I, I4, F) — sequential by packet for thread safety
+        # Process each packet group (I, I4, F, M) — sequential by packet for thread safety
         for packet_code, packet_df in sorted(packet_groups.items()):
             logger.info(
                 "Processing packet %s (%d records)",
                 packet_code,
                 len(packet_df),
+            )
+
+            # H2 fix: Create datastore from packet data for temporal rule validation
+            # NOTE: This datastore only has visibility into records in current batch
+            packet_datastore = REDCapDatastore(
+                data=packet_df,
+                pk_field=config.primary_key_field,
+                orderby="visitdate",
             )
 
             # Prepare instrument cache for this packet subset
@@ -216,6 +226,7 @@ def run_pipeline(
                 instrument: str,
                 _cache: dict = packet_instrument_cache,
                 _rules: dict = rules_cache,
+                _datastore: REDCapDatastore = packet_datastore,  # H2 fix: Pass datastore
             ) -> tuple[list, list, list, pd.DataFrame | None]:
                 """Validate a single instrument."""
                 df_inst = _cache.get(instrument, pd.DataFrame())
@@ -233,6 +244,7 @@ def run_pipeline(
                     inst_rules,
                     instrument_name=instrument,
                     primary_key_field=config.primary_key_field,
+                    datastore=_datastore,  # H2 fix: Pass datastore for temporal rules
                 )
 
                 # Status tracking
@@ -295,16 +307,6 @@ def run_pipeline(
         # Conditional exports based on mode
         # errors-only mode: only error dataset + JSON upload artifacts
         # detailed-run mode: includes validation logs + data fetched (ETL elements)
-        if not config.errors_only_mode:
-            p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
-            if p:
-                generated.append(p)
-
-            p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
-            if p:
-                generated.append(p)
-
-        # Always export JSON tracking
         upload_ready = getattr(config, "upload_ready_path", None)
         jp = export_json_tracking(
             df_all=all_records_df,
@@ -316,6 +318,15 @@ def run_pipeline(
             upload_ready_path=upload_ready,
         )
         generated.append(jp)
+
+        if config.output_mode == OutputMode.DETAILED:
+            p = export_validation_logs(logs_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
+
+            p = export_data_fetched(all_records_df, output_dir, date_tag, time_tag)
+            if p:
+                generated.append(p)
         logger.info("Exported %d report files (%.1fs)", len(generated), time.time() - t0)
 
         total = time.time() - pipeline_start

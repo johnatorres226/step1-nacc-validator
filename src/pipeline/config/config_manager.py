@@ -3,6 +3,7 @@
 import json
 import os
 from dataclasses import dataclass, field, fields
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -84,12 +85,22 @@ namespace_to_instrument = {
 uds_events = ["udsv4visit_arm_1"]
 
 
+class OutputMode(Enum):
+    """Controls which outputs the pipeline generates."""
+
+    ERRORS_ONLY = "errors-only"
+    DETAILED = "detailed-run"
+
+
 # =============================================================================
 # JSON SCHEMA TO CERBERUS MAPPING
 # =============================================================================
 
 # Map JSON rule keys to Cerberus schema keywords
+# NOTE: Keys map to custom NACCValidator keywords (see nacc_form_validator/nacc_validator.py)
+# Each custom keyword has a corresponding _validate_{keyword} method in NACCValidator
 KEY_MAP = {
+    # Standard Cerberus keywords
     "type": "type",
     "nullable": "nullable",
     "min": "min",
@@ -99,8 +110,16 @@ KEY_MAP = {
     "allowed": "allowed",
     "forbidden": "forbidden",
     "filled": "filled",
+    # NACC custom validation keywords (H1 fix - previously missing)
     "compatibility": "compatibility",
     "temporalrules": "temporalrules",
+    "logic": "logic",  # Mathematical formula validation via _validate_logic()
+    "compare_with": "compare_with",  # Value comparison via _validate_compare_with()
+    "compare_age": "compare_age",  # Age-based validation via _validate_compare_age()
+    "function": "function",  # Custom function validation via _validate_function()
+    "compute_gds": "compute_gds",  # GDS calculation validation via _validate_compute_gds()
+    "formatting": "formatting",  # Date formatting support via _validate_formatting()
+    "check_with": "check_with",  # Cerberus native check_with for custom validation
 }
 
 
@@ -128,8 +147,6 @@ class QCConfig:
     output_path: str = field(
         default_factory=lambda: os.getenv("OUTPUT_PATH", str(project_root / "output"))
     )
-    log_path: str | None = field(default_factory=lambda: os.getenv("LOG_PATH"))
-    status_path: str | None = field(default_factory=lambda: os.getenv("STATUS_PATH"))
     upload_ready_path: str | None = field(default_factory=lambda: os.getenv("UPLOAD_READY_PATH"))
 
     # --- Packet-based Rule Paths (Required) ---
@@ -147,39 +164,28 @@ class QCConfig:
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     user_initials: str | None = None
     ptid_list: list[str] | None = None
-    # Generate detailed outputs (Validation_Logs, Completed_Visits, Reports,
-    # Generation_Summary)
-    detailed_run: bool = False
-    # Generate comprehensive Rules Validation log (large file, slow generation)
-    passed_rules: bool = False
-    # Errors-only mode: only output error dataset and JSON upload artifacts
-    errors_only_mode: bool = False
+    output_mode: OutputMode = OutputMode.ERRORS_ONLY
 
     # --- Performance & Retries ---
     max_workers: int = field(default_factory=lambda: int(os.getenv("MAX_WORKERS", "4")))
     timeout: int = field(default_factory=lambda: int(os.getenv("TIMEOUT", "300")))
     retry_attempts: int = field(default_factory=lambda: int(os.getenv("RETRY_ATTEMPTS", "3")))
 
-    # --- Report Generation ---
-    generate_html_report: bool = field(
-        default_factory=lambda: os.getenv("GENERATE_HTML_REPORT", "true").lower() == "true"
-    )
-
     # --- Instrument & Event Configuration ---
     instruments: list[str] = field(default_factory=lambda: instruments)
     events: list[str] = field(default_factory=lambda: uds_events)
 
     def __post_init__(self):
-        """Post-initialization path resolution."""
+        """Post-initialization path resolution and type coercion."""
         # Resolve paths to be absolute
         if self.output_path:
             self.output_path = str(Path(self.output_path).resolve())
-        if self.log_path:
-            self.log_path = str(Path(self.log_path).resolve())
-        if self.status_path:
-            self.status_path = str(Path(self.status_path).resolve())
         if self.upload_ready_path:
             self.upload_ready_path = str(Path(self.upload_ready_path).resolve())
+
+        # Coerce output_mode string → enum (handles from_file deserialization)
+        if isinstance(self.output_mode, str):
+            self.output_mode = OutputMode(self.output_mode)
 
         # Resolve packet-specific rule paths (required for production)
         if self.json_rules_path_i:
@@ -191,7 +197,9 @@ class QCConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """Converts the configuration to a dictionary."""
-        return {f.name: getattr(self, f.name) for f in fields(self)}
+        result = {f.name: getattr(self, f.name) for f in fields(self)}
+        result["output_mode"] = self.output_mode.value
+        return result
 
     def to_file(self, file_path: str | Path) -> None:
         """Saves configuration to a JSON file."""
@@ -262,16 +270,6 @@ class QCConfig:
             except OSError as e:
                 errors.append(
                     f"OUTPUT_PATH '{self.output_path}' is not a valid directory "
-                    f"and could not be created: {e}"
-                )
-
-        # Validate and create log path if needed
-        if self.log_path and not Path(self.log_path).is_dir():
-            try:
-                Path(self.log_path).mkdir(parents=True, exist_ok=True)
-            except OSError as e:
-                errors.append(
-                    f"LOG_PATH '{self.log_path}' is not a valid directory "
                     f"and could not be created: {e}"
                 )
 
