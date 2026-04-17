@@ -1,138 +1,54 @@
 {
     "ownscar": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "ownscar": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "trspaccess": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "trspaccess": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "transprob": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
             2,
             3,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "transprob": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "transworry": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
             2,
             3,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "transworry": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "trspmed": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
             2,
             3,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "trspmed": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "incomeyr": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -141,27 +57,10 @@
             4,
             8,
             9
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "incomeyr": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "finsatis": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -170,27 +69,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "finsatis": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "billpay": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -199,27 +81,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "billpay": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "finupset": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -227,53 +92,19 @@
             3,
             4,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "finupset": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "eatless": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "eatless": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "eatlessyr": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -284,48 +115,34 @@
             {
                 "index": 0,
                 "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
+                    "eatless": {
+                        "allowed": [
+                            0
                         ]
                     }
                 },
                 "then": {
                     "eatlessyr": {
-                        "nullable": false
-                    }
-                }
-            }
-        ],
-        "nullable": true
-    },
-    "lessmeds": {
-        "type": "integer",
-        "allowed": [
-            0,
-            1,
-            8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
                         "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "lessmeds": {
-                        "nullable": false
+                            1
+                        ],
+                        "nullable": true
                     }
                 }
             }
         ]
     },
+    "lessmeds": {
+        "required": true,
+        "type": "integer",
+        "allowed": [
+            0,
+            1,
+            8
+        ]
+    },
     "lessmedsyr": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -336,22 +153,25 @@
             {
                 "index": 0,
                 "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
+                    "lessmeds": {
+                        "allowed": [
+                            0
                         ]
                     }
                 },
                 "then": {
                     "lessmedsyr": {
-                        "nullable": false
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
                     }
                 }
             }
-        ],
-        "nullable": true
+        ]
     },
     "compcomm": {
+        "required": true,
         "type": "integer",
         "anyof": [
             {
@@ -363,27 +183,10 @@
                     88
                 ]
             }
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "compcomm": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "guardedu": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -394,27 +197,10 @@
             6,
             8,
             9
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "guardedu": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "emptiness": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -423,27 +209,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "emptiness": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "misspeople": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -452,27 +221,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "misspeople": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "friends": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -481,27 +233,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "friends": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "abandoned": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -510,27 +245,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "abandoned": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "closefrnd": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -539,27 +257,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "closefrnd": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "parentcomm": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -569,27 +270,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "parentcomm": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "childcomm": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -603,23 +287,68 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "and",
                 "if": {
-                    "a1anot": {
+                    "modea2": {
                         "forbidden": [
-                            93
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "incntfrq": {
+                        "allowed": [
+                            6
                         ]
                     }
                 },
                 "then": {
                     "childcomm": {
-                        "nullable": false
+                        "allowed": [
+                            0,
+                            1,
+                            2,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            2
+                        ]
+                    },
+                    "incntfrq": {
+                        "max": 5
+                    }
+                },
+                "then": {
+                    "childcomm": {
+                        "allowed": [
+                            3,
+                            4,
+                            5,
+                            8
+                        ]
                     }
                 }
             }
-        ],
-        "nullable": true
+        ]
     },
     "friendcomm": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -633,23 +362,68 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "and",
                 "if": {
-                    "a1anot": {
+                    "modea2": {
                         "forbidden": [
-                            93
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "incntfrq": {
+                        "allowed": [
+                            6
                         ]
                     }
                 },
                 "then": {
                     "friendcomm": {
-                        "nullable": false
+                        "allowed": [
+                            0,
+                            1,
+                            2,
+                            8
+                        ]
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if_op": "and",
+                "if": {
+                    "modea2": {
+                        "forbidden": [
+                            0
+                        ]
+                    },
+                    "inrelto": {
+                        "allowed": [
+                            5
+                        ]
+                    },
+                    "incntfrq": {
+                        "max": 5
+                    }
+                },
+                "then": {
+                    "friendcomm": {
+                        "allowed": [
+                            3,
+                            4,
+                            5,
+                            8
+                        ]
                     }
                 }
             }
-        ],
-        "nullable": true
+        ]
     },
     "participate": {
+        "required": true,
         "type": "integer",
         "allowed": [
             0,
@@ -659,27 +433,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "participate": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "safehome": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -687,27 +444,10 @@
             3,
             4,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "safehome": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "safecomm": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -715,27 +455,10 @@
             3,
             4,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "safecomm": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "delaymed": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -744,27 +467,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "delaymed": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "scriptprob": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -773,27 +479,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "scriptprob": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "missedfup": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -802,27 +491,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "missedfup": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "docadvice": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -831,27 +503,10 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "docadvice": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "healthacc": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -859,27 +514,10 @@
             3,
             4,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "healthacc": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "lesscourt": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -889,27 +527,10 @@
             5,
             6,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "lesscourt": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "poorserv": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -919,27 +540,10 @@
             5,
             6,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "poorserv": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "notsmart": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -949,27 +553,10 @@
             5,
             6,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "notsmart": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "actafraid": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -979,27 +566,10 @@
             5,
             6,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "actafraid": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "threatened": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -1009,27 +579,10 @@
             5,
             6,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "threatened": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "poormedtrt": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
@@ -1038,24 +591,6 @@
             4,
             5,
             8
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "poormedtrt": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expancest": {
@@ -1119,23 +654,6 @@
         },
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expancest": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expgender": {
@@ -1143,23 +661,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expgender": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "exprace": {
@@ -1167,23 +668,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "exprace": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expage": {
@@ -1191,23 +675,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expage": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "exprelig": {
@@ -1215,23 +682,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "exprelig": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expheight": {
@@ -1239,23 +689,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expheight": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expweight": {
@@ -1263,23 +696,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expweight": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expappear": {
@@ -1287,23 +703,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expappear": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expsexorn": {
@@ -1311,23 +710,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expsexorn": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expeducinc": {
@@ -1335,23 +717,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expeducinc": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expdisab": {
@@ -1359,23 +724,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expdisab": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expskin": {
@@ -1383,23 +731,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expskin": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expother": {
@@ -1407,23 +738,6 @@
         "type": "integer",
         "allowed": [
             1
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "expother": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "expnotapp": {
@@ -1435,16 +749,85 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "or",
                 "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
+                    "expancest": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expgender": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprace": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expage": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprelig": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expheight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expweight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expappear": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expsexorn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expeducinc": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expdisab": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expskin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expother": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expnoans": {
+                        "allowed": [
+                            1
                         ]
                     }
                 },
                 "then": {
                     "expnotapp": {
-                        "nullable": false
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -1459,16 +842,85 @@
         "compatibility": [
             {
                 "index": 0,
+                "if_op": "or",
                 "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
+                    "expancest": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expgender": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprace": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expage": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "exprelig": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expheight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expweight": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expappear": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expsexorn": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expeducinc": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expdisab": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expskin": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expother": {
+                        "allowed": [
+                            1
+                        ]
+                    },
+                    "expnotapp": {
+                        "allowed": [
+                            1
                         ]
                     }
                 },
                 "then": {
                     "expnoans": {
-                        "nullable": false
+                        "forbidden": [
+                            1
+                        ],
+                        "nullable": true
                     }
                 }
             }
@@ -1481,9 +933,25 @@
             {
                 "index": 0,
                 "if": {
-                    "a1anot": {
+                    "expnotapp": {
+                        "allowed": [
+                            1
+                        ]
+                    }
+                },
+                "then": {
+                    "expstrs": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "expnotapp": {
                         "forbidden": [
-                            93
+                            1
                         ]
                     }
                 },
@@ -1503,51 +971,17 @@
         ]
     },
     "frmdatea1a": {
-        "nullable": true,
+        "required": true,
         "type": "string",
         "formatting": "date",
-        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)",
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "frmdatea1a": {
-                        "nullable": false
-                    }
-                }
-            }
-        ]
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
     },
     "langa1a": {
-        "nullable": true,
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
             2
-        ],
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "langa1a": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "modea1a": {
@@ -1647,28 +1081,11 @@
         ]
     },
     "admina1a": {
+        "required": true,
         "type": "integer",
         "allowed": [
             1,
             2
-        ],
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "admina1a": {
-                        "nullable": false
-                    }
-                }
-            }
         ]
     },
     "a1anot": {
@@ -1713,23 +1130,6 @@
         ]
     },
     "initialsa1a": {
-        "nullable": true,
-        "compatibility": [
-            {
-                "index": 0,
-                "if": {
-                    "a1anot": {
-                        "forbidden": [
-                            93
-                        ]
-                    }
-                },
-                "then": {
-                    "initialsa1a": {
-                        "nullable": false
-                    }
-                }
-            }
-        ]
+        "nullable": true
     }
 }

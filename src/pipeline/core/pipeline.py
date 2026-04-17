@@ -9,7 +9,12 @@ Parallel Validation Architecture:
     - Data is grouped by packet (I, I4, F, M) before validation
     - Within each packet group, instrument + packet validation run in parallel
     - This eliminates thread-safety issues with rule pool packet switching
-    - H2 fix: Temporal rules enabled via in-memory REDCapDatastore
+
+Note on temporal rules:
+    Temporal validation requires a full participant visit history. The current
+    report pull is filtered to un-QCed complete visits, so prior visits are
+    absent and every temporal rule produces a false failure. The datastore is
+    set to None until a full-history fetch is implemented.
 """
 
 import logging
@@ -22,7 +27,7 @@ from typing import Any
 import pandas as pd
 
 from ..config.config_manager import OutputMode, QCConfig
-from .redcap_datastore import REDCapDatastore  # H2 fix: Import datastore for temporal rules
+from .redcap_datastore import REDCapDatastore
 
 logger = logging.getLogger(__name__)
 
@@ -202,22 +207,45 @@ def run_pipeline(
                 len(packet_df),
             )
 
-            # H2 fix: Create datastore from packet data for temporal rule validation
-            # NOTE: This datastore only has visibility into records in current batch
+            # Reload rules for this specific packet only.
+            # The rule pool is a singleton that accumulates loaded packets. Without
+            # clearing between groups, F-packet temporal rules (loaded first, since
+            # F < I < I4 alphabetically) bleed into I and I4 validation via the
+            # pool's first-wins policy, producing thousands of false
+            # "failed to retrieve the previous visit" errors.
+            clear_cache()
+            packet_pool = get_pool(config)
+            try:
+                packet_pool.load_packet(packet_code, config)
+            except (FileNotFoundError, ValueError):
+                logger.warning("No rules directory for packet %s — skipping", packet_code)
+                continue
+            packet_rules_cache = _build_rules_cache_from_pool(packet_pool, config)
+            _, packet_inst_to_vars = build_variable_maps(config.instruments, packet_rules_cache)
+            logger.info(
+                "Reloaded rules for packet %s: %d instruments",
+                packet_code,
+                len(packet_rules_cache),
+            )
+
+            # REDCapDatastore is kept so that ADCID and RXCUI stub checks
+            # (is_valid_adcid / is_valid_rxcui) return True instead of causing
+            # "Datastore not set" errors. Temporal rules are suppressed separately
+            # via include_temporal_rules=False in the schema builder — the batch
+            # only contains un-QCed complete visits so prior visits are never
+            # present, making all temporal comparisons false failures.
             packet_datastore = REDCapDatastore(
                 data=packet_df,
                 pk_field=config.primary_key_field,
                 orderby="visitdate",
             )
 
-            # Prepare instrument cache for this packet subset
-            # Note: _get_variables_for_instrument now extracts ALL variables referenced
-            # in rules (including cross-form variables from compatibility clauses)
+            # Prepare instrument cache using this packet's variable mappings
             packet_instrument_cache = prepare_instrument_data_cache(
                 packet_df,
                 config.instruments,
-                inst_to_vars,
-                rules_cache,
+                packet_inst_to_vars,
+                packet_rules_cache,
                 config.primary_key_field,
             )
 
@@ -225,8 +253,8 @@ def run_pipeline(
             def validate_instrument_task(
                 instrument: str,
                 _cache: dict = packet_instrument_cache,
-                _rules: dict = rules_cache,
-                _datastore: REDCapDatastore = packet_datastore,  # H2 fix: Pass datastore
+                _rules: dict = packet_rules_cache,
+                _datastore: REDCapDatastore = packet_datastore,
             ) -> tuple[list, list, list, pd.DataFrame | None]:
                 """Validate a single instrument."""
                 df_inst = _cache.get(instrument, pd.DataFrame())
