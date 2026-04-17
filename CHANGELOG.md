@@ -3,6 +3,41 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-04-17
+
+### Added
+- **Cross-form childcomm rule (a1a-ivp/fvp-p-1002)**: implemented missing compatibility rule in
+  A1a for all packets (I, I4, F) — if A2 informant is a child (`inrelto=2`), A2 form was
+  completed (`modea2≠0`), and contact frequency is more than monthly (`incntfrq≤5` or `=6`),
+  then `childcomm` must reflect appropriate communication frequency or prefer-not-to-answer
+- **`required` key in KEY_MAP**: enables Cerberus `required: true` validation from JSON rules;
+  previously the key was silently ignored, making `required:true` a no-op in all rule files
+
+### Fixed
+- **Temporal rule false failures (I/I4 packets)**: per-packet rule pool reload now runs at the
+  start of each packet group in the pipeline — prevents F-packet temporal rules (loaded first
+  alphabetically) from bleeding into I and I4 validation via the pool's first-wins policy,
+  which caused thousands of "failed to retrieve the previous visit" false failures
+- **`compare_with` temporal rules bypassing suppression**: `_build_schema_from_raw` now strips
+  `compare_with` entries with `previous_record: true` when `include_temporal_rules=False`
+- **`temporalrules` embedded in compatibility THEN/ELSE clauses**: new
+  `_strip_temporal_from_compatibility` function removes nested temporal rules that bypassed the
+  top-level `include_temporal_rules` flag; also drops compatibility rules whose THEN clause
+  becomes empty after stripping (prevents `cerberus.schema.SchemaError: empty values not allowed`)
+- **Compatibility rule context enrichment**: `_build_variable_context` now collects all variables
+  from compatibility rule IF/THEN/ELSE clauses (not just the trigger) via
+  `_extract_all_compatibility_variables`, improving error context for cross-form errors
+
+### Changed
+- **A1a rules refactored (I/I4/F)**: switched from `nullable:true` + conditional `a1anot`
+  compatibility pattern to `required:true` + `nullable:true`; removed ~1200 lines of
+  boilerplate nullability compatibility rules; `modea1a` intentionally kept without nullable
+- **A3 parent/sibling age cap raised 110 → 120** across all packets
+- **B1 waist/hip comparison made conditional**: moved `waist1`/`hip1` `compare_with` from
+  top-level to a conditional compatibility rule that only fires when both measurements are in
+  valid range, eliminating false failures when measurements are out of range
+- **B9, D1b, A5d2 minor rule corrections** across applicable packets
+
 ## [2.4.0] - 2026-04-03
 
 ### Fixed
