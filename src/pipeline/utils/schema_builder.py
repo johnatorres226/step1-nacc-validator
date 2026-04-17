@@ -22,8 +22,7 @@ def _strip_temporal_compare_with(value: Any) -> Any | None:
         return None if value.get("previous_record") else value
     if isinstance(value, list):
         kept = [
-            item for item in value
-            if not (isinstance(item, dict) and item.get("previous_record"))
+            item for item in value if not (isinstance(item, dict) and item.get("previous_record"))
         ]
         return kept if kept else None
     return value

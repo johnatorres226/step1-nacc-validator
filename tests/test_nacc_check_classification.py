@@ -174,7 +174,11 @@ class TestBuildVariableContext:
             "lmndist": {
                 "form": "b8_neurological_examination_findings",
                 "field_label": "4c. Face or limb findings in an LMN distribution",
-                "choices": "0, Absent | 1, Focal or Unilateral | 2, Bilateral & Largely Symmetric | 3, Bilateral & Largely Asymmetric | 8, Not Assessed",
+                "choices": (
+                    "0, Absent | 1, Focal or Unilateral"
+                    " | 2, Bilateral & Largely Symmetric"
+                    " | 3, Bilateral & Largely Asymmetric | 8, Not Assessed"
+                ),
             },
             "othersign": {
                 "form": "b8_neurological_examination_findings",
@@ -184,12 +188,20 @@ class TestBuildVariableContext:
             "limbaprax": {
                 "form": "b8_neurological_examination_findings",
                 "field_label": "Limb apraxia",
-                "choices": "1, Focal or Unilateral | 2, Bilateral & Largely Symmetric | 3, Bilateral & Largely Asymmetric",
+                "choices": (
+                    "1, Focal or Unilateral"
+                    " | 2, Bilateral & Largely Symmetric"
+                    " | 3, Bilateral & Largely Asymmetric"
+                ),
             },
             "umndist": {
                 "form": "b8_neurological_examination_findings",
                 "field_label": "UMN distribution",
-                "choices": "1, Focal or Unilateral | 2, Bilateral & Largely Symmetric | 3, Bilateral & Largely Asymmetric",
+                "choices": (
+                    "1, Focal or Unilateral"
+                    " | 2, Bilateral & Largely Symmetric"
+                    " | 3, Bilateral & Largely Asymmetric"
+                ),
             },
         }
         monkeypatch.setattr(report_pipeline, "_DATA_DICT", extended_dd)
