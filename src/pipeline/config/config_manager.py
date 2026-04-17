@@ -102,6 +102,7 @@ class OutputMode(Enum):
 KEY_MAP = {
     # Standard Cerberus keywords
     "type": "type",
+    "required": "required",
     "nullable": "nullable",
     "min": "min",
     "max": "max",

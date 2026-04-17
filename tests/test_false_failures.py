@@ -107,7 +107,17 @@ class TestFalseFailures:
         error_msg = error_row["error_message"]
         current_value = error_row["current_value"]
 
-        records = data_df[data_df["ptid"] == ptid]
+        # Match on ptid + redcap_event_name when available to avoid misclassifying
+        # errors that come from a specific visit row when the participant has multiple
+        # rows in the source (e.g., both I and F packet records).
+        event = error_row.get("redcap_event_name", "")
+        if event and "redcap_event_name" in data_df.columns:
+            records = data_df[(data_df["ptid"] == ptid) & (data_df["redcap_event_name"] == event)]
+            if records.empty:
+                records = data_df[data_df["ptid"] == ptid]
+        else:
+            records = data_df[data_df["ptid"] == ptid]
+
         if records.empty:
             return "data_missing"
 
@@ -119,13 +129,17 @@ class TestFalseFailures:
         if actual_col is None:
             return "data_missing"
 
-        actual = (
-            str(records.iloc[0][actual_col]) if not pd.isna(records.iloc[0][actual_col]) else ""
-        )
         reported = "" if pd.isna(current_value) else str(current_value)
 
         if "null value not allowed" in error_msg:
-            return "valid" if actual == "" else "false_positive"
+            # When a participant has multiple rows (e.g., I and F packet in the same
+            # event), check if ANY row has null — the error is valid if so.
+            any_null = records[actual_col].isna().any()
+            return "valid" if any_null else "false_positive"
+
+        actual = (
+            str(records.iloc[0][actual_col]) if not pd.isna(records.iloc[0][actual_col]) else ""
+        )
 
         if "unallowed value" in error_msg.lower():
             m = re.search(r"unallowed value ([^\]'\"]+)", error_msg)
