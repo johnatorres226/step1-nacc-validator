@@ -109,12 +109,32 @@
                 ]
             }
         ],
-        "compare_with": {
-            "comparator": "<=",
-            "base": "waist2",
-            "op": "abs",
-            "adjustment": 1
-        }
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "waist1": {
+                        "min": 20,
+                        "max": 60
+                    },
+                    "waist2": {
+                        "min": 20,
+                        "max": 60
+                    }
+                },
+                "then": {
+                    "waist1": {
+                        "compare_with": {
+                            "comparator": "<=",
+                            "base": "waist2",
+                            "op": "abs",
+                            "adjustment": 1
+                        }
+                    }
+                }
+            }
+        ]
     },
     "waist2": {
         "required": true,
@@ -145,12 +165,32 @@
                 ]
             }
         ],
-        "compare_with": {
-            "comparator": "<=",
-            "base": "hip2",
-            "op": "abs",
-            "adjustment": 1
-        }
+        "compatibility": [
+            {
+                "index": 0,
+                "if_op": "and",
+                "if": {
+                    "hip1": {
+                        "min": 25,
+                        "max": 70
+                    },
+                    "hip2": {
+                        "min": 25,
+                        "max": 70
+                    }
+                },
+                "then": {
+                    "hip1": {
+                        "compare_with": {
+                            "comparator": "<=",
+                            "base": "hip2",
+                            "op": "abs",
+                            "adjustment": 1
+                        }
+                    }
+                }
+            }
+        ]
     },
     "hip2": {
         "required": true,
