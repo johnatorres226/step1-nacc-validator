@@ -165,63 +165,6 @@ class TestBuildVariableContext:
 
         assert _build_variable_context("unknown_var_xyz", "some error") == ""
 
-    def test_compat_rule_deeply_nested_then_includes_all_vars(self, monkeypatch):
-        """All variables from if/then clauses must appear in context, not just the trigger."""
-        from src.pipeline.reports import report_pipeline
-
-        extended_dd = {
-            **self._MOCK_DD,
-            "lmndist": {
-                "form": "b8_neurological_examination_findings",
-                "field_label": "4c. Face or limb findings in an LMN distribution",
-                "choices": (
-                    "0, Absent | 1, Focal or Unilateral"
-                    " | 2, Bilateral & Largely Symmetric"
-                    " | 3, Bilateral & Largely Asymmetric | 8, Not Assessed"
-                ),
-            },
-            "othersign": {
-                "form": "b8_neurological_examination_findings",
-                "field_label": "4. Cortical/Pyramidal/Other Signs",
-                "choices": "0, No abnormal signs | 1, Yes | 8, Not assessed",
-            },
-            "limbaprax": {
-                "form": "b8_neurological_examination_findings",
-                "field_label": "Limb apraxia",
-                "choices": (
-                    "1, Focal or Unilateral"
-                    " | 2, Bilateral & Largely Symmetric"
-                    " | 3, Bilateral & Largely Asymmetric"
-                ),
-            },
-            "umndist": {
-                "form": "b8_neurological_examination_findings",
-                "field_label": "UMN distribution",
-                "choices": (
-                    "1, Focal or Unilateral"
-                    " | 2, Bilateral & Largely Symmetric"
-                    " | 3, Bilateral & Largely Asymmetric"
-                ),
-            },
-        }
-        monkeypatch.setattr(report_pipeline, "_DATA_DICT", extended_dd)
-        monkeypatch.setattr(report_pipeline, "_DATA_DICT_LOADED", True)
-        from src.pipeline.reports.report_pipeline import _build_variable_context
-
-        msg = (
-            "('lmndist', ['unallowed value 0']) for if {'othersign': {'allowed': [1]}} "
-            "then {'limbaprax': {'allowed': [1, 2, 3]}, 'umndist': {'allowed': [1, 2, 3]}, "
-            "'lmndist': {'allowed': [1, 2, 3]}} - compatibility rule no: 2"
-        )
-        result = json.loads(_build_variable_context("lmndist", msg))
-        assert isinstance(result, list)
-        vars_in_result = {r["variable"] for r in result}
-        # failing var + IF trigger + all THEN clause vars must all be present
-        assert vars_in_result == {"lmndist", "othersign", "limbaprax", "umndist"}
-        assert len(result) == 4
-        # failing variable must be first
-        assert result[0]["variable"] == "lmndist"
-
     def test_empty_dict_returns_empty_string(self, monkeypatch):
         from src.pipeline.reports import report_pipeline
 

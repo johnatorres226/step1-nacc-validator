@@ -928,7 +928,7 @@
             }
         ],
         "min": 9,
-        "max": 120
+        "max": 110
     },
     "cogmode": {
         "nullable": true,
@@ -1521,7 +1521,7 @@
             }
         ],
         "min": 5,
-        "max": 120
+        "max": 110
     },
     "bevhall": {
         "nullable": true,
@@ -1937,7 +1937,7 @@
             }
         ],
         "min": 5,
-        "max": 120
+        "max": 110
     },
     "bedisin": {
         "nullable": true,
@@ -2432,7 +2432,7 @@
             }
         ],
         "min": 5,
-        "max": 120
+        "max": 110
     },
     "berem": {
         "nullable": true,
@@ -2514,7 +2514,7 @@
             }
         ],
         "min": 5,
-        "max": 120
+        "max": 110
     },
     "beremconf": {
         "nullable": true,
@@ -3288,7 +3288,7 @@
             }
         ],
         "min": 15,
-        "max": 120
+        "max": 110
     },
     "momode": {
         "nullable": true,

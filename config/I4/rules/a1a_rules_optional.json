@@ -233,7 +233,8 @@
         "filled": false
     },
     "admina1a": {
-        "nullable": true
+        "nullable": true,
+        "filled": false
     },
     "a1anot": {
         "type": "integer",

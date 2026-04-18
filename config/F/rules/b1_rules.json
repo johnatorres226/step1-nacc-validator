@@ -183,37 +183,20 @@
                 ]
             }
         ],
+        "compare_with": {
+            "comparator": "<=",
+            "base": "waist2",
+            "op": "abs",
+            "adjustment": 1
+        },
         "compatibility": [
             {
                 "index": 0,
-                "if_op": "and",
                 "if": {
                     "waist1": {
-                        "min": 20,
-                        "max": 60
-                    },
-                    "waist2": {
-                        "min": 20,
-                        "max": 60
-                    }
-                },
-                "then": {
-                    "waist1": {
-                        "compare_with": {
-                            "comparator": "<=",
-                            "base": "waist2",
-                            "op": "abs",
-                            "adjustment": 1
-                        }
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "waist1": {
-                        "min": 20,
-                        "max": 60
+                        "forbidden": [
+                            888
+                        ]
                     }
                 },
                 "then": {
@@ -223,8 +206,9 @@
                                 "index": 0,
                                 "previous": {
                                     "waist1": {
-                                        "min": 20,
-                                        "max": 60
+                                        "forbidden": [
+                                            888
+                                        ]
                                     }
                                 },
                                 "current": {
@@ -264,8 +248,9 @@
                 "index": 0,
                 "if": {
                     "waist2": {
-                        "min": 20,
-                        "max": 60
+                        "forbidden": [
+                            888
+                        ]
                     }
                 },
                 "then": {
@@ -275,8 +260,9 @@
                                 "index": 0,
                                 "previous": {
                                     "waist2": {
-                                        "min": 20,
-                                        "max": 60
+                                        "forbidden": [
+                                            888
+                                        ]
                                     }
                                 },
                                 "current": {
@@ -311,37 +297,20 @@
                 ]
             }
         ],
+        "compare_with": {
+            "comparator": "<=",
+            "base": "hip2",
+            "op": "abs",
+            "adjustment": 1
+        },
         "compatibility": [
             {
                 "index": 0,
-                "if_op": "and",
                 "if": {
                     "hip1": {
-                        "min": 25,
-                        "max": 70
-                    },
-                    "hip2": {
-                        "min": 25,
-                        "max": 70
-                    }
-                },
-                "then": {
-                    "hip1": {
-                        "compare_with": {
-                            "comparator": "<=",
-                            "base": "hip2",
-                            "op": "abs",
-                            "adjustment": 1
-                        }
-                    }
-                }
-            },
-            {
-                "index": 1,
-                "if": {
-                    "hip1": {
-                        "min": 25,
-                        "max": 70
+                        "forbidden": [
+                            888
+                        ]
                     }
                 },
                 "then": {
@@ -351,8 +320,9 @@
                                 "index": 0,
                                 "previous": {
                                     "hip1": {
-                                        "min": 25,
-                                        "max": 70
+                                        "forbidden": [
+                                            888
+                                        ]
                                     }
                                 },
                                 "current": {
@@ -392,8 +362,9 @@
                 "index": 0,
                 "if": {
                     "hip2": {
-                        "min": 25,
-                        "max": 70
+                        "forbidden": [
+                            888
+                        ]
                     }
                 },
                 "then": {
@@ -403,8 +374,9 @@
                                 "index": 0,
                                 "previous": {
                                     "hip2": {
-                                        "min": 25,
-                                        "max": 70
+                                        "forbidden": [
+                                            888
+                                        ]
                                     }
                                 },
                                 "current": {

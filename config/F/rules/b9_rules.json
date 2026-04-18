@@ -985,7 +985,7 @@
         "anyof": [
             {
                 "min": 9,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -1001,7 +1001,7 @@
                         "noneof": [
                             {
                                 "min": 9,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [
@@ -1653,7 +1653,7 @@
         "anyof": [
             {
                 "min": 5,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -1669,7 +1669,7 @@
                         "noneof": [
                             {
                                 "min": 9,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [
@@ -2144,7 +2144,7 @@
         "anyof": [
             {
                 "min": 5,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -2160,7 +2160,7 @@
                         "noneof": [
                             {
                                 "min": 9,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [
@@ -2714,7 +2714,7 @@
         "anyof": [
             {
                 "min": 5,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -2730,7 +2730,7 @@
                         "noneof": [
                             {
                                 "min": 9,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [
@@ -2871,7 +2871,7 @@
         "anyof": [
             {
                 "min": 5,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -2887,7 +2887,7 @@
                         "noneof": [
                             {
                                 "min": 9,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [
@@ -3720,7 +3720,7 @@
         "anyof": [
             {
                 "min": 15,
-                "max": 120
+                "max": 110
             },
             {
                 "allowed": [
@@ -3736,7 +3736,7 @@
                         "noneof": [
                             {
                                 "min": 15,
-                                "max": 120
+                                "max": 110
                             },
                             {
                                 "allowed": [

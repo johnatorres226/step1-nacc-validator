@@ -27,12 +27,6 @@ _COMPATIBILITY_ERROR_PATTERN = re.compile(r"^\('([^']+)',\s*\[")
 # Pattern: "... for if {'trigger_var': {...}} then ..."
 _COMPATIBILITY_TRIGGER_PATTERN = re.compile(r"for if \{'([^']+)':")
 
-# Regex to collect every variable key from compatibility rule clause text.
-# Variable names appear as first-level dict keys with dict values:
-#   'varname': { ...constraint... }
-# Inner constraint keys (e.g. 'allowed') have list values and do NOT match.
-_COMPAT_VAR_KEYS_PATTERN = re.compile(r"'([^']+)':\s*\{")
-
 # HTML tag pattern — used to strip markup from field labels
 _HTML_TAG_PATTERN = re.compile(r"<[^>]+>")
 
@@ -143,9 +137,9 @@ def _build_variable_context(variable: str, error_msg: str) -> str:
     # Collect all variables to include
     vars_to_include: list[str] = [variable.lower()]
     if is_compat:
-        for v in _extract_all_compatibility_variables(error_msg):
-            if v not in vars_to_include:
-                vars_to_include.append(v)
+        trigger = _extract_compatibility_trigger(error_msg)
+        if trigger and trigger.lower() != variable.lower():
+            vars_to_include.append(trigger.lower())
 
     def _entry(var: str) -> dict | None:
         info = dd.get(var)
@@ -186,39 +180,6 @@ def _extract_compatibility_trigger(error_msg: str) -> str | None:
     """
     match = _COMPATIBILITY_TRIGGER_PATTERN.search(error_msg)
     return match.group(1) if match else None
-
-
-def _extract_all_compatibility_variables(error_msg: str) -> list[str]:
-    """Extract every variable name referenced in a compatibility rule error message.
-
-    Scans the full ``for if ... then/else ...`` clause text and collects every
-    dict key whose value is itself a dict (i.e. a constraint object such as
-    ``{'allowed': [...]}``).  Inner constraint keys like ``allowed`` have list
-    values and are therefore *not* matched.
-
-    Returns a de-duplicated, order-preserving list (all lowercase).  Variables
-    appear in clause order: IF-clause variables first, then THEN/ELSE-clause
-    variables.
-
-    Example::
-
-        "('lmndist', [...]) for if {'othersign': {'allowed': [1]}} then
-         {'limbaprax': {'allowed': [1,2,3]}, 'lmndist': {'allowed': [1,2,3]}, ...}
-         - compatibility rule no: 2"
-        → ['othersign', 'limbaprax', 'lmndist', ...]
-    """
-    m = re.search(r"for if (.+?) - compatibility rule no:", error_msg, re.DOTALL)
-    if not m:
-        return []
-    clause_text = m.group(1)
-    seen: set[str] = set()
-    result: list[str] = []
-    for name in _COMPAT_VAR_KEYS_PATTERN.findall(clause_text):
-        name_lc = name.lower()
-        if name_lc not in seen:
-            seen.add(name_lc)
-            result.append(name_lc)
-    return result
 
 
 def _get_field_label(variable: str) -> str:
@@ -285,7 +246,7 @@ def validate_data(
 
             schema = _build_schema_from_raw(
                 resolved_rules,
-                include_temporal_rules=False,
+                include_temporal_rules=datastore is not None,
                 include_compatibility_rules=True,
             )
             qc = QualityCheck(
@@ -324,7 +285,7 @@ def validate_data(
                                     "redcap_repeat_instance", ""
                                 ),
                                 "visitdate": record_dict.get("visitdate", ""),
-                                "qc_date": datetime.now().strftime("%Y-%m-%d"),
+                                "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "discriminant": discriminant_info,
                                 "variable_context": _build_variable_context(actual_variable, msg),
                             }
@@ -380,7 +341,7 @@ def validate_data(
                     "redcap_event_name": record_dict.get("redcap_event_name", ""),
                     "redcap_repeat_instance": record_dict.get("redcap_repeat_instance", ""),
                     "visitdate": record_dict.get("visitdate", ""),
-                    "qc_date": datetime.now().strftime("%Y-%m-%d"),
+                    "qc_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     "discriminant": "",
                 }
             )
