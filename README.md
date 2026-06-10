@@ -54,13 +54,9 @@ REDCAP_REPORT_ID=your_report_id
 
 ### Usage
 
-**Interactive Mode** (Recommended):
+Running `poetry run udsv4-qc` without arguments prints the help text.
 
-``` bash
-poetry run udsv4-qc
-```
-
-**Command-Line Mode**:
+**Run QC validation** (initials are required):
 
 ``` bash
 poetry run udsv4-qc -i YOUR_INITIALS
@@ -69,20 +65,41 @@ poetry run udsv4-qc -i YOUR_INITIALS
 **With Options**:
 
 ``` bash
-# Detailed reports with passed rules log
-poetry run udsv4-qc -i JT -dr -ps
+# Detailed-run mode (full reports instead of errors-only)
+poetry run udsv4-qc -i JT --mode detailed-run
 
-# Target specific participant and event  
+# Target specific participant and event
 poetry run udsv4-qc -i JT --ptid 12345 --event udsv4visit_arm_1
+
+# Line-by-line validation logging
+poetry run udsv4-qc -i JT --logs
+
+# Test mode: labels the output directory as TEST_* without changing behavior
+poetry run udsv4-qc -i JT --test
 ```
 
-### Available Commands (Interactive Mode)
+**Available Options**:
 
-After entering your initials, you'll see: - `run` - Run QC validation (complete visits) - `run -dr` - Run with detailed reports - `run -dr -ps` - Run with detailed + passed rules log - `status` - View environment, config, and readiness - `help` - Show command reference - `exit` - Exit the interface
+| Option | Description |
+|---|---|
+| `--initials`, `-i` | User initials for reporting (3 characters max). Required for runs. |
+| `--mode`, `-m` | QC validation mode: `errors-only` (default) or `detailed-run`. |
+| `--event` | Specify one or more events to run (repeatable). |
+| `--ptid` | Specify one or more PTIDs to check (repeatable). |
+| `--output-dir` | Override the default output directory. |
+| `--logs` | Show line-by-line QC element validation logging during execution. |
+| `--test` | Test mode: labels output directory as TEST_* without changing behavior. |
+
+**Check configuration**:
+
+``` bash
+poetry run udsv4-qc config              # human-readable status
+poetry run udsv4-qc config --json-output  # JSON status
+```
 
 ### Output
 
-QC validation generates: - **Error Reports**: CSV files with validation failures - **Generation Summary**: Overview of QC run statistics - **Validation Logs**: Detailed rule checking results (if `-ps` flag used) - **Fetched Data**: Audit trail of REDCap data retrieved
+QC validation generates: - **Error Reports**: CSV files with validation failures - **Generation Summary**: Overview of QC run statistics - **Validation Logs**: Detailed rule checking results (with `--logs`) - **Fetched Data**: Audit trail of REDCap data retrieved
 
 All outputs saved to: `output/QC_CompleteVisits_<DATE>_<TIME>/`
 
@@ -94,8 +111,8 @@ Comprehensive documentation available in [`docs/`](docs/):
 -   [**Configuration Management**](docs/configuration-management.md) - Setup and customization
 -   [**Data Fetching System**](docs/data-fetching-system.md) - REDCap integration
 -   [**QC Validation Engine**](docs/qc-validation-engine.md) - Core validation logic
--   [**Output Reporting**](docs/output-reporting.md) - Report generation
--   [**Logging & Monitoring**](docs/logging-monitoring.md) - Audit trails
+-   [**GitHub Workflows**](docs/github-workflows.md) - CI/CD pipelines
+-   [**Version Management**](docs/version-management.md) - Release process
 
 ## 🛠 Development
 
