@@ -35,21 +35,48 @@ def _load(*file_names: str) -> dict:
 # ---------------------------------------------------------------------------
 
 _B7_BODY = {
-    "frmdateb7", "langb7",
-    "bills", "taxes", "shopping", "games", "stove",
-    "mealprep", "events", "payattn", "remdates", "travel",
+    "frmdateb7",
+    "langb7",
+    "bills",
+    "taxes",
+    "shopping",
+    "games",
+    "stove",
+    "mealprep",
+    "events",
+    "payattn",
+    "remdates",
+    "travel",
 }
 
 _B5_BODY = {
-    "frmdateb5", "langb5", "npiqinf",
-    "del", "hall", "agit", "depd", "anx",
-    "elat", "apa", "disn", "irr", "mot", "nite", "app",
+    "frmdateb5",
+    "langb5",
+    "npiqinf",
+    "del",
+    "hall",
+    "agit",
+    "depd",
+    "anx",
+    "elat",
+    "apa",
+    "disn",
+    "irr",
+    "mot",
+    "nite",
+    "app",
 }
 
 _A2_BODY = {
-    "frmdatea2", "langa2",
-    "inrelto", "inknown", "inlivwth",
-    "inrely", "inmemwors", "inmemtroub", "inmemten",
+    "frmdatea2",
+    "langa2",
+    "inrelto",
+    "inknown",
+    "inlivwth",
+    "inrely",
+    "inmemwors",
+    "inmemtroub",
+    "inmemten",
 }
 
 
@@ -77,9 +104,17 @@ class TestB7ModeNotCompleted:
             "rmreasb7": None,
             "rmmodeb7": None,
             "b7not": 97,  # Other
-            "bills": None, "taxes": None, "shopping": None, "games": None,
-            "stove": None, "mealprep": None, "events": None, "payattn": None,
-            "remdates": None, "travel": None, "initialsb7": None,
+            "bills": None,
+            "taxes": None,
+            "shopping": None,
+            "games": None,
+            "stove": None,
+            "mealprep": None,
+            "events": None,
+            "payattn": None,
+            "remdates": None,
+            "travel": None,
+            "initialsb7": None,
         }
 
     def test_body_fields_not_flagged_when_not_completed(self, qc):
@@ -113,13 +148,26 @@ class TestB5ModeNotCompleted:
     def _record_mode0(self) -> dict:
         return {
             "ptid": "NM0030",
-            "frmdateb5": None, "langb5": None,
-            "modeb5": 0, "rmreasb5": None, "rmmodeb5": None,
+            "frmdateb5": None,
+            "langb5": None,
+            "modeb5": 0,
+            "rmreasb5": None,
+            "rmmodeb5": None,
             "b5not": 97,  # Other
-            "npiqinf": None, "npiqinfx": None,
-            "del": None, "hall": None, "agit": None, "depd": None,
-            "anx": None, "elat": None, "apa": None, "disn": None,
-            "irr": None, "mot": None, "nite": None, "app": None,
+            "npiqinf": None,
+            "npiqinfx": None,
+            "del": None,
+            "hall": None,
+            "agit": None,
+            "depd": None,
+            "anx": None,
+            "elat": None,
+            "apa": None,
+            "disn": None,
+            "irr": None,
+            "mot": None,
+            "nite": None,
+            "app": None,
             "initialsb5": None,
         }
 
@@ -154,12 +202,20 @@ class TestA2ModeNotCompleted:
     def _record_mode0(self) -> dict:
         return {
             "ptid": "NM0030",
-            "frmdatea2": None, "langa2": None,
-            "modea2": 0, "rmreasa2": None, "rmmodea2": None,
+            "frmdatea2": None,
+            "langa2": None,
+            "modea2": 0,
+            "rmreasa2": None,
+            "rmmodea2": None,
             "a2not": 97,  # Other
-            "inrelto": None, "inknown": None, "inlivwth": None,
-            "inrely": None, "inmemwors": None, "inmemtroub": None,
-            "inmemten": None, "initialsa2": None,
+            "inrelto": None,
+            "inknown": None,
+            "inlivwth": None,
+            "inrely": None,
+            "inmemwors": None,
+            "inmemtroub": None,
+            "inmemten": None,
+            "initialsa2": None,
         }
 
     def test_body_fields_not_flagged_when_not_completed(self, qc):
