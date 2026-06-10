@@ -155,7 +155,13 @@ def cli(
             raise RuntimeError(f"Pipeline execution failed: {result['error']}")
         _out_dir = result["output_dir"]
         _ts = _out_dir.name.rsplit("_", 1)[-1]
-        (_out_dir / f"QC_TELEMETRY_LOG_{_ts}.json").write_text(
+        import os as _os
+        _telemetry_dir = Path(
+            _os.getenv("TELEMETRY_PATH") or
+            str(Path(__file__).resolve().parent.parent.parent / "telemetry")
+        ).resolve()
+        _telemetry_dir.mkdir(parents=True, exist_ok=True)
+        (_telemetry_dir / f"QC_TELEMETRY_LOG_{_ts}.json").write_text(
             _json.dumps({
                 "run_id":       _ts,
                 "step":         "qc-validator",

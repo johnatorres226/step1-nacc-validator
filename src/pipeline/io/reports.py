@@ -26,7 +26,7 @@ def export_error_report(
         logger.info("No validation errors — skipping error report")
         return None
 
-    path = output_dir / f"Final_Error_Dataset_{date_tag}_{time_tag}.csv"
+    path = output_dir / f"Final_Error_Dataset_{date_tag}-{time_tag}.csv"
     df_errors.to_csv(path, index=False)
     logger.info("Exported %d errors to %s", len(df_errors), path.name)
     return path
@@ -40,7 +40,7 @@ def export_validation_logs(
         logger.info("No validation logs — skipping logs report")
         return None
 
-    filename = f"Log_EventCompletenessScreening_{date_tag}_{time_tag}.csv"
+    filename = f"Log_EventCompletenessScreening_{date_tag}-{time_tag}.csv"
     path = output_dir / "Validation_Logs" / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     df_logs.to_csv(path, index=False)
@@ -56,7 +56,7 @@ def export_data_fetched(
         logger.info("No fetched data — skipping Data_Fetched report")
         return None
 
-    path = output_dir / "Data_Fetched" / f"Data_Fetched_{date_tag}_{time_tag}.csv"
+    path = output_dir / "Data_Fetched" / f"Data_Fetched_{date_tag}-{time_tag}.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     df_all.to_csv(path, index=False)
     logger.info("Exported %d records to %s", len(df_all), path.name)
@@ -113,7 +113,7 @@ def export_json_tracking(
             }
             records.append(record_data)
 
-    filename = f"QC_Status_Report_{date_tag}_{time_tag}.json"
+    filename = f"QC_Status_Report_{date_tag}-{time_tag}.json"
 
     if upload_ready_path:
         dest = Path(upload_ready_path)
