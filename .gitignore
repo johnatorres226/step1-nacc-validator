@@ -4,6 +4,11 @@ flowcharts/
 .github/instructions
 docs/Patches/
 .claude/
+.codegraph/
+/output/
+/output
+output/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -83,6 +88,8 @@ Thumbs.db
 # Project specific
 output/
 logs/
+telemetry/
+upload-ready-results/
 instance/
 *.log
 .qc_config.json
@@ -219,12 +226,6 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# # Output folder
-/output/
-/output
-output/
-output
-pull_errors/
 
 # ruff
 .ruff_cache
