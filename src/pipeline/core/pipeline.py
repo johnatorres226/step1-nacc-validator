@@ -311,6 +311,7 @@ def run_pipeline(
                             instrument_name,
                             e,
                         )
+                        raise
 
         errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
         logs_df = pd.DataFrame(all_logs) if all_logs else pd.DataFrame()
