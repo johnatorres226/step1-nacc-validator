@@ -183,9 +183,8 @@ def cli(
 
     except Exception as e:
         logger.exception("QC validation pipeline failed")
-        console.print(f"Pipeline failed: {e}")
-        if logs:
-            console.print("Check the logs above for detailed error information.")
+        console.print(f"Pipeline failed: {type(e).__name__}: {e}")
+        console.print("Re-run with --logs for detailed error information.")
         ctx.exit(1)
 
 

@@ -70,7 +70,8 @@ def _load_data_dict() -> dict[str, dict]:
 
     Picks the first CSV found in the directory. Strips HTML from field labels
     and choices at load time so lookup is clean. Thread-safe via double-checked
-    locking. Returns empty dict on any error.
+    locking. Raises RuntimeError if the CSV cannot be decoded with any
+    supported encoding.
     """
     global _DATA_DICT, _DATA_DICT_LOADED
     if _DATA_DICT_LOADED:
@@ -86,7 +87,8 @@ def _load_data_dict() -> dict[str, dict]:
             return _DATA_DICT
 
         csv_path = csv_files[0]
-        for encoding in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        encodings = ("utf-8-sig", "utf-8", "cp1252", "latin-1")
+        for encoding in encodings:
             try:
                 with csv_path.open(encoding=encoding) as f:
                     for row in csv.DictReader(f):
@@ -106,9 +108,10 @@ def _load_data_dict() -> dict[str, dict]:
                 break
             except UnicodeDecodeError:
                 continue
-            except Exception:
-                logger.warning("Failed to load data dictionary from %s", csv_path, exc_info=True)
-                break
+        else:
+            raise RuntimeError(
+                f"Failed to decode data dictionary {csv_path} with any of: {', '.join(encodings)}"
+            )
 
         _DATA_DICT_LOADED = True
     return _DATA_DICT
@@ -369,7 +372,7 @@ def validate_data(
                     primary_key_field: pk_value,
                     "instrument_name": instrument_name,
                     "variable": "system_error",
-                    "error_message": f"System validation error: {e}",
+                    "error_message": f"System validation error ({type(e).__name__}): {e}",
                     "current_value": "",
                     "packet": packet_value,
                     "json_rule_path": (
