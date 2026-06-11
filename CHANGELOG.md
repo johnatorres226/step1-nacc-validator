@@ -3,6 +3,41 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-06-10
+
+### Removed
+- **Interactive CLI**: deleted the REPL interface, branding, and environment status screens
+  (`src/cli/interface.py`, `branding.py`, `env_check.py`); running `udsv4-qc` with no arguments
+  now prints the command help instead of launching an interactive session
+- **Dead code**: `find_complete_visits` (validation_utils), `load_rules_for_packet`
+  (rule_loader) and their orphaned tests, and the empty `src/scrapper/` package
+- **`requirements.txt`**: stale and unreferenced; Poetry (`pyproject.toml`) is the single
+  dependency source of truth
+
+### Changed
+- **A failed instrument validation now fails the run**: thread-pool validation errors re-raise
+  instead of being logged and silently dropped, so degraded results can no longer pass as success
+- **`QCConfig.from_file` raises `FileNotFoundError`** for a missing config file instead of
+  silently returning a default config
+- **Lint/type configuration single-sourced**: `ruff.toml` and `mypy.ini` are the only configs
+  (matching what CI runs); the conflicting inert `[tool.ruff]`/`[tool.mypy]` sections were
+  removed from `pyproject.toml`
+
+### Added
+- **CLI test suite** (`tests/test_cli.py`): help output, flag parsing, missing-initials usage
+  error, invalid mode, and `config --json-output` schema checks via `click.testing.CliRunner`
+- **Env-var load logging**: config loading logs which environment variables were set vs
+  defaulted (names only; secret values are never logged)
+
+### Fixed
+- **Error swallowing removed across the pipeline**: data-dictionary encoding failures now raise
+  after all encodings are exhausted instead of silently returning empty context; per-record
+  system errors preserve the exception type and message; the CLI always prints the failure
+  reason (previously hidden unless `--logs` was set); fetcher errors preserve the exception
+  cause chain (`raise ... from exc`)
+- **Repository hygiene**: deduplicated `.gitignore` (duplicate `output/` patterns and a repeated
+  Python template block) and untracked a binary archive that should never have been committed
+
 ## [2.5.0] - 2026-04-17
 
 ### Added
