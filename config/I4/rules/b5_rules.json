@@ -1,16 +1,84 @@
 {
     "frmdateb5": {
-        "required": true,
+        "nullable": true,
         "type": "string",
         "formatting": "date",
-        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "frmdateb5": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "frmdateb5": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
     },
     "langb5": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             1,
             2
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "langb5": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "langb5": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "modeb5": {
@@ -191,7 +259,7 @@
         ]
     },
     "del": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -231,6 +299,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "del": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "del": {
+                        "nullable": false
                     }
                 }
             }
@@ -281,7 +381,7 @@
         ]
     },
     "hall": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -336,6 +436,38 @@
                         "nullable": true
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "hall": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "hall": {
+                        "nullable": false
+                    }
+                }
             }
         ]
     },
@@ -384,7 +516,7 @@
         ]
     },
     "agit": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -424,6 +556,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "agit": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "agit": {
+                        "nullable": false
                     }
                 }
             }
@@ -474,7 +638,7 @@
         ]
     },
     "depd": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -514,6 +678,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "depd": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "depd": {
+                        "nullable": false
                     }
                 }
             }
@@ -564,7 +760,7 @@
         ]
     },
     "anx": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -604,6 +800,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "anx": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "anx": {
+                        "nullable": false
                     }
                 }
             }
@@ -654,7 +882,7 @@
         ]
     },
     "elat": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -694,6 +922,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "elat": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "elat": {
+                        "nullable": false
                     }
                 }
             }
@@ -744,7 +1004,7 @@
         ]
     },
     "apa": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -784,6 +1044,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "apa": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "apa": {
+                        "nullable": false
                     }
                 }
             }
@@ -834,7 +1126,7 @@
         ]
     },
     "disn": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -874,6 +1166,38 @@
                             1
                         ],
                         "nullable": true
+                    }
+                }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "disn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "disn": {
+                        "nullable": false
                     }
                 }
             }
@@ -924,12 +1248,46 @@
         ]
     },
     "irr": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             9
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "irr": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "irr": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "irrsev": {
@@ -977,12 +1335,46 @@
         ]
     },
     "mot": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             9
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mot": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "mot": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "motsev": {
@@ -1030,12 +1422,46 @@
         ]
     },
     "nite": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             9
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "nite": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "nite": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "nitesev": {
@@ -1083,12 +1509,46 @@
         ]
     },
     "app": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
             1,
             9
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "app": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "app": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "appsev": {
@@ -1136,12 +1596,46 @@
         ]
     },
     "npiqinf": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             1,
             2,
             3
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "npiqinf": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb5": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "npiqinf": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "initialsb5": {

@@ -2,13 +2,8 @@
 Consolidated rule loading for the QC pipeline.
 
 Delegates to :class:`NamespacedRulePool` for auto-discovered, O(1) per-variable
-rule lookup.  Maintains backward-compatible public API (``load_rules_for_packet``,
-``get_rules_for_record``, ``clear_cache``).
+rule lookup.  Public API: ``get_rules_for_record``, ``clear_cache``.
 """
-
-import json
-from pathlib import Path
-from typing import Any
 
 from ..config.config_manager import QCConfig, get_config
 from ..logging.logging_config import get_logger
@@ -66,47 +61,6 @@ def _resolve_namespace(record: dict, instrument_name: str) -> str | None:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
-
-
-def load_rules_for_packet(packet: str, config: QCConfig | None = None) -> dict:
-    """Load all JSON rule files for a packet directory, merge into flat variable->rules dict.
-
-    Returns {variable_name: {rule_dict}} for all instruments in that packet.
-    No caching - rules are loaded fresh each time.
-    """
-    packet = _validate_packet(packet)
-
-    cfg = _get_config(config)
-    rules_path = cfg.get_rules_path_for_packet(packet)
-    rules_dir = Path(rules_path)
-
-    if not rules_dir.exists():
-        raise FileNotFoundError(f"Rules path for packet '{packet}' does not exist: {rules_path}")
-
-    rule_files = sorted(rules_dir.glob("*.json"))
-    if not rule_files:
-        logger.warning("No rule files found in %s", rules_dir)
-        return {}
-
-    merged: dict[str, Any] = {}
-    for rule_file in rule_files:
-        try:
-            with rule_file.open("r", encoding="utf-8") as f:
-                data = json.load(f)
-        except json.JSONDecodeError:
-            logger.warning("Invalid JSON in rule file %s, skipping", rule_file.name)
-            continue
-
-        if not isinstance(data, dict):
-            logger.warning("Rule file %s does not contain a dict, skipping", rule_file.name)
-            continue
-
-        merged.update(data)
-
-    logger.debug(
-        "Loaded %d rules for packet %s from %d files", len(merged), packet, len(rule_files)
-    )
-    return merged
 
 
 def get_rules_for_record(

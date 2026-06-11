@@ -103,7 +103,7 @@ def run_pipeline(
 
     run_type = config.mode.replace("_", " ").title().replace(" ", "")
     base = Path(output_path) if output_path else Path(config.output_path)
-    output_dir = base / f"QC_{run_type}_{date_tag}_{time_tag}"
+    output_dir = base / f"QC_{run_type}_{date_tag}-{time_tag}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info(
@@ -311,6 +311,7 @@ def run_pipeline(
                             instrument_name,
                             e,
                         )
+                        raise
 
         errors_df = pd.DataFrame(all_errors) if all_errors else pd.DataFrame()
         logs_df = pd.DataFrame(all_logs) if all_logs else pd.DataFrame()

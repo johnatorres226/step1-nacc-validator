@@ -104,13 +104,13 @@ def _post_api(config: QCConfig, payload: dict[str, Any]) -> list[dict[str, Any]]
         resp.raise_for_status()
         data = resp.json()
         return data if data else []
-    except requests.exceptions.Timeout:
-        raise RuntimeError(f"API request timed out after {config.timeout}s")
+    except requests.exceptions.Timeout as exc:
+        raise RuntimeError(f"API request timed out after {config.timeout}s") from exc
     except requests.exceptions.RequestException as exc:
-        text = getattr(getattr(exc, "response", None), "text", None)
-        raise RuntimeError(f"REDCap API request failed: {text or exc!s}")
+        text = exc.response.text if exc.response is not None else None
+        raise RuntimeError(f"REDCap API request failed: {text or exc!s}") from exc
     except (ValueError, json.JSONDecodeError) as exc:
-        raise RuntimeError(f"Failed to parse JSON response: {exc!s}")
+        raise RuntimeError(f"Failed to parse JSON response: {exc!s}") from exc
 
 
 def _validate_and_map(raw: list[dict[str, Any]]) -> pd.DataFrame:

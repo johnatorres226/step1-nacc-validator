@@ -6,7 +6,6 @@ A professional command-line tool for running quality control validation
 on UDSv4 REDCap data with comprehensive reporting and configuration management.
 """
 
-import sys
 import warnings
 from pathlib import Path
 
@@ -25,7 +24,6 @@ logger = get_logger("cli")
 # Build help text with version
 CLI_HELP = f"""UDSv4 REDCap QC Validator — ADRC Quality Control Interface (v{__version__}).
 
-When invoked without arguments, opens the interactive ADRC interface.
 When invoked with options (e.g. -i INITIALS), runs the QC pipeline
 directly. Use the `config` subcommand to inspect configuration.
 """
@@ -34,6 +32,7 @@ directly. Use the `config` subcommand to inspect configuration.
 @click.group(
     context_settings={"help_option_names": ["-h", "--help"]},
     invoke_without_command=True,
+    no_args_is_help=True,
     help=CLI_HELP,
 )
 @click.option(
@@ -62,6 +61,12 @@ directly. Use the `config` subcommand to inspect configuration.
     is_flag=True,
     help="Show line-by-line QC element validation logging during execution.",
 )
+@click.option(
+    "--test",
+    "test_run",
+    is_flag=True,
+    help="Test mode: labels output directory as TEST_* without changing behavior.",
+)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -71,14 +76,8 @@ def cli(
     ptid_list: list[str],
     user_initials: str,
     logs: bool,
+    test_run: bool,
 ) -> None:
-    # Launch interactive interface when no CLI arguments are provided
-    if len(sys.argv) == 1 and not ctx.invoked_subcommand:
-        from cli.interface import run_interactive
-
-        run_interactive(console)
-        return
-
     # Minimal startup logging - detailed logging configured later
     setup_logging(log_level="ERROR")
     warnings.filterwarnings(
@@ -139,24 +138,59 @@ def cli(
         if logs:
             _display_run_summary(base_config)
 
-        result = run_pipeline(config=base_config)
+        import json as _json
+        from datetime import datetime as _dt
+
+        date_tag = ("TEST_" + _dt.now().strftime("%d%b%Y").upper()) if test_run else None
+        _started_at = _dt.now()
+        result = run_pipeline(config=base_config, date_tag=date_tag)
         if not result["success"]:
             raise RuntimeError(f"Pipeline execution failed: {result['error']}")
+        _out_dir = result["output_dir"]
+        _ts = _out_dir.name.rsplit("_", 1)[-1]
+        import os as _os
+
+        _telemetry_dir = Path(
+            _os.getenv("TELEMETRY_PATH")
+            or str(Path(__file__).resolve().parent.parent.parent / "telemetry")
+        ).resolve()
+        _telemetry_dir.mkdir(parents=True, exist_ok=True)
+        (_telemetry_dir / f"QC_TELEMETRY_LOG_{_ts}.json").write_text(
+            _json.dumps(
+                {
+                    "run_id": _ts,
+                    "step": "qc-validator",
+                    "event_type": "QC",
+                    "user": base_config.user_initials,
+                    "started_at": _started_at.isoformat(),
+                    "completed_at": _dt.now().isoformat(),
+                    "duration_s": round(result["execution_time"], 1),
+                    "status": "success",
+                    "payload": {
+                        "records_fetched": result["records_fetched"],
+                        "error_count": len(result["errors_df"]),
+                        "mode": mode,
+                    },
+                    "error": None,
+                },
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
         logger.info("Results saved to: %s", Path(base_config.output_path).resolve())
         logger.info("QC validation pipeline complete")
 
     except Exception as e:
         logger.exception("QC validation pipeline failed")
-        console.print(f"Pipeline failed: {e}")
-        if logs:
-            console.print("Check the logs above for detailed error information.")
+        console.print(f"Pipeline failed: {type(e).__name__}: {e}")
+        console.print("Re-run with --logs for detailed error information.")
         ctx.exit(1)
 
 
 @cli.command()
-@click.option("--detailed", "-d", is_flag=True, help="Show detailed configuration.")
 @click.option("--json-output", is_flag=True, help="Output configuration as JSON.")
-def config(detailed: bool, json_output: bool) -> None:
+def config(json_output: bool) -> None:
     """Displays the current configuration status and validates settings."""
     try:
         config_instance = get_config(force_reload=True)
@@ -177,7 +211,7 @@ def config(detailed: bool, json_output: bool) -> None:
         # In this case, we can assume the config is invalid
         status = {
             "valid": False,
-            "errors": ["Critical configuration error. Run with --detailed for more info."],
+            "errors": ["Critical configuration error. Check your .env settings."],
             "redcap_configured": False,
             "output_path_exists": False,
             "packet_rules_configured": False,
@@ -205,13 +239,6 @@ def config(detailed: bool, json_output: bool) -> None:
     console.print(
         f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}"
     )
-
-    if detailed and "legacy_compatibility" in status:
-        legacy_info = status["legacy_compatibility"]
-        console.print("\nData Components:")
-        console.print(f"Instruments: {legacy_info.get('instruments_count', 0)}")
-        console.print(f"Events: {legacy_info.get('events_count', 0)}")
-        console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
     if status["errors"]:
         console.print("\nConfiguration Issues:")

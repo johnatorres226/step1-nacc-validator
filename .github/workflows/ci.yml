@@ -4,7 +4,7 @@ on:
   push:
     branches: [ dev, codebase-curation ]
   pull_request:
-    branches: [ main, dev ]
+    branches: [ main, dev, integration ]
 
 jobs:
   # Verify no unauthorized changes to external packages

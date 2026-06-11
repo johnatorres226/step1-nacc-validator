@@ -1,7 +1,7 @@
 """
 CLI module for UDSv4 REDCap QC Validator.
 
-This module provides the ADRC Quality Control Interface — a branded
+This module provides the ADRC Quality Control Interface — a
 command-line tool for validating UDSv4 REDCap data and generating
 quality control reports.
 """

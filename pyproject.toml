@@ -1,6 +1,6 @@
 [project]
 name = "udsv4-redcap-qc-validator"
-version = "2.5.0"  # Keep in sync with src/__version__.py
+version = "2.6.0"  # Keep in sync with src/__version__.py
 description = "QC validator for UDSv4 REDCap data"
 readme = "README.md"
 license = "MPL-2.0"
@@ -64,36 +64,6 @@ types-python-dateutil = "^2.9.0.20250822"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.ruff]
-line-length = 100
-target-version = "py313"
-# Exclude external packages from linting
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "dist",
-    "build",
-    "nacc_form_validator",  # External package - DO NOT LINT
-]
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "S", "SIM", "PL"]
-ignore = ["S101", "PLR2004"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "PLR2004"]
-
-[tool.mypy]
-python_version = "3.13"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-# Exclude external packages from type checking
-exclude = [
-    "^nacc_form_validator/.*$",  # External package - DO NOT TYPE CHECK
-]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

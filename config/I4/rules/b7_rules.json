@@ -1,16 +1,84 @@
 {
     "frmdateb7": {
-        "required": true,
+        "nullable": true,
         "type": "string",
         "formatting": "date",
-        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)"
+        "regex": "(^(0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])[-/](\\d{4})$)|(^(\\d{4})[-/](0[1-9]|1[0-2])[-/](0[1-9]|[12][0-9]|3[01])$)",
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "frmdateb7": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "frmdateb7": {
+                        "nullable": false
+                    }
+                }
+            }
+        ]
     },
     "langb7": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             1,
             2
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "langb7": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "langb7": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "modeb7": {
@@ -154,7 +222,7 @@
         ]
     },
     "bills": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -180,13 +248,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "bills": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "bills": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "taxes": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -212,13 +314,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "taxes": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "taxes": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "shopping": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -244,13 +380,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "shopping": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "shopping": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "games": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -276,13 +446,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "games": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "games": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "stove": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -311,10 +515,44 @@
                     }
                 }
             }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "stove": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "stove": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "mealprep": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -360,6 +598,38 @@
                         "nullable": true
                     }
                 }
+            },
+            {
+                "index": 2,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "mealprep": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 3,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "mealprep": {
+                        "nullable": false
+                    }
+                }
             }
         ],
         "temporalrules": [
@@ -384,7 +654,7 @@
         ]
     },
     "events": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -410,13 +680,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "events": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "events": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "payattn": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -442,13 +746,47 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "payattn": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "payattn": {
+                        "nullable": false
                     }
                 }
             }
         ]
     },
     "remdates": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -477,10 +815,44 @@
                     }
                 }
             }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "remdates": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "remdates": {
+                        "nullable": false
+                    }
+                }
+            }
         ]
     },
     "travel": {
-        "required": true,
+        "nullable": true,
         "type": "integer",
         "allowed": [
             0,
@@ -506,6 +878,40 @@
                             0
                         ],
                         "nullable": true
+                    }
+                }
+            }
+        ],
+        "compatibility": [
+            {
+                "index": 0,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            0
+                        ]
+                    }
+                },
+                "then": {
+                    "travel": {
+                        "nullable": true,
+                        "filled": false
+                    }
+                }
+            },
+            {
+                "index": 1,
+                "if": {
+                    "modeb7": {
+                        "allowed": [
+                            1,
+                            2
+                        ]
+                    }
+                },
+                "then": {
+                    "travel": {
+                        "nullable": false
                     }
                 }
             }

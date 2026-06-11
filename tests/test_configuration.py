@@ -97,8 +97,8 @@ class TestQCConfig:
                 os.unlink(temp_path)
 
     def test_handles_nonexistent_file(self):
-        config = QCConfig.from_file("/path/that/does/not/exist.json")
-        assert isinstance(config, QCConfig)
+        with pytest.raises(FileNotFoundError):
+            QCConfig.from_file("/path/that/does/not/exist.json")
 
     def test_output_mode_default_is_errors_only(self):
         config = QCConfig()

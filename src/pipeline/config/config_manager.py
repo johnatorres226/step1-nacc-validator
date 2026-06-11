@@ -213,7 +213,7 @@ class QCConfig:
         """Loads configuration from a JSON file."""
         p = Path(file_path)
         if not p.exists():
-            return cls()  # Return default config if file not found
+            raise FileNotFoundError(f"Config file not found: {p}")
         with p.open(encoding="utf-8") as fh:
             data = json.loads(fh.read())
         return cls(**data)
@@ -298,8 +298,30 @@ class QCConfig:
 _config_instance: QCConfig | None = None
 
 
+_ENV_VARS = (
+    "REDCAP_API_TOKEN",
+    "REDCAP_API_URL",
+    "PROJECT_ID",
+    "REDCAP_REPORT_ID",
+    "OUTPUT_PATH",
+    "UPLOAD_READY_PATH",
+    "JSON_RULES_PATH_I",
+    "JSON_RULES_PATH_I4",
+    "JSON_RULES_PATH_F",
+    "LOG_LEVEL",
+    "MAX_WORKERS",
+    "TIMEOUT",
+    "RETRY_ATTEMPTS",
+)
+
+
 def load_config_from_env() -> QCConfig:
     """Loads configuration from environment variables and returns a QCConfig instance."""
+    set_vars = [v for v in _ENV_VARS if os.getenv(v)]
+    defaulted = [v for v in _ENV_VARS if not os.getenv(v)]
+    logger.debug("Config env vars set: %s", ", ".join(set_vars) or "none")
+    if defaulted:
+        logger.debug("Config env vars defaulted: %s", ", ".join(defaulted))
     return QCConfig()
 
 
