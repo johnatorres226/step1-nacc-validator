@@ -6,7 +6,6 @@ A professional command-line tool for running quality control validation
 on UDSv4 REDCap data with comprehensive reporting and configuration management.
 """
 
-import sys
 import warnings
 from pathlib import Path
 
@@ -25,7 +24,6 @@ logger = get_logger("cli")
 # Build help text with version
 CLI_HELP = f"""UDSv4 REDCap QC Validator — ADRC Quality Control Interface (v{__version__}).
 
-When invoked without arguments, opens the interactive ADRC interface.
 When invoked with options (e.g. -i INITIALS), runs the QC pipeline
 directly. Use the `config` subcommand to inspect configuration.
 """
@@ -34,6 +32,7 @@ directly. Use the `config` subcommand to inspect configuration.
 @click.group(
     context_settings={"help_option_names": ["-h", "--help"]},
     invoke_without_command=True,
+    no_args_is_help=True,
     help=CLI_HELP,
 )
 @click.option(
@@ -79,13 +78,6 @@ def cli(
     logs: bool,
     test_run: bool,
 ) -> None:
-    # Launch interactive interface when no CLI arguments are provided
-    if len(sys.argv) == 1 and not ctx.invoked_subcommand:
-        from cli.interface import run_interactive
-
-        run_interactive(console)
-        return
-
     # Minimal startup logging - detailed logging configured later
     setup_logging(log_level="ERROR")
     warnings.filterwarnings(
@@ -198,9 +190,8 @@ def cli(
 
 
 @cli.command()
-@click.option("--detailed", "-d", is_flag=True, help="Show detailed configuration.")
 @click.option("--json-output", is_flag=True, help="Output configuration as JSON.")
-def config(detailed: bool, json_output: bool) -> None:
+def config(json_output: bool) -> None:
     """Displays the current configuration status and validates settings."""
     try:
         config_instance = get_config(force_reload=True)
@@ -221,7 +212,7 @@ def config(detailed: bool, json_output: bool) -> None:
         # In this case, we can assume the config is invalid
         status = {
             "valid": False,
-            "errors": ["Critical configuration error. Run with --detailed for more info."],
+            "errors": ["Critical configuration error. Check your .env settings."],
             "redcap_configured": False,
             "output_path_exists": False,
             "packet_rules_configured": False,
@@ -249,13 +240,6 @@ def config(detailed: bool, json_output: bool) -> None:
     console.print(
         f"Validation Rules: {'Configured' if status['packet_rules_configured'] else 'Missing'}"
     )
-
-    if detailed and "legacy_compatibility" in status:
-        legacy_info = status["legacy_compatibility"]
-        console.print("\nData Components:")
-        console.print(f"Instruments: {legacy_info.get('instruments_count', 0)}")
-        console.print(f"Events: {legacy_info.get('events_count', 0)}")
-        console.print(f"JSON Mappings: {legacy_info.get('mapping_count', 0)}")
 
     if status["errors"]:
         console.print("\nConfiguration Issues:")
