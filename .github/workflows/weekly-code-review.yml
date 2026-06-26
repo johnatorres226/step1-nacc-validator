@@ -1,0 +1,69 @@
+name: Weekly Automated Code Review
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  create-review-issue:
+    name: Open Copilot Code Review Issue
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Get week identifier
+        id: week
+        run: echo "label=$(date +'%Y-W%V')" >> "$GITHUB_OUTPUT"
+
+      - name: Create weekly code-review issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const week = '${{ steps.week.outputs.label }}';
+            const title = `Weekly Code Review – ${week}`;
+
+            // Avoid duplicates if the workflow is re-run manually
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automated-review',
+            });
+
+            if (existing.data.some(i => i.title === title)) {
+              core.info(`Issue "${title}" already exists – skipping.`);
+              return;
+            }
+
+            const body = [
+              '## Automated Weekly Code Review',
+              '',
+              `**Week:** ${week}`,
+              '',
+              '@github-copilot Please perform a thorough code review of the recent',
+              'changes in this repository. Focus on:',
+              '',
+              '- **Correctness** – logic errors, edge cases, off-by-one mistakes',
+              '- **Security** – potential vulnerabilities or unsafe patterns',
+              '- **Test coverage** – untested paths or missing assertions',
+              '- **Code quality** – readability, naming, duplication, dead code',
+              '- **External-package policy** – any unauthorised changes to',
+              '  `nacc_form_validator/` beyond the patches listed in `ci.yml`',
+              '',
+              'Summarise your findings and open follow-up issues or PRs for any',
+              'actionable items you discover.',
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['automated-review'],
+              assignees: ['copilot'],
+            });
+
+            core.info(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
