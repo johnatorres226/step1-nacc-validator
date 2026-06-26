@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Bi-weekly automated code review workflow** (`.github/workflows/weekly-code-review.yml`):
+  runs every other Friday via cron, opens a Copilot-assigned issue with a structured three-phase
+  review plan (write plan → request review → receive and act); includes a backlog guard that
+  skips issue creation when 3 or more unresolved `automated-review` issues are open
+- **Code reviewer prompt template** (`docs/superpowers/code-reviewer.md`): reusable subagent
+  template covering plan alignment, code quality, architecture, testing, domain consistency,
+  bug patterns, and production readiness checks
+
 ## [2.6.0] - 2026-06-10
 
 ### Removed
