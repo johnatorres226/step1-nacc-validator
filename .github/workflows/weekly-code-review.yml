@@ -1,0 +1,174 @@
+name: Bi-weekly Automated Code Review
+
+on:
+  schedule:
+    # Every Friday at 09:00 UTC — the job skips odd ISO weeks to achieve bi-weekly cadence
+    - cron: '0 9 * * 5'
+  workflow_dispatch:
+
+jobs:
+  create-review-issue:
+    name: Open Copilot Code Review Issue
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Check bi-weekly cadence (even ISO weeks only)
+        id: cadence
+        run: |
+          WEEK_NUM=$(date +'%V')
+          echo "ISO week: $WEEK_NUM"
+          if (( 10#$WEEK_NUM % 2 == 0 )); then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Odd week – skipping this cycle."
+          fi
+
+      - name: Get week identifier
+        id: week
+        if: steps.cadence.outputs.run == 'true'
+        run: echo "label=$(date +'%Y-W%V')" >> "$GITHUB_OUTPUT"
+
+      - name: Create bi-weekly code-review issue
+        if: steps.cadence.outputs.run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const week = '${{ steps.week.outputs.label }}';
+            const title = `Bi-weekly Code Review – ${week}`;
+
+            // --- Backlog guard: stop if too many unresolved review issues exist ---
+            const BACKLOG_LIMIT = 3;
+            const openReviews = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'automated-review',
+              per_page: 100,
+            });
+
+            if (openReviews.data.length >= BACKLOG_LIMIT) {
+              core.warning(
+                `Backlog limit reached: ${openReviews.data.length} open "automated-review" ` +
+                `issue(s) exist (limit is ${BACKLOG_LIMIT}). ` +
+                `Resolve or close them before the next review cycle.`
+              );
+              return;
+            }
+
+            // Avoid duplicates if the workflow is re-run manually mid-week
+            if (openReviews.data.some(i => i.title === title)) {
+              core.info(`Issue "${title}" already exists – skipping.`);
+              return;
+            }
+
+            const body = [
+              '<!-- copilot-model: claude-sonnet-4.6 -->',
+              '',
+              '## Bi-weekly Automated Code Review',
+              '',
+              `**Period:** ${week}`,
+              '',
+              '@github-copilot Work through the three phases below in order.',
+              'Each phase references a skill from',
+              '[obra/superpowers](https://github.com/obra/superpowers/tree/main/skills).',
+              'Every actionable finding must become a **new issue or PR** — do not',
+              'leave findings only as comments here. Close this issue once all',
+              'findings have been filed and the review plan committed.',
+              '',
+              '---',
+              '',
+              '## Phase 0 — Write a plan (`writing-plans`)',
+              '',
+              '> Skill: [writing-plans](https://github.com/obra/superpowers/blob/main/skills/writing-plans/SKILL.md)',
+              '',
+              'Before touching any code:',
+              '',
+              '1. Determine the git range to review:',
+              '   ```bash',
+              '   BASE_SHA=$(git log --oneline --merges origin/main | head -2 | tail -1 | awk \'{print $1}\')',
+              '   HEAD_SHA=$(git rev-parse HEAD)',
+              '   ```',
+              '2. Write an implementation plan for this review session and save it to',
+              '   `docs/superpowers/plans/YYYY-MM-DD-code-review.md` (replace date).',
+              '   The plan header must follow the `writing-plans` format:',
+              '   - **Goal:** one sentence describing what this review cycle covers',
+              '   - **Architecture:** 2–3 sentences about the approach',
+              '   - **Tech Stack:** Python, Poetry, Ruff, mypy, pytest',
+              '   - Tasks broken into bite-sized checkbox steps',
+              '3. Commit the plan file before proceeding.',
+              '',
+              '---',
+              '',
+              '## Phase 1 — Request a code review (`requesting-code-review`)',
+              '',
+              '> Skill: [requesting-code-review](https://github.com/obra/superpowers/blob/main/skills/requesting-code-review/SKILL.md)',
+              '',
+              'Dispatch a **general-purpose subagent** using the reviewer template at',
+              '`docs/superpowers/code-reviewer.md`. Fill in the four placeholders:',
+              '',
+              '- `{DESCRIPTION}` — summary of changes merged since the last review',
+              '- `{PLAN_OR_REQUIREMENTS}` — path to the plan file you just wrote',
+              '- `{BASE_SHA}` — the base commit determined in Phase 0',
+              '- `{HEAD_SHA}` — current HEAD',
+              '',
+              'The reviewer subagent applies the four engineering lenses:',
+              '',
+              '| Lens | Focus |',
+              '|------|-------|',
+              '| **diagnosing-bugs** | Broken paths, silent errors, reproduction loops |',
+              '| **tdd** | Coverage gaps, implementation-coupled tests |',
+              '| **domain-modeling** | Terminology drift, ambiguous names |',
+              '| **codebase-design** | Shallow modules, leaky interfaces, seam placement |',
+              '',
+              'The subagent returns: **Strengths · Issues (Critical / Important / Minor)',
+              '· Recommendations · Assessment**.',
+              '',
+              '---',
+              '',
+              '## Phase 2 — Receive and act on the review (`receiving-code-review`)',
+              '',
+              '> Skill: [receiving-code-review](https://github.com/obra/superpowers/blob/main/skills/receiving-code-review/SKILL.md)',
+              '',
+              'Work through the reviewer\'s output following this pattern:',
+              '',
+              '```',
+              '1. READ   – read all feedback before reacting',
+              '2. VERIFY – check each item against the codebase before accepting it',
+              '3. EVALUATE – is the suggestion technically correct for THIS codebase?',
+              '4. RESPOND – push back with reasoning if wrong; just fix it if right',
+              '5. IMPLEMENT – one item at a time, test each fix individually',
+              '```',
+              '',
+              '**Rules:**',
+              '- No performative agreement ("Great point!", "You\'re absolutely right!")',
+              '- Verify before implementing — grep the codebase, run the tests',
+              '- Apply YAGNI: if a feature is unused, propose removal, not expansion',
+              '- Push back with technical reasoning when the suggestion is wrong',
+              '  or conflicts with existing architectural decisions',
+              '- Implement in priority order: Critical → Important → Minor',
+              '',
+              '**For each fix:**',
+              '- Open a **PR** if the fix is self-contained and small',
+              '- Open an **issue** if it requires more investigation or is out of scope',
+              '- Reply to inline review comments in their thread, not as top-level',
+              '  comments on this issue',
+              '',
+              '---',
+              '',
+              '**Output contract:** every finding → a new issue or PR.',
+              'No stray prose findings in this thread.',
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['automated-review'],
+              assignees: ['copilot'],
+            });
+
+            core.info(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
